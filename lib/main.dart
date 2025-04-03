@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
+import 'training_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -80,8 +81,21 @@ class _HomeScreenState extends State<HomeScreen> {
             Image.asset('assets/logo.png', height: 100),
             SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {}, // Navegar a entrenamientos
+              onPressed: () {
+                 // Navegar a entrenamientos
+
+                // Opción 1: Navegación básica (si ya importaste TrainingScreen)
+                Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => TrainingScreen()),
+                );
+              },
+
               child: Text('Iniciar Entrenamiento'),
+              style: ElevatedButton.styleFrom(
+                minimumSize: Size(double.infinity, 50), // Botón ancho
+              ),
+
             ),
             SizedBox(height: 10),
             Text('Plantillas', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
