@@ -12,36 +12,33 @@ class _TrainingScreenState extends State<TrainingScreen> {
   String trainingTitle = "Entrenamiento de hoy";
   List<Map<String, dynamic>> selectedExercises = [];
 
-  // Ejemplo de ejercicios disponibles; en la versión real se obtendrían desde la BD
+  // Ejemplo de ejercicios disponibles; en producción se obtendrían desde la BD
   List<Map<String, dynamic>> availableExercises = [
     {'name': 'Press de banca', 'image': 'assets/press.png', 'category': 'Pecho'},
     {'name': 'Sentadilla', 'image': 'assets/sentadilla.png', 'category': 'Pierna'},
     {'name': 'Remo en T', 'image': 'assets/remo.png', 'category': 'Espalda'},
   ];
 
-  void _showCancelConfirmation() {
-    showDialog(
+  Future<bool> _onWillPop() async {
+    return await showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text("Cancelar Entrenamiento"),
         content: Text("¿Seguro? Se perderán los datos agregados."),
         actions: [
           TextButton(
-            onPressed: () {
-              Navigator.pop(context); // Cierra el diálogo
-            },
+            onPressed: () => Navigator.of(context).pop(false),
             child: Text("No"),
           ),
           TextButton(
             onPressed: () {
-              Navigator.pop(context); // Cierra el diálogo
-              Navigator.pop(context); // Regresa al menú principal
+              Navigator.of(context).pop(true);
             },
             child: Text("Sí"),
           ),
         ],
       ),
-    );
+    ) ?? false;
   }
 
   void _openExerciseOverlay() {
@@ -59,6 +56,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                   'name': exercise['name'],
                   'series': '',
                   'weight': '',
+                  'weightUnit': 'kg',
                   'reps': <String>[],
                   'notes': ''
                 });
@@ -66,6 +64,17 @@ class _TrainingScreenState extends State<TrainingScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text("Se agregó ${exercise['name']}"),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            },
+            onNewExercise: (newExercise) {
+              setState(() {
+                availableExercises.add(newExercise);
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text("Se guardó el ejercicio"),
                   duration: Duration(seconds: 2),
                 ),
               );
@@ -165,7 +174,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
           ),
           TextButton(
             onPressed: () {
-              // Aquí guardarías la plantilla en la BD o almacenamiento local
+              // Guardar plantilla en la BD o almacenamiento local
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text("Plantilla guardada")),
@@ -180,94 +189,127 @@ class _TrainingScreenState extends State<TrainingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Entrenamiento"),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.cancel),
-            onPressed: _showCancelConfirmation,
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text("Entrenamiento"),
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back),
+            onPressed: () async {
+              bool exit = await _onWillPop();
+              if (exit) Navigator.pop(context);
+            },
           ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            // Título editable
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    trainingTitle,
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                IconButton(
-                  icon: Icon(Icons.edit),
-                  onPressed: _editTrainingTitle,
-                )
-              ],
-            ),
-            SizedBox(height: 10),
-            // Botones principales
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: _openExerciseOverlay,
-                  child: Text("Añadir ejercicio"),
-                ),
-                ElevatedButton(
-                  onPressed: _confirmFinishTraining,
-                  child: Text("Terminar entrenamiento"),
-                ),
-              ],
-            ),
-            SizedBox(height: 10),
-            // Lista de ejercicios agregados
-            Expanded(
-              child: ListView.builder(
-                itemCount: selectedExercises.length,
-                itemBuilder: (context, index) {
-                  final exercise = selectedExercises[index];
-                  return Dismissible(
-                    key: UniqueKey(),
-                    direction: DismissDirection.startToEnd,
-                    background: Container(
-                      color: Colors.red,
-                      alignment: Alignment.centerLeft,
-                      padding: EdgeInsets.only(left: 16),
-                      child: Icon(Icons.delete, color: Colors.white),
-                    ),
-                    onDismissed: (direction) {
-                      setState(() {
-                        selectedExercises.removeAt(index);
-                      });
-                    },
-                    child: ListTile(
-                      title: Text(exercise['name']),
-                      subtitle: Text(
-                        'Series: ${exercise['series'] ?? "-"} | Peso: ${exercise['weight'] ?? "-"} | Reps: ${exercise['reps'] is List ? (exercise['reps'] as List).join(", ") : "-"}',
-                      ),
-                      trailing: IconButton(
-                        icon: Icon(Icons.edit),
-                        onPressed: () => _openExerciseDataDialog(exercise, index),
-                      ),
-                      onLongPress: () => _openExerciseDataDialog(exercise, index),
-                    ),
-                  );
-                },
-              ),
-            ),
-            SizedBox(height: 10),
-            // Botón para guardar como plantilla
-            ElevatedButton(
-              onPressed: _confirmSaveTemplate,
-              child: Text("Agregar plantilla"),
+          actions: [
+            TextButton(
+              onPressed: () => _confirmCancelTraining(),
+              child: Text("cancelar entrenamiento", style: TextStyle(color: Colors.white)),
             ),
           ],
         ),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              // Título editable
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      trainingTitle,
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.edit),
+                    onPressed: _editTrainingTitle,
+                  )
+                ],
+              ),
+              SizedBox(height: 10),
+              // Botones principales
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: _openExerciseOverlay,
+                    child: Text("Añadir ejercicio"),
+                  ),
+                  ElevatedButton(
+                    onPressed: _confirmFinishTraining,
+                    child: Text("Terminar entrenamiento"),
+                  ),
+                ],
+              ),
+              SizedBox(height: 10),
+              // Lista de ejercicios agregados
+              Expanded(
+                child: ListView.builder(
+                  itemCount: selectedExercises.length,
+                  itemBuilder: (context, index) {
+                    final exercise = selectedExercises[index];
+                    return Dismissible(
+                      key: UniqueKey(),
+                      direction: DismissDirection.startToEnd,
+                      background: Container(
+                        color: Colors.red,
+                        alignment: Alignment.centerLeft,
+                        padding: EdgeInsets.only(left: 16),
+                        child: Icon(Icons.delete, color: Colors.white),
+                      ),
+                      onDismissed: (direction) {
+                        setState(() {
+                          selectedExercises.removeAt(index);
+                        });
+                      },
+                      child: ListTile(
+                        title: Text(exercise['name']),
+                        subtitle: Text(
+                          'Series: ${exercise['series'] ?? "-"} | Peso: ${exercise['weight']} ${exercise['weightUnit']} | Reps: ${exercise['reps'] is List ? (exercise['reps'] as List).join(", ") : "-"}',
+                        ),
+                        trailing: IconButton(
+                          icon: Icon(Icons.edit),
+                          onPressed: () => _openExerciseDataDialog(exercise, index),
+                        ),
+                        onLongPress: () => _openExerciseDataDialog(exercise, index),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              SizedBox(height: 10),
+              // Botón para guardar como plantilla
+              ElevatedButton(
+                onPressed: _confirmSaveTemplate,
+                child: Text("Agregar plantilla"),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _confirmCancelTraining() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Cancelar Entrenamiento"),
+        content: Text("¿Seguro? Se perderán los datos agregados."),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text("No"),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pop(context);
+            },
+            child: Text("Sí"),
+          ),
+        ],
       ),
     );
   }
@@ -277,8 +319,9 @@ class _TrainingScreenState extends State<TrainingScreen> {
 class ExerciseOverlay extends StatefulWidget {
   final List<Map<String, dynamic>> availableExercises;
   final Function(Map<String, dynamic>) onExerciseSelected;
+  final Function(Map<String, dynamic>) onNewExercise;
 
-  ExerciseOverlay({required this.availableExercises, required this.onExerciseSelected});
+  ExerciseOverlay({required this.availableExercises, required this.onExerciseSelected, required this.onNewExercise});
 
   @override
   _ExerciseOverlayState createState() => _ExerciseOverlayState();
@@ -341,7 +384,7 @@ class _ExerciseOverlayState extends State<ExerciseOverlay> {
             ],
           ),
           SizedBox(height: 10),
-          // Lista de ejercicios disponibles
+          // Lista de ejercicios disponibles con imagen pequeña
           Expanded(
             child: ListView.builder(
               itemCount: filteredExercises.length,
@@ -349,8 +392,8 @@ class _ExerciseOverlayState extends State<ExerciseOverlay> {
                 final exercise = filteredExercises[index];
                 return ListTile(
                   leading: exercise['image'] != null
-                      ? Image.asset(exercise['image'], width: 40, height: 40)
-                      : Container(width: 40, height: 40, color: Colors.grey),
+                      ? Image.asset(exercise['image'], width: 30, height: 30)
+                      : Container(width: 30, height: 30, color: Colors.grey),
                   title: Text(exercise['name']),
                   onTap: () {
                     widget.onExerciseSelected(exercise);
@@ -359,14 +402,122 @@ class _ExerciseOverlayState extends State<ExerciseOverlay> {
               },
             ),
           ),
-          // Botón para agregar nuevo ejercicio (simplificado)
+          // Botón para agregar nuevo ejercicio (abre pantalla flotante "Nuevo Ejercicio")
           ElevatedButton(
             onPressed: () {
-              // Aquí podrías abrir un formulario para crear un ejercicio nuevo
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) => NewExerciseDialog(
+                  onExerciseCreated: (newExercise) {
+                    widget.onNewExercise(newExercise);
+                    Navigator.pop(context); // Cierra el dialog "Nuevo Ejercicio"
+                  },
+                ),
+              );
             },
             child: Text('+ Agregar ejercicio'),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Diálogo para crear un nuevo ejercicio
+class NewExerciseDialog extends StatefulWidget {
+  final Function(Map<String, dynamic>) onExerciseCreated;
+
+  NewExerciseDialog({required this.onExerciseCreated});
+
+  @override
+  _NewExerciseDialogState createState() => _NewExerciseDialogState();
+}
+
+class _NewExerciseDialogState extends State<NewExerciseDialog> {
+  TextEditingController nameController = TextEditingController();
+  TextEditingController descriptionController = TextEditingController();
+  String selectedCategory = '';
+  String? imagePath; // Simula la ruta de la imagen
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      insetPadding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.1),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              // Cabecera con botón "X"
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("Nuevo Ejercicio", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  IconButton(
+                    icon: Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                  )
+                ],
+              ),
+              TextField(
+                controller: nameController,
+                decoration: InputDecoration(labelText: "Nombre del ejercicio"),
+              ),
+              DropdownButtonFormField<String>(
+                value: selectedCategory.isEmpty ? null : selectedCategory,
+                decoration: InputDecoration(labelText: "Categoría"),
+                items: <String>['Pecho', 'Pierna', 'Espalda', 'Brazos', 'Cardio']
+                    .map((cat) => DropdownMenuItem(value: cat, child: Text(cat)))
+                    .toList(),
+                onChanged: (value) {
+                  setState(() {
+                    selectedCategory = value ?? '';
+                  });
+                },
+              ),
+              TextField(
+                controller: descriptionController,
+                decoration: InputDecoration(labelText: "Descripción (opcional)"),
+              ),
+              SizedBox(height: 10),
+              // Botón simulado para seleccionar imagen
+              ElevatedButton(
+                onPressed: () {
+                  // Aquí integrarías el image_picker para seleccionar imagen
+                  setState(() {
+                    imagePath = 'assets/placeholder.png';
+                  });
+                },
+                child: Text("Seleccionar imagen"),
+              ),
+              SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text("Cancelar"),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      if (nameController.text.isNotEmpty && selectedCategory.isNotEmpty) {
+                        Map<String, dynamic> newExercise = {
+                          'name': nameController.text,
+                          'image': imagePath,
+                          'category': selectedCategory,
+                          'description': descriptionController.text,
+                        };
+                        widget.onExerciseCreated(newExercise);
+                      }
+                    },
+                    child: Text("Confirmar"),
+                  ),
+                ],
+              )
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -389,13 +540,14 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog> with SingleTick
   TextEditingController weightController = TextEditingController();
   TextEditingController notesController = TextEditingController();
 
-  // Lista de controladores para los cuadros de repeticiones
+  // Controladores para cuadros de repeticiones y sus advertencias
   List<TextEditingController> repControllers = [];
+  List<String> repWarnings = [];
   int seriesCount = 0;
+  String seriesWarning = ''; // Advertencia para series
 
-  // Variables para mostrar mensajes de advertencia
-  String warningMessage = '';
-  Timer? warningTimer;
+  // Unidad de peso
+  String weightUnit = 'kg';
 
   @override
   void initState() {
@@ -404,49 +556,77 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog> with SingleTick
     seriesController.text = widget.exercise['series']?.toString() ?? '';
     weightController.text = widget.exercise['weight']?.toString() ?? '';
     notesController.text = widget.exercise['notes'] ?? '';
+    weightUnit = widget.exercise['weightUnit'] ?? 'kg';
 
-    // Inicialmente se carga la cantidad de series si ya existe
-    seriesCount = int.tryParse(seriesController.text) ?? 0;
-    _initRepControllers();
+    // Cargar repeticiones previas si existen
+    if (widget.exercise['reps'] is List && (widget.exercise['reps'] as List).isNotEmpty) {
+      repControllers = (widget.exercise['reps'] as List)
+          .map((e) => TextEditingController(text: e.toString()))
+          .toList();
+      repWarnings = List.filled(repControllers.length, '');
+      seriesCount = repControllers.length;
+    } else {
+      seriesCount = int.tryParse(seriesController.text) ?? 0;
+      _initRepControllers();
+    }
   }
 
   void _initRepControllers() {
     repControllers = [];
-    // Si seriesCount es mayor a 4, limitar a 4 y mostrar advertencia
+    repWarnings = [];
     if (seriesCount > 4) {
-      seriesCount = 4;
-      _showWarning("Se recomienda menos de 4 series para no sobrentrenar");
+      seriesWarning = "Se recomienda menos de 4 series para no sobrentrenar";
+      seriesCount = 4; // Limitar a 4 series
+    } else {
+      seriesWarning = "";
     }
     for (int i = 0; i < seriesCount; i++) {
       repControllers.add(TextEditingController());
+      repWarnings.add('');
     }
     setState(() {});
   }
 
-  void _showWarning(String message) {
-    setState(() {
-      warningMessage = message;
-    });
-    warningTimer?.cancel();
-    warningTimer = Timer(Duration(seconds: 5), () {
-      setState(() {
-        warningMessage = '';
-      });
-    });
-  }
-
-  // Verificar repeticiones para cada cuadro
-  void _checkReps() {
-    for (var controller in repControllers) {
-      int? reps = int.tryParse(controller.text);
+  // Función de validación al presionar "Aceptar"
+  void _validateAndConfirm() {
+    // Reiniciar advertencias
+    for (int i = 0; i < repWarnings.length; i++) {
+      repWarnings[i] = '';
+    }
+    // Validar cada cuadro de repeticiones
+    for (int i = 0; i < repControllers.length; i++) {
+      int? reps = int.tryParse(repControllers[i].text);
       if (reps != null) {
         if (reps < 6) {
-          _showWarning("Se recomienda bajar el peso para un mejor entrenamiento");
+          repWarnings[i] = "Se recomienda bajar el peso para un mejor entrenamiento";
         } else if (reps > 12) {
-          _showWarning("Te recomendamos subir el peso");
+          repWarnings[i] = "Te recomendamos subir el peso";
         }
       }
     }
+    setState(() {});
+    // Mostrar las advertencias durante 5 segundos y luego borrarlas
+    Timer(Duration(seconds: 5), () {
+      setState(() {
+        for (int i = 0; i < repWarnings.length; i++) {
+          repWarnings[i] = '';
+        }
+        seriesWarning = '';
+      });
+    });
+
+    // Recopilar los datos y enviarlos
+    List<String> reps = repControllers.map((c) => c.text).toList();
+    Map<String, dynamic> updatedData = {
+      'name': widget.exercise['name'],
+      'series': seriesController.text,
+      'weight': weightController.text,
+      'weightUnit': weightUnit,
+      'reps': reps,
+      'notes': notesController.text,
+    };
+    widget.onDataUpdated(updatedData);
+    Navigator.pop(context);
   }
 
   @override
@@ -456,7 +636,6 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog> with SingleTick
     weightController.dispose();
     notesController.dispose();
     repControllers.forEach((c) => c.dispose());
-    warningTimer?.cancel();
     super.dispose();
   }
 
@@ -468,12 +647,24 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog> with SingleTick
         height: MediaQuery.of(context).size.height * 0.8,
         child: Column(
           children: [
-            TabBar(
-              controller: _tabController,
-              tabs: [
-                Tab(text: 'Datos'),
-                Tab(text: 'Registros'),
-                Tab(text: 'Descripción'),
+            // Cabecera con pestañas y botón "X"
+            Stack(
+              children: [
+                TabBar(
+                  controller: _tabController,
+                  tabs: [
+                    Tab(text: 'Datos'),
+                    Tab(text: 'Registros'),
+                    Tab(text: 'Descripción'),
+                  ],
+                ),
+                Positioned(
+                  right: 0,
+                  child: IconButton(
+                    icon: Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                )
               ],
             ),
             Expanded(
@@ -487,7 +678,7 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog> with SingleTick
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Campo de series
+                          // Campo de series y advertencia de series
                           TextField(
                             controller: seriesController,
                             keyboardType: TextInputType.number,
@@ -500,25 +691,60 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog> with SingleTick
                               }
                             },
                           ),
-                          // Campo de peso
-                          TextField(
-                            controller: weightController,
-                            keyboardType: TextInputType.number,
-                            decoration: InputDecoration(labelText: 'Peso (kg/lb)'),
+                          if (seriesWarning.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0, top: 2),
+                              child: Text(
+                                seriesWarning,
+                                style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          // Campo de peso con dropdown
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  controller: weightController,
+                                  keyboardType: TextInputType.number,
+                                  decoration: InputDecoration(labelText: 'Peso'),
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              DropdownButton<String>(
+                                value: weightUnit,
+                                items: <String>['kg', 'lb']
+                                    .map((unit) => DropdownMenuItem(value: unit, child: Text(unit)))
+                                    .toList(),
+                                onChanged: (value) {
+                                  setState(() {
+                                    weightUnit = value ?? 'kg';
+                                  });
+                                },
+                              ),
+                            ],
                           ),
-                          // Generar cuadros para repeticiones según series
                           SizedBox(height: 10),
+                          // Cuadros para repeticiones y sus advertencias individuales
                           Text('Repeticiones por serie:'),
                           Column(
                             children: List.generate(repControllers.length, (index) {
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4.0),
-                                child: TextField(
-                                  controller: repControllers[index],
-                                  keyboardType: TextInputType.number,
-                                  decoration: InputDecoration(labelText: 'Serie ${index + 1}'),
-                                  onChanged: (_) => _checkReps(),
-                                ),
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  TextField(
+                                    controller: repControllers[index],
+                                    keyboardType: TextInputType.number,
+                                    decoration: InputDecoration(labelText: 'Serie ${index + 1}'),
+                                  ),
+                                  if (repWarnings[index].isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 8.0, top: 2),
+                                      child: Text(
+                                        repWarnings[index],
+                                        style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                ],
                               );
                             }),
                           ),
@@ -534,34 +760,10 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog> with SingleTick
                           SizedBox(height: 20),
                           Center(
                             child: ElevatedButton(
-                              onPressed: () {
-                                _checkReps();
-                                // Recopilar repeticiones de cada cuadro
-                                List<String> reps = repControllers.map((c) => c.text).toList();
-                                Map<String, dynamic> updatedData = {
-                                  'name': widget.exercise['name'],
-                                  'series': seriesController.text,
-                                  'weight': weightController.text,
-                                  'reps': reps,
-                                  'notes': notesController.text,
-                                };
-                                widget.onDataUpdated(updatedData);
-                                Navigator.pop(context);
-                              },
+                              onPressed: _validateAndConfirm,
                               child: Text('Aceptar'),
                             ),
                           ),
-                          // Mostrar mensaje de advertencia si corresponde
-                          if (warningMessage.isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Center(
-                                child: Text(
-                                  warningMessage,
-                                  style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                            ),
                         ],
                       ),
                     ),

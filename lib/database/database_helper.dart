@@ -16,15 +16,14 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDB(String filePath) async {
-    // Obtener el directorio de documentos del dispositivo
     Directory documentsDirectory = await getApplicationDocumentsDirectory();
     final path = join(documentsDirectory.path, filePath);
 
     return await openDatabase(
-        path,
-        version: 3,
-        onCreate: _createDB,
-        onUpgrade: _upgradeDB
+      path,
+      version: 4, // Actualizamos la versión a 4
+      onCreate: _createDB,
+      onUpgrade: _upgradeDB,
     );
   }
 
@@ -55,9 +54,12 @@ class DatabaseHelper {
         name TEXT NOT NULL,
         image TEXT,
         weight REAL NOT NULL,
+        weightUnit TEXT NOT NULL,
         reps INTEGER NOT NULL,
         sets INTEGER NOT NULL,
         notes TEXT,
+        description TEXT,
+        dateTime TEXT,
         FOREIGN KEY (workout_id) REFERENCES workouts (id) ON DELETE CASCADE,
         FOREIGN KEY (category_id) REFERENCES categories (id)
       );
@@ -89,33 +91,17 @@ class DatabaseHelper {
   }
 
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < 3) {
-      // Si se requiere actualizar tablas en versiones previas
-      await db.execute('''
-        CREATE TABLE categories (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          name TEXT NOT NULL
-        );
-      ''');
-
-      await db.execute('''
-        ALTER TABLE exercises ADD COLUMN category_id INTEGER REFERENCES categories(id);
-      ''');
-
-      await db.execute('''
-        ALTER TABLE template_exercises ADD COLUMN category_id INTEGER REFERENCES categories(id);
-      ''');
+    if (oldVersion < 4) {
+      // Para la versión 4 agregamos nuevos campos a la tabla exercises
+      await db.execute('ALTER TABLE exercises ADD COLUMN weightUnit TEXT DEFAULT "kg"');
+      await db.execute('ALTER TABLE exercises ADD COLUMN description TEXT');
+      await db.execute('ALTER TABLE exercises ADD COLUMN dateTime TEXT');
     }
   }
 
   Future<void> _insertDefaultData(Database db) async {
-    // Insertar una categoría de ejemplo: Pierna
     int piernaId = await db.insert('categories', {'name': 'Pierna'});
-
-    // Insertar ejercicios para la categoría "Pierna" en la tabla de plantillas
-    // Ejemplo: plantilla "Pierna" con ejercicios predeterminados
     int templateId = await db.insert('templates', {'name': 'Pierna'});
-
     await db.insert('template_exercises', {
       'template_id': templateId,
       'category_id': piernaId,
@@ -137,7 +123,6 @@ class DatabaseHelper {
   }
 
   // Métodos de inserción y consulta
-
   Future<int> insertCategory(Map<String, dynamic> category) async {
     final db = await database;
     return await db.insert('categories', category);
