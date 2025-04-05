@@ -1,7 +1,6 @@
-// Archivo: training_screen.dart
-
 import 'package:flutter/material.dart';
 import 'dart:async';
+import '../database/database_helper.dart';
 
 class TrainingScreen extends StatefulWidget {
   @override
@@ -11,13 +10,21 @@ class TrainingScreen extends StatefulWidget {
 class _TrainingScreenState extends State<TrainingScreen> {
   String trainingTitle = "Entrenamiento de hoy";
   List<Map<String, dynamic>> selectedExercises = [];
+  List<Map<String, dynamic>> availableExercises = [];
 
-  // Ejemplo de ejercicios disponibles; en producción se obtendrían desde la BD
-  List<Map<String, dynamic>> availableExercises = [
-    {'name': 'Press de banca', 'image': 'assets/press.png', 'category': 'Pecho'},
-    {'name': 'Sentadilla', 'image': 'assets/sentadilla.png', 'category': 'Pierna'},
-    {'name': 'Remo en T', 'image': 'assets/remo.png', 'category': 'Espalda'},
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadAvailableExercises();
+  }
+
+  Future<void> _loadAvailableExercises() async {
+    final db = DatabaseHelper.instance;
+    final exercises = await db.getTemplateExercises(1); // assuming templateId = 1 for demo
+    setState(() {
+      availableExercises = exercises;
+    });
+  }
 
   Future<bool> _onWillPop() async {
     return await showDialog(
@@ -117,10 +124,16 @@ class _TrainingScreenState extends State<TrainingScreen> {
         content: TextField(
           controller: controller,
           decoration: InputDecoration(labelText: "Título"),
+          onSubmitted: (newTitle) {
+            setState(() {
+              trainingTitle = newTitle;
+            });
+            Navigator.of(context).pop();
+          },
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.of(context).pop(),
             child: Text("Cancelar"),
           ),
           TextButton(
@@ -128,9 +141,33 @@ class _TrainingScreenState extends State<TrainingScreen> {
               setState(() {
                 trainingTitle = controller.text;
               });
-              Navigator.pop(context);
+              Navigator.of(context).pop();
             },
             child: Text("Guardar"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _removeExercise(int index) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("¿Quieres quitar el ejercicio del entrenamiento?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text("No"),
+          ),
+          TextButton(
+            onPressed: () {
+              setState(() {
+                selectedExercises.removeAt(index);
+              });
+              Navigator.of(context).pop();
+            },
+            child: Text("Sí"),
           ),
         ],
       ),
@@ -598,9 +635,9 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog> with SingleTick
       int? reps = int.tryParse(repControllers[i].text);
       if (reps != null) {
         if (reps < 6) {
-          repWarnings[i] = "Se recomienda bajar el peso para un mejor entrenamiento";
+          repWarnings[i]='Se recomienda bajar el peso para un mejor entrenamient';
         } else if (reps > 12) {
-          repWarnings[i] = "Te recomendamos subir el peso";
+          repWarnings[i]="Te recomendamos subir el peso";
         }
       }
     }

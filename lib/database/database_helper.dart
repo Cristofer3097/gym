@@ -117,8 +117,8 @@ class DatabaseHelper {
     await db.insert('template_exercises', {
       'template_id': templateId,
       'category_id': piernaId,
-      'name': 'Prensa',
-      'image': 'assets/prensa.png'
+      'name': 'Prens',
+      'image': 'assets/prens.png'
     });
   }
 
