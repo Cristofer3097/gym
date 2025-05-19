@@ -1,27 +1,27 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'dart:io';
-import 'package:path/path.dart';
-import 'training_screen.dart';
 import 'package:path_provider/path_provider.dart';
+import 'training_screen.dart';
 
-void main() {
-  runApp(MyApp());
-  WidgetsFlutterBinding.ensureInitialized();
-}
+void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       home: HomeScreen(),
     );
   }
 }
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
@@ -52,8 +52,8 @@ class _HomeScreenState extends State<HomeScreen> {
           templates = List<Map<String, dynamic>>.from(json.decode(contents));
         });
       }
-    } catch (e) {
-      print("Error al cargar plantillas: $e");
+    } catch (_) {
+      // Ignora el error si no existe el archivo aún
     }
   }
 
@@ -73,7 +73,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Diario de Entrenamiento'),
+        title: const Text('Diario de Entrenamiento'),
         centerTitle: true,
       ),
       body: Padding(
@@ -81,55 +81,41 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           children: [
             Image.asset('assets/logo.png', height: 100),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {
-                 // Navegar a entrenamientos
-
-                // Opción 1: Navegación básica (si ya importaste TrainingScreen)
-                Navigator.push(
+              onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => TrainingScreen()),
-                );
-              },
-
-              child: Text('Iniciar Entrenamiento'),
-              style: ElevatedButton.styleFrom(
-                minimumSize: Size(double.infinity, 50), // Botón ancho
               ),
-
+              child: const Text('Iniciar Entrenamiento'),
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 50),
+              ),
             ),
-            SizedBox(height: 10),
-            Text('Plantillas', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
+            const Text('Plantillas', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
             Expanded(
               child: GridView.builder(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                  childAspectRatio: 2.5,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2, crossAxisSpacing: 10, mainAxisSpacing: 10, childAspectRatio: 2.5,
                 ),
                 itemCount: templates.length,
-                itemBuilder: (context, index) {
-                  return ElevatedButton(
-                    onPressed: () {}, // Navegar a detalles
-                    child: Text(templates[index]['name']),
-                  );
-                },
+                itemBuilder: (context, index) => ElevatedButton(
+                  onPressed: () {}, // Para detalles de plantilla en el futuro
+                  child: Text(templates[index]['name']),
+                ),
               ),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             ElevatedButton(
-              onPressed: () {
-                _addTemplate('Nueva Plantilla');
-              },
-              child: Text('+ Plantilla'),
+              onPressed: () => _addTemplate('Nueva Plantilla'),
+              child: const Text('+ Plantilla'),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             ElevatedButton(
-              onPressed: () {},
-              child: Text('Calendario'),
+              onPressed: () {}, // Para funcionalidad de calendario en el futuro
+              child: const Text('Calendario'),
             ),
           ],
         ),

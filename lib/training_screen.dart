@@ -7,6 +7,7 @@ class TrainingScreen extends StatefulWidget {
   _TrainingScreenState createState() => _TrainingScreenState();
 }
 
+
 class _TrainingScreenState extends State<TrainingScreen> {
   String trainingTitle = "Entrenamiento de hoy";
   List<Map<String, dynamic>> selectedExercises = [];

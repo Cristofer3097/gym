@@ -7,7 +7,7 @@ void main() {
     // 1. Construye el widget con MaterialApp (necesario para navegación)
     await tester.pumpWidget(
       MaterialApp(
-        home: MyApp(),
+        home: MyApp (),
       ),
     );
 
