@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'dart:io';
-import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart';
 import 'training_screen.dart';
+import 'package:path_provider/path_provider.dart';
 
 void main() {
   runApp(MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
 }
 
 class MyApp extends StatelessWidget {
