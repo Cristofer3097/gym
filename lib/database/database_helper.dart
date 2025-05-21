@@ -43,7 +43,7 @@ class DatabaseHelper {
     // Tabla para categorías
     await db.execute('''
       CREATE TABLE categories (
-        idx TEXT PRIMARY KEY,
+        id TEXT PRIMARY KEY,
         name TEXT NOT NULL
         date TEXT NOT NULL,
         muscle_group TEXT NOT NULL
@@ -63,7 +63,14 @@ class DatabaseHelper {
         FOREIGN KEY (template_id) REFERENCES templates (id) ON DELETE CASCADE,
       );
     ''');
-
+    await db.execute('''
+  CREATE TABLE IF NOT EXISTS template_exercises (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    template_id INTEGER NOT NULL,
+    exercise_name TEXT NOT NULL,
+    FOREIGN KEY (template_id) REFERENCES templates(id) ON DELETE CASCADE
+  );
+''');
     // Insertar datos de ejemplo
     await _insertDefaultData(db);
   }
@@ -71,7 +78,8 @@ class DatabaseHelper {
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 4) {
       // Para la versión 4 agregamos nuevos campos a la tabla exercises
-      await db.execute('ALTER TABLE exercises ADD COLUMN weightUnit TEXT DEFAULT "kg"');
+      await db.execute(
+          'ALTER TABLE exercises ADD COLUMN weightUnit TEXT DEFAULT "kg"');
       await db.execute('ALTER TABLE exercises ADD COLUMN description TEXT');
       await db.execute('ALTER TABLE exercises ADD COLUMN dateTime TEXT');
     }
@@ -116,15 +124,8 @@ class DatabaseHelper {
     return await db.insert('exercises', exercise);
   }
 
-  Future<int> insertTemplate(Map<String, dynamic> template) async {
-    final db = await database;
-    return await db.insert('templates', template);
-  }
 
-  Future<int> insertTemplateExercise(Map<String, dynamic> templateExercise) async {
-    final db = await database;
-    return await db.insert('template_exercises', templateExercise);
-  }
+
 
   Future<List<Map<String, dynamic>>> getCategories() async {
     final db = await database;
@@ -138,7 +139,8 @@ class DatabaseHelper {
 
   Future<List<Map<String, dynamic>>> getExercises(int workoutId) async {
     final db = await database;
-    return await db.query('exercises', where: 'workout_id = ?', whereArgs: [workoutId]);
+    return await db.query(
+        'exercises', where: 'workout_id = ?', whereArgs: [workoutId]);
   }
 
   Future<List<Map<String, dynamic>>> getTemplates() async {
@@ -146,8 +148,50 @@ class DatabaseHelper {
     return await db.query('templates');
   }
 
-  Future<List<Map<String, dynamic>>> getTemplateExercises(int templateId) async {
+
+  Future<int> insertTemplate(String name) async {
     final db = await database;
-    return await db.query('template_exercises', where: 'template_id = ?', whereArgs: [templateId]);
+    return await db.insert(
+      'templates',
+      {'name': name},
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+// Agrega este método para guardar los ejercicios de la plantilla
+  Future<void> insertTemplateExercises(int templateId,
+      List<Map<String, dynamic>> exercises) async {
+    final db = await database;
+    for (final exercise in exercises) {
+      await db.insert(
+        'template_exercises',
+        {
+          'template_id': templateId,
+          'exercise_name': exercise['name'],
+          // Agrega aquí más campos si los tienes, por ejemplo:
+          // 'series': exercise['series'],
+          // 'reps': exercise['reps'],
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+  }
+
+// Agrega este método para obtener todas las plantillas
+  Future<List<Map<String, dynamic>>> getAllTemplates() async {
+    final db = await database;
+    return await db.query('templates', orderBy: 'id DESC');
+  }
+
+// Agrega este método para obtener los ejercicios de una plantilla
+  Future<List<Map<String, dynamic>>> getTemplateExercises(
+      int templateId) async {
+    final db = await database;
+    return await db.query(
+      'template_exercises',
+      where: 'template_id = ?',
+      whereArgs: [templateId],
+    );
   }
 }
+

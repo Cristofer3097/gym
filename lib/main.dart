@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'training_screen.dart';
+import '../database/database_helper.dart';
 
 void main() => runApp(const MyApp());
 
@@ -26,6 +27,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<Map<String, dynamic>> templates = [];
+
+
 
   @override
   void initState() {
@@ -62,18 +65,12 @@ class _HomeScreenState extends State<HomeScreen> {
     return File('$path/templates.json');
   }
 
-  Future<void> _loadTemplates() async {
-    try {
-      final file = await _localFile;
-      if (await file.exists()) {
-        final contents = await file.readAsString();
-        setState(() {
-          templates = List<Map<String, dynamic>>.from(json.decode(contents));
-        });
-      }
-    } catch (_) {
-      // Ignora el error si no existe el archivo aún
-    }
+  void _loadTemplates() async {
+    final db = DatabaseHelper.instance;
+    final tpls = await db.getAllTemplates();
+    setState(() {
+      templates = tpls;
+    });
   }
 
   Future<void> _saveTemplates() async {

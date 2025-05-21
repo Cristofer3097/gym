@@ -47,7 +47,15 @@ class _TrainingScreenState extends State<TrainingScreen> {
       ),
     ) ?? false;
   }
+  void _saveTemplate(String name, List<Map<String, dynamic>> selectedExercises) async {
+    final db = DatabaseHelper.instance;
+    final templateId = await db.insertTemplate(name);
+    await db.insertTemplateExercises(templateId, selectedExercises);
 
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Plantilla '$name' guardada")),
+    );
+  }
   void _openExerciseOverlay() {
     showDialog(
       context: context,
