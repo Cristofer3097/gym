@@ -7,7 +7,6 @@ class TrainingScreen extends StatefulWidget {
   _TrainingScreenState createState() => _TrainingScreenState();
 }
 
-
 class _TrainingScreenState extends State<TrainingScreen> {
   String trainingTitle = "Entrenamiento de hoy";
   List<Map<String, dynamic>> selectedExercises = [];
@@ -225,6 +224,37 @@ class _TrainingScreenState extends State<TrainingScreen> {
     );
   }
 
+  void _deleteTraining(int index) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Confirmar borrado"),
+        content: Text("¿Seguro que quieres borrar este entrenamiento?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text("Cancelar"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text("Borrar", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed ?? false) {
+      setState(() {
+        selectedExercises.removeAt(index);
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Entrenamiento borrado")),
+      );
+      // Si tienes el entrenamiento en la base de datos, aquí lo eliminas:
+      // await DatabaseHelper.instance.deleteWorkout(workoutId);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -306,9 +336,19 @@ class _TrainingScreenState extends State<TrainingScreen> {
                         subtitle: Text(
                           'Series: ${exercise['series'] ?? "-"} | Peso: ${exercise['weight']} ${exercise['weightUnit']} | Reps: ${exercise['reps'] is List ? (exercise['reps'] as List).join(", ") : "-"}',
                         ),
-                        trailing: IconButton(
-                          icon: Icon(Icons.edit),
-                          onPressed: () => _openExerciseDataDialog(exercise, index),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: Icon(Icons.edit),
+                              onPressed: () => _openExerciseDataDialog(exercise, index),
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.delete),
+                              color: Colors.red,
+                              onPressed: () => _deleteTraining(index),
+                            ),
+                          ],
                         ),
                         onLongPress: () => _openExerciseDataDialog(exercise, index),
                       ),
