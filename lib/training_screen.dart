@@ -198,30 +198,43 @@ class _TrainingScreenState extends State<TrainingScreen> {
     );
   }
 
-  void _confirmSaveTemplate() {
-    showDialog(
+  void _confirmSaveTemplate() async {
+    final nameController = TextEditingController();
+
+    final result = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text("Guardar Plantilla"),
-        content: Text("¿Guardar esta sesión como plantilla?"),
+        title: Text("Guardar como nueva plantilla"),
+        content: TextField(
+          controller: nameController,
+          decoration: InputDecoration(labelText: "Nombre de la plantilla"),
+          autofocus: true,
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text("No"),
+            child: Text("Cancelar"),
           ),
           TextButton(
             onPressed: () {
-              // Guardar plantilla en la BD o almacenamiento local
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("Plantilla guardada")),
-              );
+              if (nameController.text.trim().isNotEmpty) {
+                Navigator.pop(context, nameController.text.trim());
+              }
             },
-            child: Text("Sí"),
+            child: Text("Guardar"),
           ),
         ],
       ),
     );
+
+    if (result != null && result.isNotEmpty) {
+      // Aquí debes guardar la plantilla (en base de datos, archivo, etc.)
+      // Por ejemplo, si usas un método externo: await saveTemplate(result, selectedExercises);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Plantilla '$result' guardada")),
+      );
+      // ¡NO hagas Navigator.pop(context, true); aquí!
+    }
   }
 
   void _deleteTraining(int index) async {
@@ -360,7 +373,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
               // Botón para guardar como plantilla
               ElevatedButton(
                 onPressed: _confirmSaveTemplate,
-                child: Text("Agregar plantilla"),
+                child: Text("Agregar como nueva plantilla"),
               ),
             ],
           ),
@@ -469,9 +482,34 @@ class _ExerciseOverlayState extends State<ExerciseOverlay> {
               itemBuilder: (context, index) {
                 final exercise = filteredExercises[index];
                 return ListTile(
-                  leading: exercise['image'] != null
-                      ? Image.asset(exercise['image'], width: 30, height: 30)
-                      : Container(width: 30, height: 30, color: Colors.grey),
+                  leading: (exercise['image'] != null && (exercise['image'] as String).isNotEmpty)
+                      ? ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.asset(
+                      exercise['image'],
+                      width: 32,
+                      height: 32,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.fitness_center, color: Colors.grey, size: 20),
+                      ),
+                    ),
+                  )
+                      : Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.fitness_center, color: Colors.grey, size: 20),
+                  ),
                   title: Text(exercise['name']),
                   onTap: () {
                     widget.onExerciseSelected(exercise);

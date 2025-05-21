@@ -31,6 +31,25 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadTemplates();
+    // Limpia plantillas de ejemplo si existen (solo una vez)
+    _cleanExampleTemplates();
+  }
+
+  void _cleanExampleTemplates() async {
+    final file = await _localFile;
+    if (await file.exists()) {
+      final contents = await file.readAsString();
+      final List<Map<String, dynamic>> list = List<Map<String, dynamic>>.from(json.decode(contents));
+      // Filtra todo lo que sea igual a 'Nueva Plantilla'
+      final realTemplates = list.where((tpl) => tpl['name'] != 'Nueva Plantilla').toList();
+      if (realTemplates.length != list.length) {
+        // Si quitó algo, guarda el nuevo archivo limpio
+        await file.writeAsString(json.encode(realTemplates));
+        setState(() {
+          templates = realTemplates;
+        });
+      }
+    }
   }
 
   Future<String> get _localPath async {
@@ -83,10 +102,15 @@ class _HomeScreenState extends State<HomeScreen> {
             Image.asset('assets/logo.png', height: 100),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => TrainingScreen()),
-              ),
+              onPressed: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => TrainingScreen()),
+                );
+                if (result == true) {
+                  _loadTemplates(); // Recarga plantillas si TrainingScreen devuelve true
+                }
+              },
               child: const Text('Iniciar Entrenamiento'),
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 50),
