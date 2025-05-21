@@ -105,7 +105,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   MaterialPageRoute(builder: (context) => TrainingScreen()),
                 );
                 if (result == true) {
-                  _loadTemplates(); // Recarga plantillas si TrainingScreen devuelve true
+                  _loadTemplates(); // Recarga la lista
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Plantilla guardada")),
+                  );
                 }
               },
               child: const Text('Iniciar Entrenamiento'),
@@ -151,8 +154,23 @@ class _HomeScreenState extends State<HomeScreen> {
                     }
                   },
                   child: ElevatedButton(
-                    onPressed: () {
-                      // Acción normal al presionar (abrir entrenamiento con la plantilla)
+                    onPressed: () async {
+                      final db = DatabaseHelper.instance;
+                      final templateId = templates[index]['id'];
+                      final exercises = await db.getTemplateExercises(templateId);
+
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => TrainingScreen(initialExercises: exercises),
+                        ),
+                      );
+                      if (result == true) {
+                        _loadTemplates();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Plantilla guardada")),
+                        );
+                      }
                     },
                     child: Text(templates[index]['name']),
                   ),

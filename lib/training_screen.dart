@@ -53,7 +53,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
       ),
     ) ?? false;
   }
-  void _saveTemplate(String name, List<Map<String, dynamic>> selectedExercises) async {
+  Future<void> _saveTemplate(String name, List<Map<String, dynamic>> selectedExercises) async {
     final db = DatabaseHelper.instance;
     final templateId = await db.insertTemplate(name);
     await db.insertTemplateExercises(templateId, selectedExercises);
@@ -242,12 +242,12 @@ class _TrainingScreenState extends State<TrainingScreen> {
     );
 
     if (result != null && result.isNotEmpty) {
-      // Aquí debes guardar la plantilla (en base de datos, archivo, etc.)
-      // Por ejemplo, si usas un método externo: await saveTemplate(result, selectedExercises);
+      await _saveTemplate(result, selectedExercises);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Plantilla '$result' guardada")),
       );
-      // ¡NO hagas Navigator.pop(context, true); aquí!
+      await Future.delayed(Duration(milliseconds: 800)); // Para que se muestre el mensaje antes de volver
+      Navigator.pop(context, true);
     }
   }
 

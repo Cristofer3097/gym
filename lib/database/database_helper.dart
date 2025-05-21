@@ -160,8 +160,7 @@ class DatabaseHelper {
   }
 
 // Agrega este método para guardar los ejercicios de la plantilla
-  Future<void> insertTemplateExercises(int templateId,
-      List<Map<String, dynamic>> exercises) async {
+  Future<void> insertTemplateExercises(int templateId, List<Map<String, dynamic>> exercises) async {
     final db = await database;
     for (final exercise in exercises) {
       await db.insert(
@@ -185,8 +184,7 @@ class DatabaseHelper {
   }
 
 // Agrega este método para obtener los ejercicios de una plantilla
-  Future<List<Map<String, dynamic>>> getTemplateExercises(
-      int templateId) async {
+  Future<List<Map<String, dynamic>>> getTemplateExercises(int templateId) async {
     final db = await database;
     return await db.query(
       'template_exercises',
