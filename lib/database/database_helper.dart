@@ -123,9 +123,10 @@ class DatabaseHelper {
     final db = await database;
     return await db.insert('exercises', exercise);
   }
-
-
-
+  Future<void> deleteTemplate(int templateId) async {
+    final db = await database;
+    await db.delete('templates', where: 'id = ?', whereArgs: [templateId]);
+  }
 
   Future<List<Map<String, dynamic>>> getCategories() async {
     final db = await database;

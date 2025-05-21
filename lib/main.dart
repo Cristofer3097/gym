@@ -122,9 +122,40 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisCount: 2, crossAxisSpacing: 10, mainAxisSpacing: 10, childAspectRatio: 2.5,
                 ),
                 itemCount: templates.length,
-                itemBuilder: (context, index) => ElevatedButton(
-                  onPressed: () {}, // Para detalles de plantilla en el futuro
-                  child: Text(templates[index]['name']),
+                itemBuilder: (context, index) => GestureDetector(
+                  onLongPress: () async {
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: Text('¿Borrar plantilla?'),
+                        content: Text('¿Quieres eliminar la plantilla "${templates[index]['name']}"? Esta acción no se puede deshacer.'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, false),
+                            child: Text('Cancelar'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, true),
+                            child: Text('Borrar', style: TextStyle(color: Colors.red)),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (confirm == true) {
+                      final db = DatabaseHelper.instance;
+                      await db.deleteTemplate(templates[index]['id']);
+                      _loadTemplates(); // recarga la lista
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Plantilla eliminada')),
+                      );
+                    }
+                  },
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // Acción normal al presionar (abrir entrenamiento con la plantilla)
+                    },
+                    child: Text(templates[index]['name']),
+                  ),
                 ),
               ),
             ),

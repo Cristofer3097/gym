@@ -3,8 +3,11 @@ import 'dart:async';
 import '../database/database_helper.dart';
 
 class TrainingScreen extends StatefulWidget {
+  final List<Map<String, dynamic>>? initialExercises;
+  const TrainingScreen({Key? key, this.initialExercises}) : super(key: key);
+
   @override
-  _TrainingScreenState createState() => _TrainingScreenState();
+  State<TrainingScreen> createState() => _TrainingScreenState();
 }
 
 class _TrainingScreenState extends State<TrainingScreen> {
@@ -15,6 +18,9 @@ class _TrainingScreenState extends State<TrainingScreen> {
   @override
   void initState() {
     super.initState();
+    if (widget.initialExercises != null) {
+      selectedExercises = List<Map<String, dynamic>>.from(widget.initialExercises!);
+    }
     _loadAvailableExercises();
   }
 
