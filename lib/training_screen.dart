@@ -107,28 +107,30 @@ class _TrainingScreenState extends State<TrainingScreen> {
   }
 
   void _openExerciseDataDialog(Map<String, dynamic> exercise, int index) {
+    final db = DatabaseHelper.instance;
     showDialog(
       context: context,
-      barrierDismissible: false,
       builder: (context) {
-        return ExerciseDataDialog(
-          exercise: exercise,
-          onDataUpdated: (updatedData) {
-            setState(() {
-              selectedExercises[index] = updatedData;
-            });
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text("¡Porcentaje mejorado: 10%!"),
-                duration: Duration(seconds: 5),
-              ),
+        return FutureBuilder<Map<String, dynamic>?>(
+          future: db.getLastExerciseLog(exercise['name']),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            }
+            return ExerciseDataDialog(
+              exercise: exercise,
+              lastLog: snapshot.data,
+              onDataUpdated: (updatedExercise) {
+                setState(() {
+                  selectedExercises[index] = updatedExercise;
+                });
+              },
             );
           },
         );
       },
     );
   }
-
   void _editTrainingTitle() {
     TextEditingController controller = TextEditingController(text: trainingTitle);
     showDialog(
@@ -188,28 +190,59 @@ class _TrainingScreenState extends State<TrainingScreen> {
     );
   }
 
-  void _confirmFinishTraining() {
-    showDialog(
+  void _confirmFinishTraining() async {
+    print("Intentando terminar entrenamiento");
+    final db = DatabaseHelper.instance;
+    final now = DateTime.now().toIso8601String();
+
+    final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text("Terminar Entrenamiento"),
         content: Text("¿Terminar entrenamiento?"),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(context, false),
             child: Text("No"),
           ),
           TextButton(
-            onPressed: () {
-              // Aquí guardarías el entrenamiento en la BD
-              Navigator.pop(context);
-              Navigator.pop(context);
-            },
+            onPressed: () => Navigator.pop(context, true),
             child: Text("Sí"),
           ),
         ],
       ),
     );
+
+    if (confirm == true) {
+      try {
+        for (final exercise in selectedExercises) {
+          print("Guardando ejercicio: ${exercise['name']}");
+          await db.insertExerciseLog({
+            'exercise_name': exercise['name'],        // debe ser String
+            'dateTime': now,                          // debe ser String
+            'series': exercise['series']?.toString() ?? '', // debe ser String
+            'reps': (exercise['reps'] is List)
+                ? (exercise['reps'] as List).join(',')
+                : (exercise['reps']?.toString() ?? ''),
+            'weight': exercise['weight']?.toString() ?? '',
+            'weightUnit': exercise['weightUnit'] ?? '',
+            'notes': exercise['notes'] ?? '',
+          });
+        }
+        print("Entrenamiento guardado, cerrando pantalla");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Entrenamiento guardado")),
+        );
+        await Future.delayed(Duration(milliseconds: 400));
+        Navigator.pop(context, true);
+      } catch (e, s) {
+        print("ERROR REAL: $e");
+        print("STACK: $s");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error al guardar entrenamiento")),
+        );
+      }
+    }
   }
 
   void _confirmSaveTemplate() async {
@@ -656,9 +689,15 @@ class _NewExerciseDialogState extends State<NewExerciseDialog> {
 /// Diálogo para editar datos de un ejercicio con 3 pestañas
 class ExerciseDataDialog extends StatefulWidget {
   final Map<String, dynamic> exercise;
+  final Map<String, dynamic>? lastLog;
   final Function(Map<String, dynamic>) onDataUpdated;
 
-  ExerciseDataDialog({required this.exercise, required this.onDataUpdated});
+  const ExerciseDataDialog({
+    Key? key,
+    required this.exercise,
+    this.lastLog,
+    required this.onDataUpdated,
+  }) : super(key: key);
 
   @override
   _ExerciseDataDialogState createState() => _ExerciseDataDialogState();
@@ -763,6 +802,8 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog> with SingleTick
 
   @override
   Widget build(BuildContext context) {
+    final lastLog = widget.lastLog;
+
     return Dialog(
       insetPadding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.1),
       child: Container(
@@ -895,6 +936,21 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog> with SingleTick
                           SizedBox(height: 20),
                           // Mostrar último registro (si existe)
                           Text('Último registro: ...'),
+                          SizedBox(height: 20),
+                          if (lastLog != null)
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text("Último registro:", style: TextStyle(fontWeight: FontWeight.bold)),
+                                Text("Series: ${lastLog['series'] ?? '-'}"),
+                                Text("Peso: ${lastLog['weight'] ?? '-'} ${lastLog['weightUnit'] ?? ''}"),
+                                Text("Reps: ${lastLog['reps'] ?? '-'}"),
+                                Text("Notas: ${lastLog['notes'] ?? '-'}"),
+                                Text("Fecha: ${lastLog['dateTime'] ?? '-'}"),
+                              ],
+                            )
+                          else
+                            Text("Sin registros anteriores"),
                           SizedBox(height: 20),
                           Center(
                             child: ElevatedButton(

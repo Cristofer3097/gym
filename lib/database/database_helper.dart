@@ -30,7 +30,6 @@ class DatabaseHelper {
   Future<Database> _initDB(String filePath) async {
     Directory documentsDirectory = await getApplicationDocumentsDirectory();
     final path = join(documentsDirectory.path, filePath);
-
     return await openDatabase(
       path,
       version: 4,
@@ -40,41 +39,88 @@ class DatabaseHelper {
   }
 
   Future<void> _createDB(Database db, int version) async {
-    // Tabla para categorías
+    // Tabla workouts (debes tenerla definida para las llaves foráneas)
     await db.execute('''
-      CREATE TABLE categories (
-        id TEXT PRIMARY KEY,
+      CREATE TABLE IF NOT EXISTS workouts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL
-        date TEXT NOT NULL,
-        muscle_group TEXT NOT NULL
+      );
+    ''');
+
+    // Tabla templates
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS templates (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL
+      );
+    ''');
+
+    // Tabla categories
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS categories (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        date TEXT,
+        muscle_group TEXT,
         workout_id INTEGER,
         category_id INTEGER,
         image TEXT,
-        weight REAL NOT NULL,
-        weightUnit TEXT NOT NULL,
-        reps INTEGER NOT NULL,
-        sets INTEGER NOT NULL,
+        weight REAL,
+        weightUnit TEXT,
+        reps INTEGER,
+        sets INTEGER,
         notes TEXT,
         description TEXT,
         dateTime TEXT,
         FOREIGN KEY (workout_id) REFERENCES workouts (id) ON DELETE CASCADE,
         FOREIGN KEY (category_id) REFERENCES categories (id)
-        template_id INTEGER NOT NULL,
-        FOREIGN KEY (template_id) REFERENCES templates (id) ON DELETE CASCADE,
       );
     ''');
+
+    // Tabla template_exercises
     await db.execute('''
-  CREATE TABLE IF NOT EXISTS template_exercises (
+      CREATE TABLE IF NOT EXISTS template_exercises (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     template_id INTEGER NOT NULL,
-    exercise_name TEXT NOT NULL,
+    category_id INTEGER,
+    name TEXT NOT NULL,
+    image TEXT,
     FOREIGN KEY (template_id) REFERENCES templates(id) ON DELETE CASCADE
   );
 ''');
+
+    // Tabla exercise_logs
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS exercise_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        exercise_name TEXT NOT NULL,
+        dateTime TEXT NOT NULL,
+        series TEXT,
+        reps TEXT,
+        weight TEXT,
+        weightUnit TEXT,
+        notes TEXT
+      );
+    ''');
     // Insertar datos de ejemplo
     await _insertDefaultData(db);
   }
-
+  Future<void> insertExerciseLog(Map<String, dynamic> log) async {
+    final db = await database;
+    await db.insert('exercise_logs', log);
+  }
+  Future<Map<String, dynamic>?> getLastExerciseLog(String exerciseName) async {
+    final db = await database;
+    final res = await db.query(
+      'exercise_logs',
+      where: 'exercise_name = ?',
+      whereArgs: [exerciseName],
+      orderBy: 'dateTime DESC',
+      limit: 1,
+    );
+    if (res.isNotEmpty) return res.first;
+    return null;
+  }
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 4) {
       // Para la versión 4 agregamos nuevos campos a la tabla exercises
