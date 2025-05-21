@@ -26,9 +26,10 @@ class _TrainingScreenState extends State<TrainingScreen> {
 
   Future<void> _loadAvailableExercises() async {
     final db = DatabaseHelper.instance;
-    final exercises = await db.getTemplateExercises(1); // assuming templateId = 1 for demo
+    final exercises = await db.getTemplateExercises(1);
     setState(() {
-      availableExercises = exercises;
+      // Esto convierte la lista en mutable
+      availableExercises = List<Map<String, dynamic>>.from(exercises);
     });
   }
 
@@ -663,7 +664,7 @@ class _NewExerciseDialogState extends State<NewExerciseDialog> {
                     child: Text("Cancelar"),
                   ),
                   TextButton(
-                    onPressed: () {
+                    onPressed: () async {
                       if (nameController.text.isNotEmpty && selectedCategory.isNotEmpty) {
                         Map<String, dynamic> newExercise = {
                           'name': nameController.text,
@@ -671,7 +672,25 @@ class _NewExerciseDialogState extends State<NewExerciseDialog> {
                           'category': selectedCategory,
                           'description': descriptionController.text,
                         };
+                        // GUARDA en la base de datos
+                        await DatabaseHelper.instance.insertCategory({
+                          'name': newExercise['name'],
+                          'muscle_group': newExercise['category'],
+                          'image': newExercise['image'],
+                          'description': newExercise['description'],
+                          // completa los campos requeridos con null o valores por defecto si no tienes info
+                          'date': null,
+                          'workout_id': null,
+                          'category_id': null,
+                          'weight': null,
+                          'weightUnit': null,
+                          'reps': null,
+                          'sets': null,
+                          'notes': null,
+                          'dateTime': null,
+                        });
                         widget.onExerciseCreated(newExercise);
+                        Navigator.pop(context);
                       }
                     },
                     child: Text("Confirmar"),
