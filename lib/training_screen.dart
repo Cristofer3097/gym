@@ -672,17 +672,9 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog> with SingleTick
       repWarnings[i] = '';
     }
     // Validar cada cuadro de repeticiones
-    for (int i = 0; i < repControllers.length; i++) {
-      int? reps = int.tryParse(repControllers[i].text);
-      if (reps != null) {
-        if (reps < 6) {
-          repWarnings[i]='Se recomienda bajar el peso para un mejor entrenamient';
-        } else if (reps > 12) {
-          repWarnings[i]="Te recomendamos subir el peso";
-        }
-      }
-    }
-    setState(() {});
+
+
+
     // Mostrar las advertencias durante 5 segundos y luego borrarlas
     Timer(Duration(seconds: 5), () {
       setState(() {
@@ -813,6 +805,22 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog> with SingleTick
                                     controller: repControllers[index],
                                     keyboardType: TextInputType.number,
                                     decoration: InputDecoration(labelText: 'Serie ${index + 1}'),
+                                    onChanged: (value) {
+                                      int? reps = int.tryParse(value);
+                                      setState(() {
+                                        if (reps != null) {
+                                          if (reps < 6) {
+                                            repWarnings[index] = 'Se recomienda bajar el peso para un mejor entrenamiento';
+                                          } else if (reps > 12) {
+                                            repWarnings[index] = "Te recomendamos subir el peso";
+                                          } else {
+                                            repWarnings[index] = "";
+                                          }
+                                        } else {
+                                          repWarnings[index] = "";
+                                        }
+                                      });
+                                    },
                                   ),
                                   if (repWarnings[index].isNotEmpty)
                                     Padding(
