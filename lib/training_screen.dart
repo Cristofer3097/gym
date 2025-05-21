@@ -372,12 +372,12 @@ class _TrainingScreenState extends State<TrainingScreen> {
                             ),
                             IconButton(
                               icon: Icon(Icons.delete),
-                              color: Colors.red,
+                              //color: Colors.red,
                               onPressed: () => _deleteTraining(index),
                             ),
                           ],
                         ),
-                        onLongPress: () => _openExerciseDataDialog(exercise, index),
+                        //onLongPress: () => _openExerciseDataDialog(exercise, index),
                       ),
                     );
                   },
