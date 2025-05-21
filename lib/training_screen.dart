@@ -963,7 +963,41 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog> with SingleTick
                     ),
                   ),
                   // Pestaña Registros
-                  Center(child: Text('Registros de entrenamiento')),
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: FutureBuilder<List<Map<String, dynamic>>>(
+                      future: DatabaseHelper.instance.getExerciseLogs(widget.exercise['name']),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return Center(child: CircularProgressIndicator());
+                        }
+                        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                          return Text("Sin registros anteriores");
+                        }
+                        final logs = snapshot.data!;
+                        return ListView.separated(
+                          shrinkWrap: true,
+                          itemCount: logs.length,
+                          separatorBuilder: (_, __) => Divider(),
+                          itemBuilder: (context, index) {
+                            final log = logs[index];
+                            return ListTile(
+                              title: Text("Fecha: ${log['dateTime'] ?? '-'}"),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text("Series: ${log['series'] ?? '-'}"),
+                                  Text("Peso: ${log['weight'] ?? '-'} ${log['weightUnit'] ?? ''}"),
+                                  Text("Reps: ${log['reps'] ?? '-'}"),
+                                  Text("Notas: ${log['notes'] ?? '-'}"),
+                                ],
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
                   // Pestaña Descripción
                   Padding(
                     padding: const EdgeInsets.all(16.0),
