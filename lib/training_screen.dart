@@ -642,6 +642,10 @@ class _ExerciseOverlayState extends State<ExerciseOverlay> {
                 barrierDismissible: false,
                 builder: (context) => NewExerciseDialog(
                   onExerciseCreated: (newExercise) {
+                    // Aquí asigna isManual: true antes de pasarlo
+                    newExercise['isManual'] = true;
+                    // Si tienes el id después de insertar en la base de datos, asígnalo también:
+                    // newExercise['id'] = idDevueltoPorDB;
                     widget.onNewExercise(newExercise);
                     Navigator.pop(context); // Cierra el dialog "Nuevo Ejercicio"
                   },
@@ -741,7 +745,8 @@ class _NewExerciseDialogState extends State<NewExerciseDialog> {
                           'description': descriptionController.text,
                         };
                         // GUARDA en la base de datos
-                        await DatabaseHelper.instance.insertCategory({
+                        final id = await DatabaseHelper.instance.insertCategory({
+
                           'name': newExercise['name'],
                           'muscle_group': newExercise['category'],
                           'image': newExercise['image'],
@@ -757,6 +762,8 @@ class _NewExerciseDialogState extends State<NewExerciseDialog> {
                           'notes': null,
                           'dateTime': null,
                         });
+                        newExercise['id'] = id;
+                        newExercise['isManual'] = true; // <-- ¡ESTO ES CLAVE!
                         widget.onExerciseCreated(newExercise);
                         Navigator.pop(context);
                       }
