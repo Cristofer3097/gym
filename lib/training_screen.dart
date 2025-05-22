@@ -26,10 +26,22 @@ class _TrainingScreenState extends State<TrainingScreen> {
 
   Future<void> _loadAvailableExercises() async {
     final db = DatabaseHelper.instance;
-    final exercises = await db.getTemplateExercises(1);
+    // Obtén ejercicios de plantillas
+    final templateExercises = await db.getTemplateExercises(1);
+    // Obtén ejercicios personalizados (de la tabla categories)
+    final customExercises = await db.getCategories();
+
+    // Normaliza el formato para que ambos tengan las mismas claves
+    final customExercisesMapped = customExercises.map((ex) => {
+      'name': ex['name'],
+      'image': ex['image'] ?? '',
+      'category': ex['muscle_group'] ?? '',
+      'description': ex['description'] ?? '',
+    }).toList();
+
     setState(() {
-      // Esto convierte la lista en mutable
-      availableExercises = List<Map<String, dynamic>>.from(exercises);
+      availableExercises = List<Map<String, dynamic>>.from(templateExercises)
+        ..addAll(customExercisesMapped);
     });
   }
 
