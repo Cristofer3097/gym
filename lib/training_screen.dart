@@ -26,22 +26,29 @@ class _TrainingScreenState extends State<TrainingScreen> {
 
   Future<void> _loadAvailableExercises() async {
     final db = DatabaseHelper.instance;
-    // Obtén ejercicios de plantillas
     final templateExercises = await db.getTemplateExercises(1);
-    // Obtén ejercicios personalizados (de la tabla categories)
     final customExercises = await db.getCategories();
 
-    // Normaliza el formato para que ambos tengan las mismas claves
+    // Asegura el campo isManual en cada ejercicio
+    final templateMapped = templateExercises.map((ex) => {
+      ...ex,
+      'isManual': false,
+    }).toList();
+
     final customExercisesMapped = customExercises.map((ex) => {
       'name': ex['name'],
       'image': ex['image'] ?? '',
       'category': ex['muscle_group'] ?? '',
       'description': ex['description'] ?? '',
+      'id': ex['id'],
+      'isManual': true,
     }).toList();
 
     setState(() {
-      availableExercises = List<Map<String, dynamic>>.from(templateExercises)
-        ..addAll(customExercisesMapped);
+      availableExercises = [
+        ...templateMapped,
+        ...customExercisesMapped,
+      ];
     });
   }
 
@@ -83,6 +90,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
         return Dialog(
           insetPadding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.1),
           child: ExerciseOverlay(
+            getAvailableExercises: _loadAvailableExercises, // <-- pásala aquí
             availableExercises: availableExercises,
             onExerciseSelected: (exercise) {
               setState(() {
@@ -471,20 +479,39 @@ class ExerciseOverlay extends StatefulWidget {
   final List<Map<String, dynamic>> availableExercises;
   final Function(Map<String, dynamic>) onExerciseSelected;
   final Function(Map<String, dynamic>) onNewExercise;
+  final Future<void> Function() getAvailableExercises; // <-- NUEVO
 
-  ExerciseOverlay({required this.availableExercises, required this.onExerciseSelected, required this.onNewExercise});
+  ExerciseOverlay({
+    required this.getAvailableExercises,
+    required this.availableExercises,
+    required this.onExerciseSelected,
+    required this.onNewExercise,
+  });
 
   @override
   _ExerciseOverlayState createState() => _ExerciseOverlayState();
 }
 
 class _ExerciseOverlayState extends State<ExerciseOverlay> {
+  List<Map<String, dynamic>> exercises = [];
   String searchQuery = '';
   String filterCategory = '';
 
   @override
+  void initState() {
+    super.initState();
+    exercises = List.from(widget.availableExercises);
+  }
+
+  Future<void> refreshExercises() async {
+    await widget.getAvailableExercises();
+    setState(() {
+      exercises = List.from(widget.availableExercises);
+    });
+  }
+  @override
   Widget build(BuildContext context) {
-    List<Map<String, dynamic>> filteredExercises = widget.availableExercises.where((exercise) {
+    List<Map<String, dynamic>> filteredExercises = exercises.where((exercise) {
       bool matchesSearch = exercise['name'].toLowerCase().contains(searchQuery.toLowerCase());
       bool matchesCategory = filterCategory.isEmpty || exercise['category'] == filterCategory;
       return matchesSearch && matchesCategory;
@@ -571,9 +598,38 @@ class _ExerciseOverlayState extends State<ExerciseOverlay> {
                     child: const Icon(Icons.fitness_center, color: Colors.grey, size: 20),
                   ),
                   title: Text(exercise['name']),
-                  onTap: () {
-                    widget.onExerciseSelected(exercise);
-                  },
+                  trailing: exercise['isManual'] == true
+                      ? IconButton(
+                    icon: Icon(Icons.delete, color: Colors.red),
+                    onPressed: () async {
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: Text("¿Borrar ejercicio?"),
+                          content: Text("Se borrará el ejercicio y toda su información permanentemente."),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, false),
+                              child: Text("Cancelar"),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, true),
+                              child: Text("Borrar", style: TextStyle(color: Colors.red)),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirmed == true) {
+                        await DatabaseHelper.instance.deleteCategory(exercise['id']);
+                        await refreshExercises();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Ejercicio eliminado permanentemente")),
+                        );
+                      }
+                    },
+                  )
+                      : null,
+                  onTap: () => widget.onExerciseSelected(exercise),
                 );
               },
             ),

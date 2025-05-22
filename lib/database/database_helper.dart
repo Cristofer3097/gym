@@ -109,6 +109,11 @@ class DatabaseHelper {
     final db = await database;
     await db.insert('exercise_logs', log);
   }
+  Future<void> deleteCategory(int id) async {
+    final db = await database;
+    await db.delete('categories', where: 'id = ?', whereArgs: [id]);
+    // Opcional: borra también logs relacionados si lo deseas
+  }
   Future<List<Map<String, dynamic>>> getExerciseLogs(String exerciseName) async {
     final db = await database;
     return await db.query(
