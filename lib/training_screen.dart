@@ -24,7 +24,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
     _loadAvailableExercises();
   }
 
-  Future<void> _loadAvailableExercises() async {
+  Future<List<Map<String, dynamic>>> _loadAvailableExercises() async {
     final db = DatabaseHelper.instance;
     final templateExercises = await db.getTemplateExercises(1);
     final customExercises = await db.getCategories();
@@ -44,12 +44,18 @@ class _TrainingScreenState extends State<TrainingScreen> {
       'isManual': true,
     }).toList();
 
-    setState(() {
-      availableExercises = [
-        ...templateMapped,
-        ...customExercisesMapped,
-      ];
-    });
+    final allAvailableExercises = [ // Nueva variable para la lista combinada
+      ...templateMapped,
+      ...customExercisesMapped,
+    ];
+
+
+    if (mounted) { // Asegura que el widget todavía está en el árbol
+      setState(() {
+        availableExercises = allAvailableExercises;
+      });
+    }
+    return allAvailableExercises; // Devuelve la lista fresca
   }
 
   Future<bool> _onWillPop() async {
@@ -110,7 +116,8 @@ class _TrainingScreenState extends State<TrainingScreen> {
                 ),
               );
             },
-            onNewExercise: (newExercise) {
+            onNewExercise: (newExercise) async {
+              await _loadAvailableExercises();
               setState(() {
                 availableExercises.add(newExercise);
               });
@@ -476,17 +483,21 @@ class _TrainingScreenState extends State<TrainingScreen> {
 
 /// Widget para el overlay de selección de ejercicios
 class ExerciseOverlay extends StatefulWidget {
-  final List<Map<String, dynamic>> availableExercises;
+  // MODIFICADO: El tipo de getAvailableExercises
+  final Future<List<Map<String, dynamic>>> Function() getAvailableExercises;
+  final List<Map<String, dynamic>> availableExercises; // Para la carga inicial
   final Function(Map<String, dynamic>) onExerciseSelected;
   final Function(Map<String, dynamic>) onNewExercise;
-  final Future<void> Function() getAvailableExercises; // <-- NUEVO
+  // final VoidCallback onExerciseDeleted; // ELIMINADO
 
-  ExerciseOverlay({
+  const ExerciseOverlay({
+    Key? key, // Agregado Key
     required this.getAvailableExercises,
     required this.availableExercises,
     required this.onExerciseSelected,
     required this.onNewExercise,
-  });
+    // required this.onExerciseDeleted, // ELIMINADO
+  }) : super(key: key); // Agregado super(key: key)
 
   @override
   _ExerciseOverlayState createState() => _ExerciseOverlayState();
@@ -504,10 +515,12 @@ class _ExerciseOverlayState extends State<ExerciseOverlay> {
   }
 
   Future<void> refreshExercises() async {
-    await widget.getAvailableExercises();
-    setState(() {
-      exercises = List.from(widget.availableExercises);
-    });
+    final freshList = await widget.getAvailableExercises();
+    if (mounted) { // Comprueba si el widget sigue montado antes de llamar a setState
+      setState(() {
+        exercises = freshList;
+      });
+    }
   }
   @override
   Widget build(BuildContext context) {
@@ -636,18 +649,18 @@ class _ExerciseOverlayState extends State<ExerciseOverlay> {
           ),
           // Botón para agregar nuevo ejercicio (abre pantalla flotante "Nuevo Ejercicio")
           ElevatedButton(
-            onPressed: () {
-              showDialog(
+            onPressed: () async { // Hacer async para posible actualización
+              await showDialog( // Esperar a que el diálogo de nuevo ejercicio se cierre
                 context: context,
-                barrierDismissible: false,
+                barrierDismissible: false, // Generalmente bueno para diálogos de creación
                 builder: (context) => NewExerciseDialog(
-                  onExerciseCreated: (newExercise) {
-                    // Aquí asigna isManual: true antes de pasarlo
-                    newExercise['isManual'] = true;
-                    // Si tienes el id después de insertar en la base de datos, asígnalo también:
-                    // newExercise['id'] = idDevueltoPorDB;
+                  onExerciseCreated: (newExercise) async { // Hacer async
                     widget.onNewExercise(newExercise);
-                    Navigator.pop(context); // Cierra el dialog "Nuevo Ejercicio"
+                    // Después de crear un nuevo ejercicio y que el diálogo se cierre,
+                    // refrescamos la lista del ExerciseOverlay.
+                    // Nota: onNewExercise en _TrainingScreenState ya llama a _loadAvailableExercises.
+                    // Así que widget.getAvailableExercises() ya contendrá la lista actualizada.
+                    await refreshExercises();
                   },
                 ),
               );
