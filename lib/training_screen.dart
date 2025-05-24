@@ -568,9 +568,9 @@ class _TrainingScreenState extends State<TrainingScreen> {
                     child: ElevatedButton.icon(
                         icon: Icon(Icons.save_alt),
                         onPressed: _confirmSaveTemplate,
-                        label: Text("Plantilla"),
+                        label: Text("Crear Plantilla"),
                         style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blueAccent))),
+                            ))),
               ]),
               SizedBox(height: 10),
               if (selectedExercises.isEmpty)
@@ -916,7 +916,7 @@ class _ExerciseOverlayState extends State<ExerciseOverlay> {
               padding: const EdgeInsets.only(top: 8.0),
               child: ElevatedButton.icon(
                 icon: Icon(Icons.add_circle_outline),
-                label: Text('Crear Nuevo Ejercicio Manual'),
+                label: Text('Crear Nuevo Ejercicio '),
                 style:
                 ElevatedButton.styleFrom(minimumSize: Size(double.infinity, 40)),
                 onPressed: () async {
@@ -1720,7 +1720,7 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
           ],
           ElevatedButton(
               onPressed: _confirmAndSaveData,
-              child: Text('Guardar Cambios del Log'),
+              child: Text('Actualizar Registro'),
               style: ElevatedButton.styleFrom(
                   padding: EdgeInsets.symmetric(vertical: 12))),
     ]

@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
-import 'training_screen.dart';
-import 'dart:io';
-import 'calendar.dart';
-import '../database/database_helper.dart';
+import 'training_screen.dart'; //
+import 'calendar.dart'; //
+import '../database/database_helper.dart'; //
+
+// Define los colores principales basados en la imagen y tus preferencias
+const Color amarilloPrincipal = Color(0xFFFFC107); // Un tono de amarillo vibrante (Ámbar)
+const Color fondoOscuro = Color(0xFF121212); // Un gris muy oscuro, casi negro para el fondo
+const Color colorAppBar = Color(0xFF000000); // Negro para la AppBar
+const Color negroBoton = Color(0xFF121212); //Colors.black; // Fondo de los botones principales
+const Color grisContenedor = Color(0xFF1E1E1E); // Un gris oscuro para tarjetas y diálogos
+const Color grisTextField = Color(0xFF2C2C2C); // Un gris para el fondo de campos de texto
 
 void main() => runApp(const MyApp());
 
@@ -11,190 +18,281 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      title: 'Gym Diary App',
-      home: HomeScreen(),
+    return MaterialApp(
+      title: 'Gym Diary App', // Título de la aplicación
+      theme: ThemeData(
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: fondoOscuro,
+        primaryColor: amarilloPrincipal, // Color primario para acentos
+        colorScheme: ColorScheme.dark(
+          primary: amarilloPrincipal,
+          secondary: amarilloPrincipal, // Usado para elementos como el color del cursor, etc.
+          surface: grisContenedor, // Color de superficie para Cards, Dialogs
+          onPrimary: negroBoton, // Color del texto/iconos sobre el color primario
+          onSecondary: negroBoton,
+          onSurface: Colors.white, // Color del texto/iconos sobre el color de superficie
+          background: fondoOscuro,
+          onBackground: Colors.white,
+          error: Colors.redAccent,
+          onError: Colors.white,
+        ),
+        appBarTheme: AppBarTheme(
+          backgroundColor: colorAppBar,
+          foregroundColor: Colors.white, // Color para el título e iconos en la AppBar
+          elevation: 0, // La AppBar en la imagen no tiene sombra
+          titleTextStyle: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold, // El título "Post" en la imagen se ve en negrita
+          ),
+          iconTheme: IconThemeData(color: Colors.white), // Para iconos como la flecha de retroceso
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: negroBoton, // Fondo negro para los botones
+            foregroundColor: amarilloPrincipal, // Texto e iconos en amarillo
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14), // Padding generoso
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8.0), // Esquinas redondeadas
+              side: BorderSide(color: amarilloPrincipal, width: 1.5), // Borde amarillo
+            ),
+            textStyle: TextStyle(
+              fontWeight: FontWeight.w500, // Un peso de fuente medio para los botones
+              fontSize: 15,
+            ),
+          ),
+        ),
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(
+            foregroundColor: amarilloPrincipal, // Texto amarillo para TextButtons
+            textStyle: TextStyle(fontWeight: FontWeight.w600),
+          ),
+        ),
+        cardTheme: CardTheme(
+          color: grisContenedor, // Color de fondo para las Cards
+          elevation: 1, // Una elevación sutil
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+          margin: EdgeInsets.symmetric(vertical: 6.0, horizontal: 4.0),
+        ),
+        dialogTheme: DialogTheme(
+          backgroundColor: grisContenedor, // Fondo oscuro para diálogos
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+          titleTextStyle: TextStyle(color: Colors.white, fontSize: 19, fontWeight: FontWeight.bold),
+          contentTextStyle: TextStyle(color: Colors.white.withOpacity(0.85), fontSize: 15),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: grisTextField, // Fondo oscuro para campos de texto
+          hintStyle: TextStyle(color: Colors.grey[500]),
+          labelStyle: TextStyle(color: amarilloPrincipal.withOpacity(0.9)),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.0),
+            borderSide: BorderSide.none, // Sin borde por defecto cuando está relleno
+          ),
+          enabledBorder: OutlineInputBorder( // Borde cuando el campo no está enfocado pero está habilitado
+            borderRadius: BorderRadius.circular(8.0),
+            borderSide: BorderSide(color: Colors.grey[700]!, width: 0.5),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.0),
+            borderSide: BorderSide(color: amarilloPrincipal, width: 1.5), // Borde amarillo cuando está enfocado
+          ),
+          prefixIconColor: Colors.grey[400], // Color para iconos de prefijo
+        ),
+        listTileTheme: ListTileThemeData(
+          iconColor: amarilloPrincipal, // Color de iconos en ListTiles
+          textColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+          // tileColor: grisContenedor.withOpacity(0.5), // Opcional: si quieres un fondo para todos los ListTiles
+        ),
+        dividerTheme: DividerThemeData(
+          color: Colors.grey[700],
+          thickness: 0.5,
+        ),
+      ),
+      home: const HomeScreen(),
     );
   }
 }
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key}); //
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<Map<String, dynamic>> templates = [];
+  List<Map<String, dynamic>> templates = []; //
 
   @override
   void initState() {
     super.initState();
-    _loadTemplates();
+    _loadTemplates(); //
   }
 
   void _loadTemplates() async {
-    final db = DatabaseHelper.instance;
+    final db = DatabaseHelper.instance; //
     final tpls = await db.getAllTemplates(); //
     if (mounted) {
       setState(() {
-        templates = tpls;
+        templates = tpls; //
       });
     }
   }
 
-
-  // NUEVO MÉTODO para mostrar el diálogo de selección de plantilla a borrar
-  void _showSelectTemplateToDeleteDialog() async {
-    if (templates.isEmpty) {
-      if (mounted) { // Verificar mounted antes de usar context
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("No hay plantillas para borrar.")),
-        );
-      }
-      return;
-    }
-
-    final bool? deletionOccurred = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return SelectTemplateToDeleteDialog(
-          templates: templates, // Pasa la lista actual de plantillas
-        );
-      },
-    );
-
-    if (deletionOccurred == true && mounted) {
-      _loadTemplates(); // Recarga la lista de plantillas en HomeScreen
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Plantilla eliminada con éxito.')),
-      );
-    }
-  }
+  // _showSelectTemplateToDeleteDialog no necesita cambios lógicos aquí.
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Diario de Entrenamiento'),
-        centerTitle: true,
+        title: const Text('Gym Diary'), // Título de la AppBar
+        centerTitle: true, //
+        // Puedes añadir un menú lateral (Drawer) o acciones si lo deseas:
+        // leading: IconButton(icon: Icon(Icons.menu), onPressed: () { /* Lógica del menú */ }),
+        // actions: [
+        //   IconButton(icon: Icon(Icons.search), onPressed: () { /* Lógica de búsqueda */ }),
+        //   IconButton(icon: Icon(Icons.more_vert), onPressed: () { /* Lógica de más opciones */ }),
+        // ],
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0), //
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch, // Para que los botones ocupen el ancho
           children: [
-            Image.asset('assets/logo.png', height: 100),
-            const SizedBox(height: 20),
+            // Considera si la imagen del logo es necesaria o cómo se ve en tema oscuro
+            // Image.asset('assets/logo.png', height: 80, color: amarilloPrincipal), //
+            // const SizedBox(height: 24),
+
             ElevatedButton(
               onPressed: () async {
                 final result = await Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const TrainingScreen()),
+                  MaterialPageRoute(builder: (context) => const TrainingScreen()), //
                 );
                 if (result == true) {
-                  _loadTemplates();
+                  _loadTemplates(); //
                 }
               },
-              child: const Text('Iniciar Entrenamiento'),
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 50),
-              ),
+              // El estilo del botón se toma del tema global.
+              // Si necesitas un tamaño específico, puedes usar style.merge.
+              // style: Theme.of(context).elevatedButtonTheme.style?.copyWith(
+              //   minimumSize: MaterialStateProperty.all(const Size(double.infinity, 50)),
+              // ),
+              child: const Text('Iniciar Entrenamiento'), //
             ),
-            const SizedBox(height: 10),
-            const Text('Plantillas', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
+            const SizedBox(height: 24),
+            Text(
+              'Plantillas',
+              style: TextStyle(
+                fontSize: 19,
+                fontWeight: FontWeight.bold,
+                color: Colors.white.withOpacity(0.9),
+              ), //
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
             Expanded(
               child: templates.isEmpty
-                  ? const Center(child: Text("No hay plantillas. ¡Crea una o guarda un entrenamiento!"))
+                  ? Center(
+                  child: Text(
+                    "No hay plantillas guardadas.\n¡Crea una nueva o guarda un entrenamiento!", //
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.grey[500], fontSize: 15),
+                  ))
                   : GridView.builder(
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                    childAspectRatio: 2.5,
+                    crossAxisCount: 2, //
+                    crossAxisSpacing: 12, //
+                    mainAxisSpacing: 12, //
+                    childAspectRatio: 2.2, // Ajusta según el padding del botón
                   ),
-                  itemCount: templates.length,
+                  itemCount: templates.length, //
                   itemBuilder: (context, index) {
-                    final template = templates[index];
-                    final templateName = template['name']?.toString() ?? 'Plantilla sin nombre';
-                    final templateId = template['id'];
+                    final template = templates[index]; //
+                    final templateName = template['name']?.toString() ?? 'Plantilla'; //
+                    final templateId = template['id']; //
 
                     if (templateId == null) {
-                      return const Card(child: Center(child: Text("Error: Plantilla sin ID")));
+                      return Card(
+                          child: Center(
+                              child: Text("Error: Plantilla sin ID", //
+                                  style: TextStyle(color: Theme.of(context).colorScheme.error))));
                     }
 
-                    return GestureDetector(
-                      onLongPress: () async {
+                    return GestureDetector( //
+                      onLongPress: () async { //
                         final confirm = await showDialog<bool>(
                           context: context,
                           builder: (ctx) => AlertDialog(
-                            title: const Text('¿Borrar plantilla?'),
-                            content: Text('¿Quieres eliminar la plantilla "$templateName"? Esta acción no se puede deshacer.'),
+                            title: const Text('¿Borrar plantilla?'), //
+                            content: Text(
+                                '¿Quieres eliminar la plantilla "$templateName"? Esta acción no se puede deshacer.'), //
                             actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(ctx, false),
-                                child: const Text('Cancelar'),
+                              TextButton( //
+                                onPressed: () => Navigator.pop(ctx, false), //
+                                child: const Text('Cancelar'), //
                               ),
-                              TextButton(
-                                onPressed: () => Navigator.pop(ctx, true),
-                                child: const Text('Borrar', style: TextStyle(color: Colors.red)),
+                              TextButton( //
+                                onPressed: () => Navigator.pop(ctx, true), //
+                                child: Text('Borrar', //
+                                    style: TextStyle(color: Theme.of(context).colorScheme.error)),
                               ),
                             ],
                           ),
                         );
-                        if (confirm == true) {
-                          final db = DatabaseHelper.instance;
+                        if (confirm == true) { //
+                          final db = DatabaseHelper.instance; //
                           await db.deleteTemplate(templateId); //
-                          _loadTemplates();
-                          if (mounted) {
+                          _loadTemplates(); //
+                          if (mounted) { //
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Plantilla "$templateName" eliminada')),
+                              SnackBar(
+                                content: Text('Plantilla "$templateName" eliminada.'), //
+                                backgroundColor: Theme.of(context).cardTheme.color,
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              ),
                             );
                           }
                         }
                       },
                       child: ElevatedButton(
-                        onPressed: () async {
-                          final db = DatabaseHelper.instance;
-                          // Cargar los ejercicios ANTES de mostrar el diálogo
+                        onPressed: () async { //
+                          final db = DatabaseHelper.instance; //
                           final exercises = await db.getTemplateExercises(templateId); //
 
-                          // Mostrar el nuevo diálogo de vista previa y esperar su resultado
                           final dynamic dialogResult = await showDialog(
                             context: context,
                             builder: (BuildContext dialogContext) {
-                              return TemplatePreviewDialog(
-                                templateId: templateId,
-                                templateName: templateName,
-                                exercises: exercises, // Pasar los ejercicios cargados
+                              return TemplatePreviewDialog( //
+                                templateId: templateId, //
+                                templateName: templateName, //
+                                exercises: exercises, //
                               );
                             },
                           );
-
-                          // Si el diálogo se cerró y devolvió 'true' (porque TrainingScreen devolvió 'true'),
-                          // entonces recargamos las plantillas.
-                          if (dialogResult == true && mounted) {
-                            _loadTemplates();
+                          if (dialogResult == true && mounted) { //
+                            _loadTemplates(); //
                           }
                         },
-                        child: Text(templateName, textAlign: TextAlign.center),
+                        child: Text(templateName, textAlign: TextAlign.center), //
                       ),
                     );
                   }),
             ),
-
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
             ElevatedButton.icon(
-              icon: const Icon(Icons.calendar_month),
-              label: const Text('Calendario'),
-              onPressed: () {
+              icon: const Icon(Icons.calendar_month), //
+              label: const Text('Calendario'), //
+              onPressed: () { //
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const CalendarScreen()),
+                  MaterialPageRoute(builder: (context) => const CalendarScreen()), //
                 );
               },
-
+              // No necesita style override si el tamaño por defecto del tema es adecuado.
             )
           ],
         ),
@@ -204,118 +302,89 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class TemplatePreviewDialog extends StatelessWidget {
-  final int templateId;
-  final String templateName;
-  final List<Map<String, dynamic>> exercises;
+  final int templateId; //
+  final String templateName; //
+  final List<Map<String, dynamic>> exercises; //
 
   const TemplatePreviewDialog({
-    Key? key,
-    required this.templateId,
-    required this.templateName,
-    required this.exercises,
+    Key? key, //
+    required this.templateId, //
+    required this.templateName, //
+    required this.exercises, //
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // Estilo base común para los botones con borde negro y esquinas redondeadas
-    final ButtonStyle baseButtonStyle = ElevatedButton.styleFrom(
-      side: const BorderSide(color: Colors.black, width: 1.0),
-      elevation: 1, // Menor elevación para un look más plano si se desea
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8.0),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10), // Ajusta el padding
-    );
-
-    // Estilo para el botón "Regresar" e "Iniciar Entrenamiento" (fondo blanco)
-    final ButtonStyle whiteBackgroundButtonStyle = baseButtonStyle.copyWith(
-      backgroundColor: MaterialStateProperty.all(Colors.white),
-    );
-
-    return AlertDialog(
-      title: Text(
-        templateName,
-        textAlign: TextAlign.center,
-        style: const TextStyle(fontWeight: FontWeight.bold),
-      ),
-      content: Container(
-        width: double.maxFinite,
+    return AlertDialog( // Se aplica DialogTheme
+      title: Text(templateName, textAlign: TextAlign.center), // Se aplica DialogTheme.titleTextStyle
+      content: Container( // Se aplica DialogTheme.contentTextStyle para el texto dentro
+        width: double.maxFinite, //
         child: exercises.isEmpty
-            ? const Center(
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 20.0),
-            child: Text("Esta plantilla no tiene ejercicios."),
-          ),
-        )
-            : ListView.builder(
-          shrinkWrap: true,
-          itemCount: exercises.length,
+            ? Center( //
+            child: Padding( //
+              padding: EdgeInsets.symmetric(vertical: 20.0), //
+              child: Text("Esta plantilla no tiene ejercicios."), //
+            ))
+            : ListView.builder( //
+          shrinkWrap: true, //
+          itemCount: exercises.length, //
           itemBuilder: (context, index) {
-            final exercise = exercises[index];
-            final exerciseName = exercise['name']?.toString() ?? 'Ejercicio sin nombre';
-            return ListTile(
-              title: Text('${index + 1}. $exerciseName'),
+            final exercise = exercises[index]; //
+            final exerciseName = exercise['name']?.toString() ?? 'Ejercicio'; //
+            return ListTile( // Se aplica ListTileTheme
+              title: Text('${index + 1}. $exerciseName'), //
+              contentPadding: EdgeInsets.symmetric(vertical: 2, horizontal: 8),
             );
           },
         ),
       ),
-      actionsAlignment: MainAxisAlignment.spaceBetween, // Distribuye el espacio entre los grupos de acciones
-      actionsPadding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0),
+      actionsAlignment: MainAxisAlignment.spaceBetween, //
+      actionsPadding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0), //
       actions: <Widget>[
-        // Botón Regresar
-        ElevatedButton(
-
-          child: const Text('Regresar'),
-          onPressed: () {
-            Navigator.of(context).pop(); // Simplemente cierra este diálogo
+        ElevatedButton( // Usa TextButtonTheme
+          child: const Text('Regresar'), //
+          onPressed: () { //
+            Navigator.of(context).pop(); //
           },
         ),
-        // Botón Borrar (Nuevo)
-        ElevatedButton(
-          style: baseButtonStyle.copyWith(
-            backgroundColor: MaterialStateProperty.all(Colors.red.shade600),
+        ElevatedButton( // Botón de Borrar
+          style: Theme.of(context).elevatedButtonTheme.style?.copyWith( // Hereda del tema pero cambia colores
+            backgroundColor: MaterialStateProperty.all(Colors.red.shade700),
             foregroundColor: MaterialStateProperty.all(Colors.white),
+            side: MaterialStateProperty.all(BorderSide(color: amarilloPrincipal, width: 1.5)), // Mantiene borde amarillo
           ),
-          child: const Text('Borrar'),
-          onPressed: () async {
-            // Muestra el diálogo de confirmación para borrar
+          child: const Text('Borrar'), //
+          onPressed: () async { //
             final bool? confirmedDelete = await showDialog<bool>(
-              context: context, // Usa el contexto del TemplatePreviewDialog
+              context: context,
               builder: (BuildContext confirmDialogContext) {
-                return ConfirmDeleteDialog( // Reutiliza el ConfirmDeleteDialog
-                  templateId: templateId,   // Pasa el ID de la plantilla actual
-                  templateName: templateName, // Pasa el nombre de la plantilla actual
+                return ConfirmDeleteDialog( //
+                  templateId: templateId, //
+                  templateName: templateName, //
                 );
               },
             );
-
-            if (confirmedDelete == true) {
-              // Si la eliminación fue confirmada y realizada,
-              // cierra TemplatePreviewDialog y devuelve 'true' a HomeScreen.
-              if (Navigator.of(context).canPop()) {
-                Navigator.of(context).pop(true);
+            if (confirmedDelete == true) { //
+              if (Navigator.of(context).canPop()) { //
+                Navigator.of(context).pop(true); //
               }
             }
-            // Si confirmedDelete es false o null, no hacemos nada aquí,
-            // TemplatePreviewDialog permanece abierto.
           },
         ),
-        // Botón Iniciar Entrenamiento
-        ElevatedButton(
-
-          child: const Text('Iniciar'), // Texto más corto para mejor ajuste si es necesario
-          onPressed: () async {
+        ElevatedButton( // Botón Iniciar, usa ElevatedButtonTheme global
+          child: const Text('Iniciar'), //
+          onPressed: () async { //
             final dynamic trainingScreenResult = await Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => TrainingScreen(
-                  initialExercises: exercises,
-                  templateName: templateName,
+                builder: (context) => TrainingScreen( //
+                  initialExercises: exercises, //
+                  templateName: templateName, //
                 ),
               ),
             );
-            if (Navigator.of(context).canPop()) {
-              Navigator.of(context).pop(trainingScreenResult);
+            if (Navigator.of(context).canPop()) { //
+              Navigator.of(context).pop(trainingScreenResult); //
             }
           },
         ),
@@ -325,66 +394,58 @@ class TemplatePreviewDialog extends StatelessWidget {
 }
 
 class SelectTemplateToDeleteDialog extends StatelessWidget {
-  final List<Map<String, dynamic>> templates;
+  final List<Map<String, dynamic>> templates; //
 
   const SelectTemplateToDeleteDialog({
-    Key? key,
-    required this.templates,
+    Key? key, //
+    required this.templates, //
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text("Selecciona Plantilla a Borrar"),
-      content: Container(
-        width: double.maxFinite, // Para que el diálogo tenga un ancho razonable
+    return AlertDialog( // Aplicará DialogTheme
+      title: const Text("Selecciona Plantilla a Borrar"), //
+      content: Container( //
+        width: double.maxFinite, //
         child: templates.isEmpty
-            ? const Center(child: Padding(
-          padding: EdgeInsets.all(8.0),
-          child: Text("No hay plantillas para borrar."),
-        ))
-            : ListView.builder(
-          shrinkWrap: true,
-          itemCount: templates.length,
+            ? Center( //
+            child: Padding( //
+              padding: EdgeInsets.all(8.0), //
+              child: Text("No hay plantillas para borrar."), //
+            ))
+            : ListView.builder( //
+          shrinkWrap: true, //
+          itemCount: templates.length, //
           itemBuilder: (BuildContext context, int index) {
-            final template = templates[index];
-            final String templateName = template['name']?.toString() ?? 'Plantilla Desconocida';
-            final int templateId = template['id'];
+            final template = templates[index]; //
+            final String templateName = template['name']?.toString() ?? 'Plantilla'; //
+            final int templateId = template['id']; //
 
-            return ListTile(
-              title: Text(templateName),
-              onTap: () async {
-                // Muestra el diálogo de confirmación para esta plantilla específica
+            return ListTile( // Aplicará ListTileTheme
+              title: Text(templateName), //
+              onTap: () async { //
                 final bool? confirmedDelete = await showDialog<bool>(
-                  context: context, // Usa el contexto del diálogo actual para mostrar otro encima
+                  context: context,
                   builder: (BuildContext confirmDialogContext) {
-                    return ConfirmDeleteDialog(
-                      templateId: templateId,
-                      templateName: templateName,
+                    return ConfirmDeleteDialog( //
+                      templateId: templateId, //
+                      templateName: templateName, //
                     );
                   },
                 );
-
-                if (confirmedDelete == true) {
-                  // Si la eliminación fue confirmada y realizada,
-                  // cierra este diálogo de selección (SelectTemplateToDeleteDialog)
-                  // y devuelve 'true' para que HomeScreen sepa que debe recargar.
-                  Navigator.of(context).pop(true);
+                if (confirmedDelete == true) { //
+                  Navigator.of(context).pop(true); //
                 }
-                // Si confirmedDelete es false o null (el usuario canceló la eliminación),
-                // no hacemos nada aquí; SelectTemplateToDeleteDialog permanece abierto.
-                // El usuario puede elegir otra plantilla o presionar "Cancelar" abajo.
               },
             );
           },
         ),
       ),
       actions: <Widget>[
-        TextButton(
-          child: const Text('Cancelar'),
-          onPressed: () {
-            // El usuario canceló el proceso de selección de plantilla a borrar
-            Navigator.of(context).pop(false); // Devuelve false o null
+        TextButton( // Aplicará TextButtonTheme
+          child: const Text('Cancelar'), //
+          onPressed: () { //
+            Navigator.of(context).pop(false); //
           },
         ),
       ],
@@ -393,38 +454,39 @@ class SelectTemplateToDeleteDialog extends StatelessWidget {
 }
 
 class ConfirmDeleteDialog extends StatelessWidget {
-  final int templateId;
-  final String templateName;
+  final int templateId; //
+  final String templateName; //
 
   const ConfirmDeleteDialog({
-    Key? key,
-    required this.templateId,
-    required this.templateName,
+    Key? key, //
+    required this.templateId, //
+    required this.templateName, //
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text("Confirmar Borrado"),
-      content: Text("¿Seguro que quieres borrar la plantilla \"$templateName\" permanentemente? Esta acción no se puede deshacer."),
-      actionsAlignment: MainAxisAlignment.spaceAround, // Para espaciar los botones
+    return AlertDialog( // Aplicará DialogTheme
+      title: const Text("Confirmar Borrado"), //
+      content: Text("¿Seguro que quieres borrar la plantilla \"$templateName\" permanentemente? Esta acción no se puede deshacer."), //
+      actionsAlignment: MainAxisAlignment.spaceAround, //
       actions: <Widget>[
-        TextButton(
-          child: const Text("Cancelar"),
-          onPressed: () {
-            Navigator.of(context).pop(false); // Borrado no confirmado
+        TextButton( // Aplicará TextButtonTheme
+          child: const Text("Cancelar"), //
+          onPressed: () { //
+            Navigator.of(context).pop(false); //
           },
         ),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red, // Color distintivo para la acción de borrar
-            foregroundColor: Colors.white,
+        ElevatedButton( // Botón de confirmación de borrado
+          style: Theme.of(context).elevatedButtonTheme.style?.copyWith( // Hereda del tema pero cambia colores
+            backgroundColor: MaterialStateProperty.all(Theme.of(context).colorScheme.error), // Usa el color de error del tema
+            foregroundColor: MaterialStateProperty.all(Theme.of(context).colorScheme.onError),
+            side: MaterialStateProperty.all(BorderSide(color: amarilloPrincipal, width: 1.5)), // Mantiene borde amarillo
           ),
-          child: const Text("Sí, Borrar"),
-          onPressed: () async {
-            final db = DatabaseHelper.instance;
-            await db.deleteTemplate(templateId);
-            Navigator.of(context).pop(true); // Borrado confirmado y realizado
+          child: const Text("Sí, Borrar"), //
+          onPressed: () async { //
+            final db = DatabaseHelper.instance; //
+            await db.deleteTemplate(templateId); //
+            Navigator.of(context).pop(true); //
           },
         ),
       ],
