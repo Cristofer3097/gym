@@ -9,7 +9,13 @@ import 'package:device_info_plus/device_info_plus.dart';
 // Clase principal de la pantalla de Entrenamiento
 class TrainingScreen extends StatefulWidget {
   final List<Map<String, dynamic>>? initialExercises;
-  const TrainingScreen({Key? key, this.initialExercises}) : super(key: key);
+  final String? templateName;
+
+  const TrainingScreen({
+    Key? key,
+    this.initialExercises,
+    this.templateName, // <--- AÑADIR AL CONSTRUCTOR
+  }) : super(key: key);
 
   @override
   State<TrainingScreen> createState() => _TrainingScreenState();
@@ -19,6 +25,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
   String trainingTitle = "Entrenamiento de hoy";
   List<Map<String, dynamic>> selectedExercises = []; // Ejercicios en la sesión actual
   List<Map<String, dynamic>> availableExercises = []; // Todos los ejercicios disponibles (plantillas + manuales)
+  bool _didDataChange = false;
 
   // CORRECCIÓN 4: Quitado @override innecesario
   void _removeExerciseFromTraining(int index) {
@@ -51,8 +58,13 @@ class _TrainingScreenState extends State<TrainingScreen> {
   @override
   void initState() {
     super.initState();
+    if (widget.templateName != null && widget.templateName!.isNotEmpty) {
+      trainingTitle = widget.templateName!; // <--- USA EL NOMBRE DE LA PLANTILLA
+    }
+
+    // Carga ejercicios iniciales si vienen de una plantilla
     if (widget.initialExercises != null) {
-      selectedExercises = widget.initialExercises!.map((ex) {
+      selectedExercises = widget.initialExercises!.map((ex) { // ex es una fila de la tabla template_exercises
         var newEx = Map<String, dynamic>.from(ex);
         if (newEx['reps'] is String) {
           newEx['reps'] = (newEx['reps'] as String)
@@ -67,6 +79,13 @@ class _TrainingScreenState extends State<TrainingScreen> {
         newEx['weight'] = newEx['weight']?.toString() ?? '';
         newEx['weightUnit'] = newEx['weightUnit']?.toString() ?? 'kg';
         newEx['notes'] = newEx['notes']?.toString() ?? '';
+
+        // Aseguramos que 'db_category_id' esté presente para consistencia al guardar.
+        // 'category_id' de template_exercises ya es la referencia a categories.id
+        newEx['db_category_id'] = ex['category_id'];
+        // 'isManual' para ejercicios de plantilla es false. 'id' es el de template_exercises.
+        newEx['isManual'] = false; // Los ejercicios de plantilla no son 'manuales' en este contexto.
+        // El 'id' aquí es de template_exercises.id
         return newEx;
       }).toList();
     }
@@ -142,6 +161,9 @@ class _TrainingScreenState extends State<TrainingScreen> {
           'description': exercise['description'],
           'isManual': exercise['isManual'] ?? false, // Asegurar que isManual se propaga
           'id': exercise['id'], // Propagar id para la edición
+          'db_category_id': (exercise['isManual'] == true)
+              ? exercise['id'] // Si es manual, su 'id' es de 'categories'
+              : exercise['category_id'], // Si no es manual (de plantilla de ejemplo), ya tiene 'category_id' que referencia 'categories'
         });
       }
     });
@@ -195,6 +217,25 @@ class _TrainingScreenState extends State<TrainingScreen> {
   }
 
   Future<bool> _onWillPop() async {
+    if (selectedExercises.isEmpty && !_didDataChange) {
+      Navigator.of(context).pop(false); // Salir sin preguntar, no recargar HomeScreen
+      return false; // Prevenir que WillPopScope o el caller hagan otro pop.
+    }
+
+    // Si hay datos en el log actual o se guardó algo (plantilla/definición de ejercicio).
+    final String dialogMessage;
+    if (_didDataChange) {
+      if (selectedExercises.isEmpty) {
+        dialogMessage = "Has guardado cambios (ej. una plantilla o definición de ejercicio). "
+            "No hay datos en el entrenamiento actual. ¿Salir de todas formas?";
+      } else {
+        dialogMessage = "Has guardado cambios (ej. una plantilla o definición de ejercicio). "
+            "Los datos del entrenamiento actual no finalizado también se perderán. ¿Seguro que quieres salir?";
+      }
+    } else { // Esto significa que !_didDataChange es true, pero selectedExercises NO está vacío.
+      dialogMessage = "Los datos del entrenamiento actual no guardados se perderán. ¿Seguro que quieres salir?";
+    }
+
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -210,7 +251,12 @@ class _TrainingScreenState extends State<TrainingScreen> {
         ],
       ),
     );
-    return result ?? false;
+    if (result == true) { // Usuario confirmó "Sí, Salir" en el diálogo
+      Navigator.of(context).pop(_didDataChange); // Pop TrainingScreen con el valor de _didDataChange
+      return false; // Ya hicimos el pop, WillPopScope/caller no debe hacer otro.
+    }
+    return false; // Usuario dijo "No" o cerró el diálogo, no salir. WillPopScope/caller no hará pop.
+
   }
 
   Future<void> _saveTemplate(
@@ -223,7 +269,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
         'name': ex['name'],
         'exercise_name': ex['name'],
         'image': ex['image'],
-        'category_id': ex['category_id'],
+        'category_id': ex['db_category_id'],
         'description': ex['description'],
       };
     }).toList();
@@ -232,6 +278,9 @@ class _TrainingScreenState extends State<TrainingScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Plantilla '$name' guardada")),
       );
+      setState(() { // setState para que la UI pueda reaccionar si es necesario, y para _didDataChange
+        _didDataChange = true; // <--- ACTUALIZAR AQUÍ
+      });
     }
   }
 
@@ -254,6 +303,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                 if (mounted) {
                   setState(() {
                     selectedExercises[index] = updatedExercise;
+                    _didDataChange = true;
                   });
                 }
               },
@@ -384,7 +434,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
   void _confirmSaveTemplate() async {
     if (selectedExercises.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
             content: Text(
                 "Añade ejercicios al entrenamiento para guardarlo como plantilla.")),
       );
@@ -402,7 +452,8 @@ class _TrainingScreenState extends State<TrainingScreen> {
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context), child: Text("Cancelar")),
+              onPressed: () => Navigator.pop(context),
+              child: Text("Cancelar")),
           TextButton(
             onPressed: () {
               if (nameController.text.trim().isNotEmpty) {
@@ -425,25 +476,45 @@ class _TrainingScreenState extends State<TrainingScreen> {
     }
   }
 
-  void _confirmCancelTraining() {
-    showDialog(
+  void _confirmCancelTraining() async {
+    if (selectedExercises.isEmpty && !_didDataChange) {
+      Navigator.pop(context, false); // Salir, no recargar HomeScreen.
+      return;
+    }
+
+    final String dialogMessage;
+    if (_didDataChange) {
+      if (selectedExercises.isEmpty) {
+        dialogMessage = "Has guardado cambios (ej. una plantilla o definición de ejercicio). "
+            "No hay datos en el entrenamiento actual. ¿Cancelar y salir?";
+      } else {
+        dialogMessage = "Has guardado cambios (ej. una plantilla o definición de ejercicio). "
+            "El entrenamiento actual no se guardará. ¿Seguro que quieres cancelar y salir?";
+      }
+    } else { // !_didDataChange es true, pero selectedExercises NO está vacío.
+      dialogMessage = "Los datos no guardados del entrenamiento actual se perderán. ¿Seguro que quieres cancelar y salir?";
+    }
+    final confirmDialogResult = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text("Cancelar Entrenamiento"),
-        content: Text("¿Seguro? Se perderán los datos agregados."),
+        content: Text(dialogMessage),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context), child: Text("No")),
+              onPressed: () => Navigator.pop(context, false), // No salir (cierra el diálogo)
+              child: Text("No")),
           TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context);
-            },
+            onPressed: () => Navigator.pop(context, true),  // Sí, salir (cierra el diálogo)
             child: Text("Sí, Salir"),
           ),
         ],
       ),
     );
+    if (confirmDialogResult == true) {
+      // El usuario confirmó que quiere salir del entrenamiento.
+      // Pop TrainingScreen y pasar _didDataChange para que HomeScreen sepa si recargar.
+      Navigator.pop(context, _didDataChange);
+    }
   }
 
   @override
@@ -456,9 +527,8 @@ class _TrainingScreenState extends State<TrainingScreen> {
           leading: IconButton(
             icon: Icon(Icons.arrow_back),
             onPressed: () async {
-              if (await _onWillPop()) {
-                Navigator.pop(context);
-              }
+              await _onWillPop();
+
             },
           ),
           actions: [

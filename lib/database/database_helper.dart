@@ -295,7 +295,7 @@ class DatabaseHelper {
         'template_exercises',
         {
           'template_id': templateId,
-          'exercise_name': exercise['name'], // Asegúrate que 'name' sea la clave correcta
+          'name': exercise['name'],
           'image': exercise['image'],
           'category_id': exercise['category_id'],
           'description': exercise['description'], // <--- AÑADE ESTA LÍNEA para guardar la descripción
