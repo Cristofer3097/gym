@@ -320,5 +320,48 @@ class DatabaseHelper {
       whereArgs: [templateId],
     );
   }
+  Future<List<DateTime>> getDatesWithTrainings() async {
+    final db = await database;
+    // Selecciona solo la parte de la fecha de la columna dateTime
+    final List<Map<String, dynamic>> result = await db.rawQuery(
+        "SELECT DISTINCT SUBSTR(dateTime, 1, 10) as training_date FROM exercise_logs WHERE training_date IS NOT NULL"
+    );
+    return result.map((map) {
+      try {
+        // Parsea la fecha y la devuelve. Asegúrate que no haya valores nulos o mal formateados.
+        return DateTime.parse(map['training_date'] as String);
+      } catch (e) {
+        print("Error parseando fecha desde la DB: ${map['training_date']}, error: $e");
+        return null; // O manejar el error de otra forma, como retornar una lista vacía si alguno falla
+      }
+    }).whereType<DateTime>().toList(); // Filtra los nulos si el parseo falla
+  }
+  Future<List<Map<String, dynamic>>> getTrainingsForDate(DateTime date) async {
+    final db = await database;
+    // Formatea la fecha a 'YYYY-MM-DD' para la consulta
+    String dateString = "${date.year.toString().padLeft(4, '0')}-"
+        "${date.month.toString().padLeft(2, '0')}-"
+        "${date.day.toString().padLeft(2, '0')}";
+    return await db.query(
+      'exercise_logs',
+      where: "SUBSTR(dateTime, 1, 10) = ?", // Compara solo la parte de la fecha
+      whereArgs: [dateString],
+      orderBy: 'id ASC', // Puedes ordenar como prefieras, ej: por id o exercise_name
+    );
+  }
+  Future<void> deleteExerciseLog(int logId) async {
+    final db = await database;
+    int count = await db.delete(
+      'exercise_logs',
+      where: 'id = ?',
+      whereArgs: [logId],
+    );
+    if (count > 0) {
+      print("Log con ID $logId eliminado de exercise_logs.");
+    } else {
+      print("No se encontró log con ID $logId para eliminar.");
+    }
+  }
+
 }
 

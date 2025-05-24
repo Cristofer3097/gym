@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'training_screen.dart';
 import 'dart:io';
+import 'calendar.dart';
 import '../database/database_helper.dart';
 
 void main() => runApp(const MyApp());
@@ -184,14 +185,17 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
 
             const SizedBox(height: 10),
-            ElevatedButton(
+            ElevatedButton.icon(
+              icon: const Icon(Icons.calendar_month),
+              label: const Text('Calendario'),
               onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Funcionalidad de Calendario próximamente.")),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const CalendarScreen()),
                 );
               },
-              child: const Text('Calendario'),
-            ),
+
+            )
           ],
         ),
       ),
