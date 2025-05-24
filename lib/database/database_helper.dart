@@ -150,9 +150,10 @@ class DatabaseHelper {
     int templateId = await db.insert('templates', {'name': 'Pierna'});
     await db.insert('template_exercises', {
       'template_id': templateId,
-      'category_id': piernaId,
+      'category_id': piernaId, // Asumiendo que esto es relevante
       'name': 'Sentadilla',
-      'image': 'assets/sentadilla.png'
+      'image': 'assets/sentadilla.png',
+      'description': 'Descripción detallada de la sentadilla...' // Añadir descripción
     });
     await db.insert('template_exercises', {
       'template_id': templateId,

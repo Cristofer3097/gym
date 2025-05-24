@@ -130,9 +130,14 @@ class _TrainingScreenState extends State<TrainingScreen> {
       if (!selectedExercises.any((ex) => ex['name'] == exercise['name'])) {
         selectedExercises.add({
           'name': exercise['name'],
-          'series': '', 'weight': '', 'weightUnit': 'kg',
-          'reps': <String>[], 'notes': '',
-          'image': exercise['image'], 'category': exercise['category'],
+          'series': '', // Valores por defecto
+          'weight': '', // Valores por defecto
+          'weightUnit': 'kg', // Valores por defecto
+          'reps': <String>[], // Valores por defecto
+          'notes': '', // Valores por defecto
+          'image': exercise['image'],
+          'category': exercise['category'],
+          'description': exercise['description'], // <<< ¡AÑADE ESTA LÍNEA!
         });
       }
     });
@@ -1317,10 +1322,10 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog> with SingleTick
             ),
           Text(exerciseName ?? "Ejercicio", style: Theme.of(context).textTheme.headlineSmall),
           SizedBox(height: 8),
-          Text(
+          Text( // Aquí se muestra la descripción o el mensaje por defecto
             exerciseDescription != null && exerciseDescription.isNotEmpty
-                ? exerciseDescription
-                : "No hay descripción disponible.",
+                ? exerciseDescription // Muestra la descripción real si existe
+                : "No hay descripción disponible.", // Mensaje por defecto
             style: Theme.of(context).textTheme.bodyMedium,
           ),
         ],
