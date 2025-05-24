@@ -2,6 +2,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
+import 'package:intl/intl.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -21,7 +22,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 5, // Actualizamos la versión a 4
+      version: 6, // Actualizamos la versión a 4
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -32,7 +33,7 @@ class DatabaseHelper {
     final path = join(documentsDirectory.path, filePath);
     return await openDatabase(
       path,
-      version: 5,
+      version: 6, // <--- ASEGÚRATE QUE ESTA VERSIÓN SEA LA CORRECTA (EJ. 6)
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -90,19 +91,28 @@ class DatabaseHelper {
   );
 ''');
 
-    // Tabla exercise_logs
     await db.execute('''
-      CREATE TABLE IF NOT EXISTS exercise_logs (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        exercise_name TEXT NOT NULL,
-        dateTime TEXT NOT NULL,
-        series TEXT,
-        reps TEXT,
-        weight TEXT,
-        weightUnit TEXT,
-        notes TEXT
-      );
-    ''');
+    CREATE TABLE IF NOT EXISTS training_sessions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      session_title TEXT NOT NULL,
+      session_dateTime TEXT NOT NULL 
+    );
+  ''');
+
+    await db.execute('''
+    CREATE TABLE IF NOT EXISTS exercise_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      session_id INTEGER, 
+      exercise_name TEXT NOT NULL,
+      dateTime TEXT NOT NULL, 
+      series TEXT,
+      reps TEXT,
+      weight TEXT,
+      weightUnit TEXT,
+      notes TEXT,
+      FOREIGN KEY (session_id) REFERENCES training_sessions(id) ON DELETE CASCADE
+    );
+  ''');
     // Insertar datos de ejemplo
     await _insertDefaultData(db);
   }
@@ -137,38 +147,49 @@ class DatabaseHelper {
     return null;
   }
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < 4) {
-      // Tu lógica existente para la versión 4.
-      // ¡CUIDADO! Esta lógica altera una tabla llamada 'exercises'.
-      // En tu _createDB, no tienes una tabla llamada 'exercises'.
-      // Tienes 'categories', 'template_exercises', 'exercise_logs'.
-      // Debes revisar si 'exercises' aquí es un error y debería ser, por ejemplo, 'categories'.
-      // Si la tabla 'exercises' realmente no existe, estas líneas causarán un error.
+    // ... (tus upgrades anteriores para version < 5)
+    if (oldVersion < 6) { // Nueva versión para estos cambios
+      print("Aplicando upgrade a V6: Creando tabla training_sessions y modificando exercise_logs...");
+      await db.execute('''
+      CREATE TABLE IF NOT EXISTS training_sessions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        session_title TEXT NOT NULL,
+        session_dateTime TEXT NOT NULL
+      );
+    ''');
       try {
-        print("Aplicando upgrade a V4: Modificando tabla 'exercises' (o la tabla que corresponda)...");
-        await db.execute('ALTER TABLE exercises ADD COLUMN weightUnit TEXT DEFAULT "kg"');
-        await db.execute('ALTER TABLE exercises ADD COLUMN description TEXT');
-        await db.execute('ALTER TABLE exercises ADD COLUMN dateTime TEXT');
+        // Verifica si la columna ya existe antes de intentar añadirla
+        var tableInfo = await db.rawQuery('PRAGMA table_info(exercise_logs)');
+        bool columnExists = tableInfo.any((column) => column['name'] == 'session_id');
+        if (!columnExists) {
+          await db.execute('ALTER TABLE exercise_logs ADD COLUMN session_id INTEGER REFERENCES training_sessions(id) ON DELETE CASCADE');
+          print("Columna session_id añadida a exercise_logs.");
+        } else {
+          print("Columna session_id ya existe en exercise_logs.");
+        }
       } catch (e) {
-        print("Error durante la actualización a V4 (revisar nombre de tabla 'exercises'): $e");
+        print("Error en upgrade V6 (exercise_logs): $e");
       }
     }
-    if (oldVersion < 5) {
-      // Lógica para la versión 5: Añadir columna 'description' a 'template_exercises'
-      try {
-        print("Aplicando upgrade a V5: Añadiendo columna 'description' a 'template_exercises'...");
-        await db.execute('ALTER TABLE template_exercises ADD COLUMN description TEXT');
-      } catch (e) {
-        print("Error añadiendo columna 'description' a 'template_exercises' en V5: $e");
-        // Podrías querer manejar esto de forma más robusta si la columna ya existe por alguna razón
-      }
-    }
-    // ... más upgrades si tienes oldVersion < 6, etc.
+  }
+
+  Future<int> insertTrainingSession(String title, String dateTime) async {
+    final db = await database;
+    return await db.insert('training_sessions', {
+      'session_title': title,
+      'session_dateTime': dateTime,
+    });
   }
 
   Future<void> _insertDefaultData(Database db) async {
-    int piernaId = await db.insert('categories', {'name': 'Pierna'});
+    int piernaId = await db.insert('categories', {
+    'name': 'Pierna',
+    'muscle_group': 'Piernas', // Opcional: Define el grupo muscular para la categoría
+    'description': 'Conjunto de ejercicios enfocados en el desarrollo de los músculos de las piernas.'
+    })
+    ;
     int templateId = await db.insert('templates', {'name': 'Pierna'});
+
     await db.insert('template_exercises', {
       'template_id': templateId,
       'category_id': piernaId, // Asumiendo que esto es relevante
@@ -241,7 +262,21 @@ class DatabaseHelper {
     };
     return await db.insert('categories', completeCategoryData);
   }
-
+  Future<void> insertExerciseLogWithSessionId(Map<String, dynamic> logData, int sessionId) async {
+    final db = await database;
+    Map<String, dynamic> logToInsert = Map.from(logData);
+    logToInsert['session_id'] = sessionId;
+    await db.insert('exercise_logs', logToInsert);
+  }
+  Future<void> deleteTrainingSessionAndLogs(int sessionId) async {
+    final db = await database;
+    int count = await db.delete('training_sessions', where: 'id = ?', whereArgs: [sessionId]);
+    if (count > 0) {
+      print("Sesión con ID $sessionId y sus logs asociados eliminados.");
+    } else {
+      print("No se encontró sesión con ID $sessionId para eliminar.");
+    }
+  }
   Future<int> insertWorkout(Map<String, dynamic> workout) async {
     final db = await database;
     return await db.insert('workouts', workout);
@@ -320,33 +355,32 @@ class DatabaseHelper {
       whereArgs: [templateId],
     );
   }
-  Future<List<DateTime>> getDatesWithTrainings() async {
+  Future<List<DateTime>> getDatesWithTrainingSessions() async {
     final db = await database;
-    // Selecciona solo la parte de la fecha de la columna dateTime
     final List<Map<String, dynamic>> result = await db.rawQuery(
-        "SELECT DISTINCT SUBSTR(dateTime, 1, 10) as training_date FROM exercise_logs WHERE training_date IS NOT NULL"
+        "SELECT DISTINCT SUBSTR(session_dateTime, 1, 10) as training_date FROM training_sessions WHERE training_date IS NOT NULL ORDER BY training_date DESC"
     );
-    return result.map((map) {
-      try {
-        // Parsea la fecha y la devuelve. Asegúrate que no haya valores nulos o mal formateados.
-        return DateTime.parse(map['training_date'] as String);
-      } catch (e) {
-        print("Error parseando fecha desde la DB: ${map['training_date']}, error: $e");
-        return null; // O manejar el error de otra forma, como retornar una lista vacía si alguno falla
-      }
-    }).whereType<DateTime>().toList(); // Filtra los nulos si el parseo falla
+    return result.map((map) => DateTime.parse(map['training_date'] as String)).toList();
   }
-  Future<List<Map<String, dynamic>>> getTrainingsForDate(DateTime date) async {
+
+  Future<List<Map<String, dynamic>>> getTrainingSessionsForDate(DateTime date) async {
     final db = await database;
-    // Formatea la fecha a 'YYYY-MM-DD' para la consulta
-    String dateString = "${date.year.toString().padLeft(4, '0')}-"
-        "${date.month.toString().padLeft(2, '0')}-"
-        "${date.day.toString().padLeft(2, '0')}";
+    String dateString = DateFormat('yyyy-MM-dd').format(date); // Esto ahora es válido
+    return await db.query(
+      'training_sessions',
+      where: "SUBSTR(session_dateTime, 1, 10) = ?",
+      whereArgs: [dateString],
+      orderBy: 'session_dateTime ASC',
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getExerciseLogsForSession(int sessionId) async {
+    final db = await database;
     return await db.query(
       'exercise_logs',
-      where: "SUBSTR(dateTime, 1, 10) = ?", // Compara solo la parte de la fecha
-      whereArgs: [dateString],
-      orderBy: 'id ASC', // Puedes ordenar como prefieras, ej: por id o exercise_name
+      where: "session_id = ?",
+      whereArgs: [sessionId],
+      orderBy: 'id ASC', // O el orden que prefieras para los ejercicios dentro de una sesión
     );
   }
   Future<void> deleteExerciseLog(int logId) async {

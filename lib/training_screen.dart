@@ -378,9 +378,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
   void _confirmFinishTraining() async {
     if (selectedExercises.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text(
-                "Añade al menos un ejercicio para terminar el entrenamiento.")),
+        SnackBar(content: Text("Añade al menos un ejercicio para terminar el entrenamiento.")),
       );
       return;
     }
@@ -390,23 +388,28 @@ class _TrainingScreenState extends State<TrainingScreen> {
         title: Text("Terminar Entrenamiento"),
         content: Text("¿Guardar y terminar el entrenamiento actual?"),
         actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text("No")),
-          TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: Text("Sí, Guardar")),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text("No")),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: Text("Sí, Guardar")),
         ],
       ),
     );
+
     if (confirm == true) {
       final db = DatabaseHelper.instance;
-      final now = DateTime.now().toIso8601String();
+      final String sessionDateTimeStr = DateTime.now().toIso8601String();
+      // Usa el trainingTitle actual de la pantalla, que es editable
+      final String currentSessionTitle = trainingTitle;
+
       try {
+        // 1. Insertar la sesión de entrenamiento y obtener su ID
+        int sessionId = await db.insertTrainingSession(currentSessionTitle, sessionDateTimeStr);
+        print("Nueva sesión guardada con ID: $sessionId, Título: '$currentSessionTitle'");
+
+        // 2. Insertar cada log de ejercicio con el session_id
         for (final exercise in selectedExercises) {
-          await db.insertExerciseLog({
+          await db.insertExerciseLogWithSessionId({ // Usamos el nuevo método
             'exercise_name': exercise['name'],
-            'dateTime': now,
+            'dateTime': DateTime.now().toIso8601String(), // Timestamp individual del log
             'series': exercise['series']?.toString() ?? '',
             'reps': (exercise['reps'] is List)
                 ? (exercise['reps'] as List).join(',')
@@ -414,14 +417,17 @@ class _TrainingScreenState extends State<TrainingScreen> {
             'weight': exercise['weight']?.toString() ?? '',
             'weightUnit': exercise['weightUnit']?.toString() ?? 'kg',
             'notes': exercise['notes']?.toString() ?? '',
-          });
+          }, sessionId);
         }
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("Entrenamiento guardado con éxito")));
-          Navigator.pop(context, true);
+              SnackBar(content: Text("Entrenamiento '$currentSessionTitle' guardado con éxito")));
+          _didDataChange = true; // Marcar cambio para HomeScreen
+          Navigator.pop(context, _didDataChange); // Indicar que algo se guardó
         }
       } catch (e) {
+        print("Error al guardar la sesión de entrenamiento: $e");
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
               content: Text("Error al guardar entrenamiento: $e"),
