@@ -45,5 +45,11 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSPhotoLibraryUsageDescription</key>
+    <string>Necesitamos acceso a tu galería para seleccionar imágenes de ejercicios.</string>
+    <key>NSCameraUsageDescription</key>
+    <string>Necesitamos acceso a tu cámara para tomar fotos de ejercicios.</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Necesitamos acceso a tu micrófono si deseas grabar videos con audio (opcional para image_picker de solo imágenes).</string>
 </dict>
 </plist>

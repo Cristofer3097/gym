@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../database/database_helper.dart'; // Asegúrate que la ruta sea correcta
+import 'package:device_info_plus/device_info_plus.dart';
+
 
 // Clase principal de la pantalla de Entrenamiento
 class TrainingScreen extends StatefulWidget {
@@ -584,9 +589,15 @@ class _ExerciseOverlayState extends State<ExerciseOverlay> {
               : ListView.builder(
             shrinkWrap: true, itemCount: filteredExercises.length,
             itemBuilder: (context, index) {
+
               final exercise = filteredExercises[index];
+
               final bool isSelected = widget.selectedExercisesForCheckboxes.any((selectedEx) => selectedEx['name'] == exercise['name']);
+              final String? exerciseImage = exercise['image'] as String?; //
+              final String exerciseName = exercise['name']?.toString() ?? "Ejercicio sin nombre";
+
               List<Widget> trailingItems = [];
+
               if (exercise['isManual'] == true) {
                 trailingItems.add(SizedBox(width: iconButtonWidth, child: IconButton(
                   padding: EdgeInsets.zero, icon: Icon(Icons.delete_forever, color: Colors.red.shade700), tooltip: "Borrar permanentemente",
@@ -609,41 +620,36 @@ class _ExerciseOverlayState extends State<ExerciseOverlay> {
               trailingItems.add(Checkbox(value: isSelected, onChanged: (bool? newValue) {
                 if (newValue == true) widget.onExerciseChecked(exercise); else widget.onExerciseUnchecked(exercise);
               }));
-              final exerciseName = exercise['name']?.toString();
-              final exerciseImage = exercise['image'] as String?;
+
 
               return Card(
                 margin: EdgeInsets.symmetric(vertical: 4.0),
                 child: ListTile(
-                  leading: (exerciseImage != null && exerciseImage.isNotEmpty && exerciseImage.startsWith('assets/'))
-                      ? ClipRRect( // Si hay una imagen de asset válida
-                    borderRadius: BorderRadius.circular(8.0), // Tu radio de borde anterior
-                    child: Image.asset(
-                      exerciseImage,
-                      width: 32, // Tu ancho anterior
-                      height: 32, // Tu alto anterior
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container( // Tu errorBuilder anterior
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[300],
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                        child: const Icon(Icons.fitness_center, color: Colors.grey, size: 20),
-                      ),
-                    ),
-                  )
-                      : Container( // Tu placeholder por defecto anterior
-                    width: 32,
-                    height: 32,
+                  leading: Container( // Contenedor para un tamaño fijo y borde redondeado
+                    width: 50, // Ajusta el tamaño según necesites
+                    height: 50,
+                    clipBehavior: Clip.antiAlias, // Para que el borde redondeado afecte a la imagen
                     decoration: BoxDecoration(
-                      color: Colors.grey[300],
+                      color: Colors.grey[200], // Color de fondo si no hay imagen o mientras carga
                       borderRadius: BorderRadius.circular(8.0),
                     ),
-                    child: const Icon(Icons.fitness_center, color: Colors.grey, size: 20),
+                    child: (exerciseImage != null && exerciseImage.isNotEmpty)
+                        ? (exerciseImage.startsWith('assets/'))
+                        ? Image.asset( // Imagen desde assets
+                      exerciseImage,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          Icon(Icons.fitness_center, color: Colors.grey[400], size: 30),
+                    )
+                        : Image.file( // Imagen desde archivo local
+                      File(exerciseImage),
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          Icon(Icons.broken_image, color: Colors.grey[400], size: 30),
+                    )
+                        : Icon(Icons.fitness_center, color: Colors.grey[400], size: 30), // Placeholder si no hay imagen
                   ),
-                  title: Text(exerciseName ?? "Ejercicio sin nombre"), // Mantenemos el fallback
+                  title: Text(exerciseName),
                   trailing: Row(mainAxisSize: MainAxisSize.min, children: trailingItems),
                   onTap: () {
                     if (isSelected) {
@@ -654,6 +660,8 @@ class _ExerciseOverlayState extends State<ExerciseOverlay> {
                   },
                 ),
               );
+
+
             },
           )),
           Padding(padding: const EdgeInsets.only(top: 8.0), child: ElevatedButton.icon(
@@ -686,10 +694,153 @@ class _NewExerciseDialogState extends State<NewExerciseDialog> {
   TextEditingController nameController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
   String? selectedMuscleGroup;
-  String? imagePath;
+  File? _imageFile; // Para almacenar el archivo de imagen seleccionado
+  final ImagePicker _picker = ImagePicker();
 
   final List<String> muscleGroups = ['Pecho', 'Pierna', 'Espalda', 'Brazos', 'Hombros', 'Abdomen', 'Cardio', 'Otro'];
+  // Dentro de _NewExerciseDialogState en training_screen.dart
 
+  Future<void> _pickImage(ImageSource source) async {
+    debugPrint(" Iniciando _pickImage con fuente: $source"); // LOG 1
+
+    Map<Permission, PermissionStatus> statuses;
+
+    if (source == ImageSource.camera) {
+      debugPrint(" Solicitando permiso de CAMARA..."); // LOG 2
+      statuses = await [Permission.camera].request();
+      debugPrint(" Estado del permiso de CAMARA: $statuses"); // LOG 3
+    } else { // Galería
+      int? sdkVersion = await _getAndroidSDKVersion();
+      debugPrint(" Versión SDK de Android obtenida: $sdkVersion"); // LOG 4
+
+      if (Platform.isAndroid) {
+        if (sdkVersion != null && sdkVersion >= 33) { // Android 13 (API 33) o superior
+          debugPrint(" Solicitando Permission.photos (Android 13+)..."); // LOG 5
+          statuses = await [Permission.photos].request();
+          debugPrint(" Estado de Permission.photos: $statuses"); // LOG 6
+        } else { // Android inferior a 13
+          debugPrint(" Solicitando Permission.storage (Android < 13)..."); // LOG 7
+          statuses = await [Permission.storage].request();
+          debugPrint(" Estado de Permission.storage: $statuses"); // LOG 8
+        }
+      } else { // No es Android (iOS u otros)
+        debugPrint(" Solicitando Permission.photos (iOS u otra plataforma)..."); // LOG 9
+        statuses = await [Permission.photos].request(); // Para iOS, Permission.photos es común
+        debugPrint(" Estado de Permission.photos (iOS u otra): $statuses"); // LOG 10
+      }
+    }
+
+    bool permissionsGranted = true;
+    statuses.forEach((permission, permissionStatus) async {
+      debugPrint(" Procesando permiso: $permission, Estado: $permissionStatus"); // LOG 11
+      if (permissionStatus.isPermanentlyDenied) {
+        debugPrint(" ¡ALERTA! Permiso $permission DENEGADO PERMANENTEMENTE.");
+        if (mounted) { // Asegúrate que el widget esté montado
+          await showDialog(
+          context: context,
+          builder: (BuildContext context) => AlertDialog(
+            title: Text("Permiso Requerido"),
+            content: Text("Esta función requiere permisos que fueron denegados permanentemente. Por favor, habilítalos en la configuración de la aplicación."),
+            actions: <Widget>[
+              TextButton(
+                child: Text("Cancelar"),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              TextButton(
+                child: Text("Abrir Configuración"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  openAppSettings(); // Abre la configuración de la app
+                },
+              ),
+            ],
+          ),
+          );
+        }
+      }
+    }
+    );
+
+    for (var entry in statuses.entries) {
+      final permission = entry.key;
+      final permissionStatus = entry.value;
+      debugPrint(" Procesando permiso: $permission, Estado: $permissionStatus"); // LOG 11 (se mantiene)
+
+      if (!permissionStatus.isGranted) {
+        permissionsGranted = false; // Si CUALQUIER permiso no está concedido, marcamos como false
+
+        if (permissionStatus.isPermanentlyDenied) {
+          debugPrint(" ¡ALERTA! Permiso $permission DENEGADO PERMANENTEMENTE."); // LOG 12 (se mantiene)
+          if (mounted) {
+            // Mostramos un diálogo para guiar al usuario a la configuración de la app
+            await showDialog(
+              context: context,
+              builder: (BuildContext dialogContext) => AlertDialog( // Usar dialogContext aquí
+                title: Text("Permiso Requerido"),
+                content: Text("Esta función requiere permisos que fueron denegados permanentemente. Por favor, habilítalos en la configuración de la aplicación."),
+                actions: <Widget>[
+                  TextButton(
+                    child: Text("Cancelar"),
+                    onPressed: () => Navigator.of(dialogContext).pop(),
+                  ),
+                  TextButton(
+                    child: Text("Abrir Configuración"),
+                    onPressed: () {
+                      Navigator.of(dialogContext).pop();
+                      openAppSettings(); // Función de permission_handler
+                    },
+                  ),
+                ],
+              ),
+            );
+          }
+          // Importante: Si un permiso está denegado permanentemente, salimos temprano
+          // ya que permissionsGranted será false y el return de abajo se encargará.
+        }
+      }
+    }
+    if (!permissionsGranted) {
+      debugPrint(" Permisos NO concedidos. Mostrando SnackBar."); // LOG 13 (se mantiene)
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Se requieren permisos. Habilítalos en la configuración de la app.')),
+        );
+      }
+      return; // Salir de la función si los permisos no fueron concedidos
+    }
+
+    debugPrint(" Permisos CONCEDIDOS. Procediendo a seleccionar imagen...");
+    debugPrint(" Permisos CONCEDIDOS. Procediendo a seleccionar imagen..."); // LOG 14
+    try {
+      final XFile? pickedFile = await _picker.pickImage(source: source);
+      if (pickedFile != null) {
+        debugPrint(" Imagen seleccionada: ${pickedFile.path}"); // LOG 15
+        if (mounted) {
+          setState(() {
+            _imageFile = File(pickedFile.path);
+          });
+        }
+      } else {
+        debugPrint(" Selección de imagen cancelada o pickedFile es null."); // LOG 16
+      }
+    } catch (e) {
+      debugPrint(" EXCEPCIÓN al seleccionar imagen: $e"); // LOG 17
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al seleccionar imagen: $e')),
+        );
+      }
+    }
+  }
+  Future<int?> _getAndroidSDKVersion() async {
+    if (Platform.isAndroid) {
+      final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+      final AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+      debugPrint("Versión real del SDK de Android: ${androidInfo.version.sdkInt}");
+      return androidInfo.version.sdkInt;
+    }
+    return null; // Retorna null si no es Android
+  }
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -722,16 +873,63 @@ class _NewExerciseDialogState extends State<NewExerciseDialog> {
               maxLines: 3,
             ),
             SizedBox(height: 12),
-            TextButton.icon(icon: Icon(Icons.image_search),
-              label: Text(imagePath == null ? "Simular Selección de Imagen" : "Quitar Imagen Simulada"),
-              onPressed: () {
-                setState(() => imagePath = imagePath == null ? 'assets/ejercicio_placeholder.png' : null);
-                if (imagePath != null) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Imagen simulada: ${imagePath!}. El asset debe existir.")));
-              },
+
+            Text("Imagen del Ejercicio (opcional):", style: Theme.of(context).textTheme.titleSmall),
+            SizedBox(height: 8),
+            if (_imageFile != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Image.file(
+                  _imageFile!,
+                  // ... otros parámetros ...
+                  errorBuilder: (context, error, stackTrace) {
+                    debugPrint("Error al cargar la previsualización de Image.file: $error");
+                    // Programar para que _imageFile se anule después del ciclo de construcción actual
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted) { // Asegura que el widget aún está montado
+                        setState(() {
+                          _imageFile = null; // Esto mostrará el placeholder en la siguiente reconstrucción
+                        });
+                      }
+                    });
+                    return Center(child: Text("Error al cargar la previsualización.", style: TextStyle(color: Colors.red)));
+                  },
+                ),
+              )
+            else
+              Container(
+                height: 100,
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  border: Border.all(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Center(child: Icon(Icons.image_not_supported, color: Colors.grey[600], size: 40)),
+              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                TextButton.icon(
+                  icon: Icon(Icons.photo_library),
+                  label: Text("Galería"),
+                  onPressed: () => _pickImage(ImageSource.gallery),
+                ),
+                TextButton.icon(
+                  icon: Icon(Icons.camera_alt),
+                  label: Text("Cámara"),
+                  onPressed: () => _pickImage(ImageSource.camera),
+                ),
+              ],
             ),
-            if (imagePath != null && imagePath!.startsWith('assets/'))
-              Padding(padding: const EdgeInsets.only(top: 8.0),
-                child: Image.asset(imagePath!, height: 60, errorBuilder: (_,__,___) => Text("Error al cargar imagen placeholder.", style: TextStyle(color: Colors.red))),
+            if (_imageFile != null)
+              TextButton.icon(
+                icon: Icon(Icons.delete_outline, color: Colors.red),
+                label: Text("Quitar Imagen", style: TextStyle(color: Colors.red)),
+                onPressed: () {
+                  setState(() {
+                    _imageFile = null;
+                  });
+                },
               ),
             SizedBox(height: 20),
             ElevatedButton(
@@ -739,9 +937,11 @@ class _NewExerciseDialogState extends State<NewExerciseDialog> {
               onPressed: () async {
                 if (_formKey.currentState!.validate()) {
                   String trimmedName = nameController.text.trim();
+                  String? imagePathToSave = _imageFile?.path;
+
                   Map<String, dynamic> newExerciseDataForDb = {
                     'name': trimmedName, 'muscle_group': selectedMuscleGroup,
-                    'image': imagePath, 'description': descriptionController.text.trim(),
+                    'image': imagePathToSave, 'description': descriptionController.text.trim(),
                     'date': null, 'workout_id': null, 'category_id': null, 'weight': null,
                     'weightUnit': null, 'reps': null, 'sets': null, 'notes': null, 'dateTime': null,
                   };
@@ -1069,15 +1269,62 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog> with SingleTick
     final exerciseImage = widget.exercise['image'] as String?;
     final exerciseDescription = widget.exercise['description'] as String?;
     final exerciseName = widget.exercise['name']?.toString();
-    return SingleChildScrollView(padding: const EdgeInsets.all(16.0), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      if (exerciseImage != null && exerciseImage.isNotEmpty && exerciseImage.startsWith('assets/'))
-        Center(child: Padding(padding: const EdgeInsets.only(bottom: 16.0),
-          child: Image.asset(exerciseImage, height: 150, fit: BoxFit.contain, errorBuilder: (_,__,___) => Text("No se pudo cargar imagen.", textAlign: TextAlign.center, style: TextStyle(color: Colors.orange))),
-        ))
-      else if (exerciseImage != null && exerciseImage.isNotEmpty) Center(child: Padding(padding: const EdgeInsets.only(bottom: 16.0), child: Icon(Icons.image_search, size: 100, color: Colors.grey))),
-      Text(exerciseName ?? "Ejercicio", style: Theme.of(context).textTheme.headlineSmall), // Usar headlineSmall
-      SizedBox(height: 8),
-      Text(exerciseDescription != null && exerciseDescription.isNotEmpty ? exerciseDescription : "No hay descripción disponible.", style: Theme.of(context).textTheme.bodyMedium), // Usar bodyMedium
-    ]));
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (exerciseImage != null && exerciseImage.isNotEmpty)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: Container(
+                  height: 150, // Ajusta según necesites
+                  width: double.infinity,
+                  clipBehavior: Clip.antiAlias,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  child: exerciseImage.startsWith('assets/')
+                      ? Image.asset( // Imagen desde assets
+                    exerciseImage,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) => Center(child: Text("No se pudo cargar imagen.", textAlign: TextAlign.center, style: TextStyle(color: Colors.orange))),
+                  )
+                      : Image.file( // Imagen desde archivo local
+                    File(exerciseImage),
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) => Center(child: Text("No se pudo cargar imagen.", textAlign: TextAlign.center, style: TextStyle(color: Colors.red))),
+                  ),
+                ),
+              ),
+            )
+          else // Placeholder si no hay ruta de imagen
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: Container(
+                  height: 150,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  child: Icon(Icons.image_search, size: 100, color: Colors.grey[400]),
+                ),
+              ),
+            ),
+          Text(exerciseName ?? "Ejercicio", style: Theme.of(context).textTheme.headlineSmall),
+          SizedBox(height: 8),
+          Text(
+            exerciseDescription != null && exerciseDescription.isNotEmpty
+                ? exerciseDescription
+                : "No hay descripción disponible.",
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        ],
+      ),
+    );
   }
-}
+  }
