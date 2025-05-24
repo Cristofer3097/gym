@@ -1470,19 +1470,19 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
           tempWarning == "Valor inválido" ||
           tempWarning == "Mínimo 1 repetición." ||
           tempWarning == "Máximo 99 reps.") {
-        if (hasBlockingErrors) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text("Corrige los errores marcados antes de guardar."),
-              backgroundColor: Colors.redAccent));
-          return;
-        }
-        // Actualizar el warning visual por si acaso no se hizo en el último onChanged
-        if (mounted && i < repWarnings.length) {
-          setState(() {
-            repWarnings[i] = tempWarning;
-          });
+        hasBlockingErrors = true;
+        if (mounted && i < repWarnings.length && repWarnings[i] != tempWarning) {
         }
       }
+    }
+
+    if (hasBlockingErrors) {
+      if (mounted) { // Verificar mounted antes de usar context
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text("Corrige los errores marcados antes de guardar."),
+            backgroundColor: Colors.redAccent));
+      }
+      return; // No continuar si hay errores
     }
 
 
@@ -1586,23 +1586,38 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
   Widget _buildCurrentDataTab() {
     return SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
-        child:
-        Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          TextField(
-            controller: seriesController,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(
-                labelText: 'Número de Series',
-                border: OutlineInputBorder(),
-                errorText:
-                seriesWarningText.isEmpty ? null : seriesWarningText),
-            onChanged: (value) {
-              setState(() {
-                seriesCountFromInput = int.tryParse(value) ?? 0;
-                _initializeRepControllersBasedOnSeriesCount();
-              });
-            },
-          ),
+    child: Form( // <--- 1. ENVOLVER CON WIDGET Form
+    key: _formKeyCurrentDataTab, // <--- 2. ASIGNAR LA CLAVE
+    child: Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+    // Campo de Número de Series
+    TextFormField( // <--- 3. Considerar cambiar a TextFormField si quieres validación de Form
+    controller: seriesController,
+    keyboardType: TextInputType.number,
+    decoration: InputDecoration(
+    labelText: 'Número de Series',
+    border: OutlineInputBorder(),
+    errorText:
+    seriesWarningText.isEmpty ? null : seriesWarningText),
+    onChanged: (value) {
+    setState(() {
+    seriesCountFromInput = int.tryParse(value) ?? 0;
+    _initializeRepControllersBasedOnSeriesCount();
+    });
+    },
+      validator: (value) {
+        // Ejemplo de validador si quisieras usar el Form para este campo:
+        // if (value == null || value.trim().isEmpty) {
+        //   return 'Las series son requeridas';
+        // }
+        // final n = int.tryParse(value.trim());
+        // if (n == null) return 'Número inválido';
+        // if (n < 0) return 'No puede ser negativo';
+        return null; // Sin error desde la perspectiva del Form si la validación manual es suficiente
+      },
+    ),
+
           SizedBox(height: 12),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1663,7 +1678,7 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
                 itemBuilder: (context, index) {
                   return Padding(
                       padding: const EdgeInsets.only(top: 8.0),
-                      child: TextField(
+    child: TextFormField(
                         controller: repControllers[index],
                         keyboardType: TextInputType.number,
                         decoration: InputDecoration(
@@ -1677,7 +1692,7 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
                       ));
                 }),
           SizedBox(height: 16),
-          TextField(
+    TextFormField(
               controller: notesController,
               decoration: InputDecoration(
                   labelText: 'Notas (opcional)',
@@ -1702,7 +1717,10 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
               child: Text('Guardar Cambios del Log'),
               style: ElevatedButton.styleFrom(
                   padding: EdgeInsets.symmetric(vertical: 12))),
-        ]));
+    ]
+    ),
+    ),
+    );
   }
 
   // CORRECCIÓN 3: Añadidos itemCount, separatorBuilder, e itemBuilder
