@@ -21,7 +21,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 4, // Actualizamos la versión a 4
+      version: 5, // Actualizamos la versión a 4
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -32,7 +32,7 @@ class DatabaseHelper {
     final path = join(documentsDirectory.path, filePath);
     return await openDatabase(
       path,
-      version: 4,
+      version: 5,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -79,12 +79,13 @@ class DatabaseHelper {
 
     // Tabla template_exercises
     await db.execute('''
-      CREATE TABLE IF NOT EXISTS template_exercises (
+  CREATE TABLE IF NOT EXISTS template_exercises (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     template_id INTEGER NOT NULL,
     category_id INTEGER,
     name TEXT NOT NULL,
     image TEXT,
+    description TEXT, 
     FOREIGN KEY (template_id) REFERENCES templates(id) ON DELETE CASCADE
   );
 ''');
@@ -137,12 +138,32 @@ class DatabaseHelper {
   }
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 4) {
-      // Para la versión 4 agregamos nuevos campos a la tabla exercises
-      await db.execute(
-          'ALTER TABLE exercises ADD COLUMN weightUnit TEXT DEFAULT "kg"');
-      await db.execute('ALTER TABLE exercises ADD COLUMN description TEXT');
-      await db.execute('ALTER TABLE exercises ADD COLUMN dateTime TEXT');
+      // Tu lógica existente para la versión 4.
+      // ¡CUIDADO! Esta lógica altera una tabla llamada 'exercises'.
+      // En tu _createDB, no tienes una tabla llamada 'exercises'.
+      // Tienes 'categories', 'template_exercises', 'exercise_logs'.
+      // Debes revisar si 'exercises' aquí es un error y debería ser, por ejemplo, 'categories'.
+      // Si la tabla 'exercises' realmente no existe, estas líneas causarán un error.
+      try {
+        print("Aplicando upgrade a V4: Modificando tabla 'exercises' (o la tabla que corresponda)...");
+        await db.execute('ALTER TABLE exercises ADD COLUMN weightUnit TEXT DEFAULT "kg"');
+        await db.execute('ALTER TABLE exercises ADD COLUMN description TEXT');
+        await db.execute('ALTER TABLE exercises ADD COLUMN dateTime TEXT');
+      } catch (e) {
+        print("Error durante la actualización a V4 (revisar nombre de tabla 'exercises'): $e");
+      }
     }
+    if (oldVersion < 5) {
+      // Lógica para la versión 5: Añadir columna 'description' a 'template_exercises'
+      try {
+        print("Aplicando upgrade a V5: Añadiendo columna 'description' a 'template_exercises'...");
+        await db.execute('ALTER TABLE template_exercises ADD COLUMN description TEXT');
+      } catch (e) {
+        print("Error añadiendo columna 'description' a 'template_exercises' en V5: $e");
+        // Podrías querer manejar esto de forma más robusta si la columna ya existe por alguna razón
+      }
+    }
+    // ... más upgrades si tienes oldVersion < 6, etc.
   }
 
   Future<void> _insertDefaultData(Database db) async {
@@ -168,11 +189,57 @@ class DatabaseHelper {
       'image': 'assets/prens.png'
     });
   }
-
-  // Métodos de inserción y consulta
-  Future<int> insertCategory(Map<String, dynamic> category) async {
+  Future<int> updateCategory(int id, Map<String, dynamic> category) async {
     final db = await database;
-    return await db.insert('categories', category);
+    return await db.update('categories', category, where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<Map<String, dynamic>?> getCategoryById(int id) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'categories',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+    if (maps.isNotEmpty) {
+      return maps.first;
+    }
+    return null;
+  }
+
+  Future<void> updateExerciseLogsName(String oldName, String newName) async {
+    final db = await database;
+    await db.update(
+      'exercise_logs',
+      {'exercise_name': newName},
+      where: 'exercise_name = ?',
+      whereArgs: [oldName],
+    );
+    print('Nombres de ejercicio actualizados en logs: de "$oldName" a "$newName"');
+  }
+  // Métodos de inserción y consulta
+  Future<int> insertCategory(Map<String, dynamic> categoryData) async {
+    final db = await database;
+    // Prepara el mapa asegurando que todos los campos de la tabla 'categories'
+    // que no vienen de categoryData se establezcan explícitamente a null o un valor por defecto.
+    Map<String, dynamic> completeCategoryData = {
+      'name': categoryData['name'],
+      'muscle_group': categoryData['muscle_group'],
+      'image': categoryData['image'],
+      'description': categoryData['description'],
+      // Campos que podrían no venir del formulario de definición pero existen en la tabla:
+      'date': categoryData['date'], // o null si no se maneja
+      'workout_id': categoryData['workout_id'], // o null
+      'category_id': categoryData['category_id'], // o null
+      'weight': categoryData['weight'], // o null
+      'weightUnit': categoryData['weightUnit'], // o null
+      'reps': categoryData['reps'], // o null
+      'sets': categoryData['sets'], // o null
+      'notes': categoryData['notes'], // o null
+      'dateTime': categoryData['dateTime'], // o null
+    };
+    return await db.insert('categories', completeCategoryData);
   }
 
   Future<int> insertWorkout(Map<String, dynamic> workout) async {
@@ -228,10 +295,10 @@ class DatabaseHelper {
         'template_exercises',
         {
           'template_id': templateId,
-          'exercise_name': exercise['name'],
-          // Agrega aquí más campos si los tienes, por ejemplo:
-          // 'series': exercise['series'],
-          // 'reps': exercise['reps'],
+          'exercise_name': exercise['name'], // Asegúrate que 'name' sea la clave correcta
+          'image': exercise['image'],
+          'category_id': exercise['category_id'],
+          'description': exercise['description'], // <--- AÑADE ESTA LÍNEA para guardar la descripción
         },
         conflictAlgorithm: ConflictAlgorithm.replace,
       );

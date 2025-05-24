@@ -6,7 +6,6 @@ import 'package:permission_handler/permission_handler.dart';
 import '../database/database_helper.dart'; // Asegúrate que la ruta sea correcta
 import 'package:device_info_plus/device_info_plus.dart';
 
-
 // Clase principal de la pantalla de Entrenamiento
 class TrainingScreen extends StatefulWidget {
   final List<Map<String, dynamic>>? initialExercises;
@@ -21,43 +20,49 @@ class _TrainingScreenState extends State<TrainingScreen> {
   List<Map<String, dynamic>> selectedExercises = []; // Ejercicios en la sesión actual
   List<Map<String, dynamic>> availableExercises = []; // Todos los ejercicios disponibles (plantillas + manuales)
 
-  @override
+  // CORRECCIÓN 4: Quitado @override innecesario
   void _removeExerciseFromTraining(int index) {
-    if (mounted) { // Asegura que el widget todavía está en el árbol de widgets
-      // Verificación adicional para la validez del índice
+    if (mounted) {
       if (index >= 0 && index < selectedExercises.length) {
-        final String exerciseNameToRemove = selectedExercises[index]['name']?.toString() ?? 'Ejercicio';
+        final String exerciseNameToRemove =
+            selectedExercises[index]['name']?.toString() ?? 'Ejercicio';
 
         setState(() {
           selectedExercises.removeAt(index);
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("'$exerciseNameToRemove' quitado del entrenamiento")),
+          SnackBar(
+              content:
+              Text("'$exerciseNameToRemove' quitado del entrenamiento")),
         );
       } else {
-        // Esto no debería ocurrir si ListView.builder está funcionando correctamente,
-        // pero es una salvaguarda y ayuda a depurar si sucede.
-        debugPrint("Error en _removeExerciseFromTraining: Índice $index está fuera de los límites para selectedExercises de tamaño ${selectedExercises.length}.");
+        debugPrint(
+            "Error en _removeExerciseFromTraining: Índice $index está fuera de los límites para selectedExercises de tamaño ${selectedExercises.length}.");
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error al quitar el ejercicio. Índice inválido."), backgroundColor: Colors.red),
+          SnackBar(
+              content: Text("Error al quitar el ejercicio. Índice inválido."),
+              backgroundColor: Colors.red),
         );
       }
     }
   }
+
+  @override
   void initState() {
     super.initState();
-    // Si se pasan ejercicios iniciales (ej. desde una plantilla), se cargan
     if (widget.initialExercises != null) {
       selectedExercises = widget.initialExercises!.map((ex) {
         var newEx = Map<String, dynamic>.from(ex);
-        // Asegurar formato correcto para 'reps'
         if (newEx['reps'] is String) {
-          newEx['reps'] = (newEx['reps'] as String).split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+          newEx['reps'] = (newEx['reps'] as String)
+              .split(',')
+              .map((s) => s.trim())
+              .where((s) => s.isNotEmpty)
+              .toList();
         } else if (newEx['reps'] == null || newEx['reps'] is! List) {
           newEx['reps'] = <String>[];
         }
-        // Asegurar valores por defecto para otros campos
         newEx['series'] = newEx['series']?.toString() ?? '';
         newEx['weight'] = newEx['weight']?.toString() ?? '';
         newEx['weightUnit'] = newEx['weightUnit']?.toString() ?? 'kg';
@@ -65,10 +70,9 @@ class _TrainingScreenState extends State<TrainingScreen> {
         return newEx;
       }).toList();
     }
-    _loadAvailableExercises(); // Carga todos los ejercicios disponibles de la DB
+    _loadAvailableExercises();
   }
 
-  // Carga todos los ejercicios (plantillas y manuales) de la base de datos
   Future<List<Map<String, dynamic>>> _loadAvailableExercises() async {
     final db = DatabaseHelper.instance;
     debugPrint("Cargando ejercicios disponibles desde DB...");
@@ -76,39 +80,37 @@ class _TrainingScreenState extends State<TrainingScreen> {
     List<Map<String, dynamic>> customExercises = [];
 
     try {
-      // Asumiendo ID 1 para plantillas generales (ajusta si es necesario)
       templateExercises = await db.getTemplateExercises(1);
-      customExercises = await db.getCategories(); // Ejercicios manuales se guardan en 'categories'
+      customExercises = await db.getCategories();
     } catch (e) {
       debugPrint("Error cargando ejercicios de la DB: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error al cargar ejercicios: $e"), backgroundColor: Colors.red),
+          SnackBar(
+              content: Text("Error al cargar ejercicios: $e"),
+              backgroundColor: Colors.red),
         );
       }
-      return availableExercises; // Devuelve la lista actual para evitar romper la UI
+      return availableExercises;
     }
 
-    // Mapea ejercicios de plantilla a un formato común
     final templateMapped = templateExercises.map((ex) {
-      final name = ex['name']?.toString() ?? ex['exercise_name']?.toString(); // Consistencia en el nombre
-      return { ...ex, 'name': name, 'isManual': false };
+      final name = ex['name']?.toString() ?? ex['exercise_name']?.toString();
+      return {...ex, 'name': name, 'isManual': false};
     }).toList();
 
-    // Mapea ejercicios manuales (categorías) a un formato común
     final customExercisesMapped = customExercises.map((ex) {
       final name = ex['name']?.toString();
       return {
         'name': name,
         'image': ex['image']?.toString() ?? '',
-        'category': ex['muscle_group']?.toString() ?? '', // 'muscle_group' de la DB es 'category' en la UI
+        'category': ex['muscle_group']?.toString() ?? '',
         'description': ex['description']?.toString() ?? '',
         'id': ex['id'],
         'isManual': true,
       };
     }).toList();
 
-    // Combina ambas listas
     final allAvailableExercises = [...templateMapped, ...customExercisesMapped];
 
     if (mounted) {
@@ -116,74 +118,73 @@ class _TrainingScreenState extends State<TrainingScreen> {
         availableExercises = allAvailableExercises;
       });
     }
-    debugPrint("Total de ejercicios cargados para el overlay: ${allAvailableExercises.length}");
+    debugPrint(
+        "Total de ejercicios cargados para el overlay: ${allAvailableExercises.length}");
     if (allAvailableExercises.isEmpty) {
-      debugPrint("Advertencia: La lista de 'availableExercises' está vacía después de cargar.");
+      debugPrint(
+          "Advertencia: La lista de 'availableExercises' está vacía después de cargar.");
     }
-    return allAvailableExercises; // Devuelve la lista fresca para el ExerciseOverlay
+    return allAvailableExercises;
   }
 
-  // Callback: se ejecuta cuando se marca un ejercicio en ExerciseOverlay
   void _onExerciseCheckedInOverlay(Map<String, dynamic> exercise) {
     setState(() {
-      // Añade el ejercicio a la sesión actual si no está ya
       if (!selectedExercises.any((ex) => ex['name'] == exercise['name'])) {
         selectedExercises.add({
           'name': exercise['name'],
-          'series': '', // Valores por defecto
-          'weight': '', // Valores por defecto
-          'weightUnit': 'kg', // Valores por defecto
-          'reps': <String>[], // Valores por defecto
-          'notes': '', // Valores por defecto
+          'series': '',
+          'weight': '',
+          'weightUnit': 'kg',
+          'reps': <String>[],
+          'notes': '',
           'image': exercise['image'],
           'category': exercise['category'],
-          'description': exercise['description'], // <<< ¡AÑADE ESTA LÍNEA!
+          'description': exercise['description'],
+          'isManual': exercise['isManual'] ?? false, // Asegurar que isManual se propaga
+          'id': exercise['id'], // Propagar id para la edición
         });
       }
     });
   }
 
-  // Callback: se ejecuta cuando se desmarca un ejercicio en ExerciseOverlay
   void _onExerciseUncheckedInOverlay(Map<String, dynamic> exercise) {
     setState(() {
       selectedExercises.removeWhere((ex) => ex['name'] == exercise['name']);
     });
   }
 
-  // Abre el diálogo ExerciseOverlay para seleccionar ejercicios
   void _openExerciseOverlay() {
     showDialog(
       context: context,
-      barrierDismissible: false, // Evita que se cierre al tocar fuera
+      barrierDismissible: false,
       builder: (BuildContext dialogContext) {
-        // StatefulBuilder permite actualizar la UI del diálogo (checkboxes)
-        // cuando cambia el estado en _TrainingScreenState (ej. selectedExercises)
         return StatefulBuilder(
           builder: (BuildContext sbfContext, StateSetter setDialogState) {
             return Dialog(
-              insetPadding: EdgeInsets.all(MediaQuery.of(sbfContext).size.width * 0.05), // Padding del diálogo
+              insetPadding: EdgeInsets.all(
+                  MediaQuery.of(sbfContext).size.width * 0.05),
               child: ExerciseOverlay(
                 getAvailableExercises: _loadAvailableExercises,
-                availableExercises: availableExercises, // Pasa la lista completa
-                selectedExercisesForCheckboxes: selectedExercises, // Pasa los ya seleccionados
-
+                availableExercises: availableExercises,
+                selectedExercisesForCheckboxes: selectedExercises,
                 onNewExercise: (newExerciseMap) async {
-                  // Este callback se llama desde NewExerciseDialog después de crear un ejercicio
-                  await _loadAvailableExercises(); // Recarga la lista de todos los ejercicios
-                  setDialogState(() {}); // Refresca la UI de ExerciseOverlay
+                  await _loadAvailableExercises();
+                  setDialogState(() {});
                   if (mounted) {
                     ScaffoldMessenger.of(sbfContext).showSnackBar(
-                      SnackBar(content: Text("Ejercicio '${newExerciseMap['name']}' creado.")),
+                      SnackBar(
+                          content:
+                          Text("Ejercicio '${newExerciseMap['name']}' creado.")),
                     );
                   }
                 },
                 onExerciseChecked: (exercise) {
                   _onExerciseCheckedInOverlay(exercise);
-                  setDialogState(() {}); // Actualiza los checkboxes en el diálogo
+                  setDialogState(() {});
                 },
                 onExerciseUnchecked: (exercise) {
                   _onExerciseUncheckedInOverlay(exercise);
-                  setDialogState(() {}); // Actualiza los checkboxes en el diálogo
+                  setDialogState(() {});
                 },
               ),
             );
@@ -193,12 +194,6 @@ class _TrainingScreenState extends State<TrainingScreen> {
     );
   }
 
-  // --- Métodos para manejo del entrenamiento (guardar, editar título, etc.) ---
-  // Estos métodos se mantienen como estaban en tu última versión completa,
-  // ya que parecían funcionar bien y no estaban directamente relacionados
-  // con los problemas de nombres o la ventana vacía del overlay.
-  // Se incluyen aquí para que el archivo esté completo.
-
   Future<bool> _onWillPop() async {
     final result = await showDialog<bool>(
       context: context,
@@ -206,24 +201,30 @@ class _TrainingScreenState extends State<TrainingScreen> {
         title: Text("Cancelar Entrenamiento"),
         content: Text("¿Seguro? Se perderán los datos no guardados."),
         actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text("No")),
-          TextButton(onPressed: () => Navigator.of(context).pop(true), child: Text("Sí")),
+          TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text("No")),
+          TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text("Sí")),
         ],
       ),
     );
     return result ?? false;
   }
 
-  Future<void> _saveTemplate(String name, List<Map<String, dynamic>> exercisesToSave) async {
+  Future<void> _saveTemplate(
+      String name, List<Map<String, dynamic>> exercisesToSave) async {
     final db = DatabaseHelper.instance;
     final templateId = await db.insertTemplate(name);
     final exercisesForTemplateDb = exercisesToSave.map((ex) {
       return {
         'template_id': templateId,
         'name': ex['name'],
-        'exercise_name': ex['name'], // Por compatibilidad o si usas ambos
+        'exercise_name': ex['name'],
         'image': ex['image'],
-        'category_id': ex['category_id'], // Asegúrate que este ID exista si lo usas
+        'category_id': ex['category_id'],
+        'description': ex['description'],
       };
     }).toList();
     await db.insertTemplateExercises(templateId, exercisesForTemplateDb);
@@ -234,13 +235,14 @@ class _TrainingScreenState extends State<TrainingScreen> {
     }
   }
 
+  // CORRECCIÓN 1: Añadido el parámetro onExerciseDefinitionChanged
   void _openExerciseDataDialog(Map<String, dynamic> exercise, int index) {
     final db = DatabaseHelper.instance;
     showDialog(
       context: context,
       builder: (context) {
         return FutureBuilder<Map<String, dynamic>?>(
-          future: db.getLastExerciseLog(exercise['name']?.toString() ?? ''), // Manejo de nombre nulo
+          future: db.getLastExerciseLog(exercise['name']?.toString() ?? ''),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(child: CircularProgressIndicator());
@@ -253,6 +255,28 @@ class _TrainingScreenState extends State<TrainingScreen> {
                   setState(() {
                     selectedExercises[index] = updatedExercise;
                   });
+                }
+              },
+              onExerciseDefinitionChanged: () async {
+                debugPrint(
+                    "TrainingScreen: Definición de ejercicio cambiada. Recargando availableExercises...");
+                await _loadAvailableExercises();
+                if (mounted) {
+                  // Actualizar el ejercicio en selectedExercises si el nombre ha cambiado
+                  final String oldName = exercise['name'];
+                  final updatedExerciseDefinition = availableExercises.firstWhere(
+                        (ex) => ex['id'] == exercise['id'] && ex['isManual'] == true,
+                    orElse: () => selectedExercises[index], // Mantener el actual si no se encuentra (poco probable)
+                  );
+
+                  if (selectedExercises[index]['name'] != updatedExerciseDefinition['name']) {
+                    debugPrint("Nombre cambiado de '$oldName' a '${updatedExerciseDefinition['name']}'. Actualizando selectedExercises.");
+                    selectedExercises[index]['name'] = updatedExerciseDefinition['name'];
+                    selectedExercises[index]['description'] = updatedExerciseDefinition['description'];
+                    selectedExercises[index]['image'] = updatedExerciseDefinition['image'];
+                    selectedExercises[index]['category'] = updatedExerciseDefinition['category'];
+                  }
+                  setState(() {});
                 }
               },
             );
@@ -272,19 +296,25 @@ class _TrainingScreenState extends State<TrainingScreen> {
           controller: controller,
           decoration: InputDecoration(labelText: "Título"),
           autofocus: true,
-          onSubmitted: (newTitle) { // Guardar al presionar Enter en el teclado
+          onSubmitted: (newTitle) {
             if (mounted && newTitle.trim().isNotEmpty) {
-              setState(() { trainingTitle = newTitle.trim(); });
+              setState(() {
+                trainingTitle = newTitle.trim();
+              });
             }
             Navigator.of(context).pop();
           },
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(), child: Text("Cancelar")),
+          TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text("Cancelar")),
           TextButton(
             onPressed: () {
               if (mounted && controller.text.trim().isNotEmpty) {
-                setState(() { trainingTitle = controller.text.trim(); });
+                setState(() {
+                  trainingTitle = controller.text.trim();
+                });
               }
               Navigator.of(context).pop();
             },
@@ -298,7 +328,9 @@ class _TrainingScreenState extends State<TrainingScreen> {
   void _confirmFinishTraining() async {
     if (selectedExercises.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Añade al menos un ejercicio para terminar el entrenamiento.")),
+        SnackBar(
+            content: Text(
+                "Añade al menos un ejercicio para terminar el entrenamiento.")),
       );
       return;
     }
@@ -308,8 +340,12 @@ class _TrainingScreenState extends State<TrainingScreen> {
         title: Text("Terminar Entrenamiento"),
         content: Text("¿Guardar y terminar el entrenamiento actual?"),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: Text("No")),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: Text("Sí, Guardar")),
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text("No")),
+          TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text("Sí, Guardar")),
         ],
       ),
     );
@@ -322,19 +358,24 @@ class _TrainingScreenState extends State<TrainingScreen> {
             'exercise_name': exercise['name'],
             'dateTime': now,
             'series': exercise['series']?.toString() ?? '',
-            'reps': (exercise['reps'] is List) ? (exercise['reps'] as List).join(',') : (exercise['reps']?.toString() ?? ''),
+            'reps': (exercise['reps'] is List)
+                ? (exercise['reps'] as List).join(',')
+                : (exercise['reps']?.toString() ?? ''),
             'weight': exercise['weight']?.toString() ?? '',
             'weightUnit': exercise['weightUnit']?.toString() ?? 'kg',
             'notes': exercise['notes']?.toString() ?? '',
           });
         }
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Entrenamiento guardado con éxito")));
-          Navigator.pop(context, true); // Vuelve a HomeScreen, indicando que algo se guardó
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Entrenamiento guardado con éxito")));
+          Navigator.pop(context, true);
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error al guardar entrenamiento: $e"), backgroundColor: Colors.red));
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text("Error al guardar entrenamiento: $e"),
+              backgroundColor: Colors.red));
         }
       }
     }
@@ -343,7 +384,9 @@ class _TrainingScreenState extends State<TrainingScreen> {
   void _confirmSaveTemplate() async {
     if (selectedExercises.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Añade ejercicios al entrenamiento para guardarlo como plantilla.")),
+        SnackBar(
+            content: Text(
+                "Añade ejercicios al entrenamiento para guardarlo como plantilla.")),
       );
       return;
     }
@@ -358,14 +401,17 @@ class _TrainingScreenState extends State<TrainingScreen> {
           autofocus: true,
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text("Cancelar")),
+          TextButton(
+              onPressed: () => Navigator.pop(context), child: Text("Cancelar")),
           TextButton(
             onPressed: () {
               if (nameController.text.trim().isNotEmpty) {
                 Navigator.pop(context, nameController.text.trim());
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("El nombre de la plantilla no puede estar vacío.")),
+                  SnackBar(
+                      content:
+                      Text("El nombre de la plantilla no puede estar vacío.")),
                 );
               }
             },
@@ -376,23 +422,22 @@ class _TrainingScreenState extends State<TrainingScreen> {
     );
     if (result != null && result.isNotEmpty) {
       await _saveTemplate(result, selectedExercises);
-      // Considera si quieres volver a HomeScreen después de guardar plantilla.
-      // Navigator.pop(context, true); // 'true' podría indicar a HomeScreen que recargue plantillas.
     }
   }
 
-  void _confirmCancelTraining() { // Confirmación para el botón "Cancelar" del AppBar
+  void _confirmCancelTraining() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text("Cancelar Entrenamiento"),
         content: Text("¿Seguro? Se perderán los datos agregados."),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text("No")), // Cierra solo el diálogo
+          TextButton(
+              onPressed: () => Navigator.pop(context), child: Text("No")),
           TextButton(
             onPressed: () {
-              Navigator.pop(context); // Cierra el diálogo de confirmación
-              Navigator.pop(context); // Cierra la pantalla de TrainingScreen
+              Navigator.pop(context);
+              Navigator.pop(context);
             },
             child: Text("Sí, Salir"),
           ),
@@ -404,21 +449,21 @@ class _TrainingScreenState extends State<TrainingScreen> {
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-      onWillPop: _onWillPop, // Maneja el botón de retroceso del dispositivo
+      onWillPop: _onWillPop,
       child: Scaffold(
         appBar: AppBar(
           title: Text("Entrenamiento"),
           leading: IconButton(
             icon: Icon(Icons.arrow_back),
             onPressed: () async {
-              if (await _onWillPop()) { // Confirma antes de salir
+              if (await _onWillPop()) {
                 Navigator.pop(context);
               }
             },
           ),
           actions: [
             TextButton(
-              onPressed: _confirmCancelTraining, // Botón de cancelar en AppBar
+              onPressed: _confirmCancelTraining,
               child: Text("Cancelar", style: TextStyle(color: Colors.white)),
             ),
           ],
@@ -429,32 +474,51 @@ class _TrainingScreenState extends State<TrainingScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Row(children: [
-                Expanded(child: Text(trainingTitle, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
+                Expanded(
+                    child: Text(trainingTitle,
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold))),
                 IconButton(icon: Icon(Icons.edit), onPressed: _editTrainingTitle)
               ]),
               SizedBox(height: 10),
               Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
-                Expanded(child: ElevatedButton.icon(icon: Icon(Icons.add), onPressed: _openExerciseOverlay, label: Text("Añadir"))),
+                Expanded(
+                    child: ElevatedButton.icon(
+                        icon: Icon(Icons.add),
+                        onPressed: _openExerciseOverlay,
+                        label: Text("Añadir"))),
                 SizedBox(width: 10),
-                Expanded(child: ElevatedButton.icon(icon: Icon(Icons.save_alt), onPressed: _confirmSaveTemplate, label: Text("Plantilla"), style: ElevatedButton.styleFrom(backgroundColor: Colors.blueAccent))),
+                Expanded(
+                    child: ElevatedButton.icon(
+                        icon: Icon(Icons.save_alt),
+                        onPressed: _confirmSaveTemplate,
+                        label: Text("Plantilla"),
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blueAccent))),
               ]),
               SizedBox(height: 10),
               if (selectedExercises.isEmpty)
-                Expanded(child: Center(child: Text("Añade ejercicios a tu entrenamiento.", style: TextStyle(fontSize: 16, color: Colors.grey))))
+                Expanded(
+                    child: Center(
+                        child: Text("Añade ejercicios a tu entrenamiento.",
+                            style:
+                            TextStyle(fontSize: 16, color: Colors.grey))))
               else
                 Expanded(
                   child: ListView.builder(
                     itemCount: selectedExercises.length,
                     itemBuilder: (context, index) {
                       final exercise = selectedExercises[index];
-                      final exerciseName = exercise['name']?.toString() ?? "Ejercicio";
+                      final exerciseName =
+                          exercise['name']?.toString() ?? "Ejercicio";
                       return Card(
                         margin: const EdgeInsets.symmetric(vertical: 4.0),
                         child: Dismissible(
-                          key: UniqueKey(), // Clave única para cada elemento
+                          key: UniqueKey(),
                           direction: DismissDirection.endToStart,
                           background: Container(
-                            color: Colors.red.shade400, alignment: Alignment.centerRight,
+                            color: Colors.red.shade400,
+                            alignment: Alignment.centerRight,
                             padding: EdgeInsets.symmetric(horizontal: 20),
                             child: Icon(Icons.delete_sweep, color: Colors.white),
                           ),
@@ -463,30 +527,44 @@ class _TrainingScreenState extends State<TrainingScreen> {
                               context: context,
                               builder: (ctx) => AlertDialog(
                                 title: Text("Quitar Ejercicio"),
-                                content: Text("¿Quitar '$exerciseName' del entrenamiento?"),
+                                content: Text(
+                                    "¿Quitar '$exerciseName' del entrenamiento?"),
                                 actions: [
-                                  TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text("No")),
-                                  TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text("Sí, Quitar"), style: TextButton.styleFrom(foregroundColor: Colors.red)),
+                                  TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(ctx, false),
+                                      child: Text("No")),
+                                  TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(ctx, true),
+                                      child: Text("Sí, Quitar"),
+                                      style: TextButton.styleFrom(
+                                          foregroundColor: Colors.red)),
                                 ],
                               ),
-                            ) ?? false; // Si el diálogo se cierra sin seleccionar, devuelve false
+                            ) ??
+                                false;
                           },
                           onDismissed: (direction) {
                             if (mounted) {
-                              _removeExerciseFromTraining(index); // Usa la función centralizada
+                              _removeExerciseFromTraining(index);
                             }
                           },
                           child: ListTile(
-                            title: Text(exerciseName, style: TextStyle(fontWeight: FontWeight.bold)),
+                            title: Text(exerciseName,
+                                style: TextStyle(fontWeight: FontWeight.bold)),
                             subtitle: Text(
                               'Series: ${exercise['series']?.toString() ?? "-"} | Peso: ${exercise['weight']?.toString() ?? "-"} ${exercise['weightUnit']?.toString() ?? "kg"} | Reps: ${(exercise['reps'] as List?)?.join(", ") ?? "-"}',
                               overflow: TextOverflow.ellipsis,
                             ),
                             trailing: IconButton(
-                              icon: Icon(Icons.edit_note, color: Theme.of(context).primaryColor),
-                              onPressed: () => _openExerciseDataDialog(exercise, index),
+                              icon: Icon(Icons.edit_note,
+                                  color: Theme.of(context).primaryColor),
+                              onPressed: () =>
+                                  _openExerciseDataDialog(exercise, index),
                             ),
-                            onTap: () => _openExerciseDataDialog(exercise, index), // También abre al tocar
+                            onTap: () =>
+                                _openExerciseDataDialog(exercise, index),
                           ),
                         ),
                       );
@@ -499,7 +577,8 @@ class _TrainingScreenState extends State<TrainingScreen> {
                 onPressed: _confirmFinishTraining,
                 label: Text("Terminar y Guardar Entrenamiento"),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green.shade600, foregroundColor: Colors.white,
+                  backgroundColor: Colors.green.shade600,
+                  foregroundColor: Colors.white,
                   padding: EdgeInsets.symmetric(vertical: 12),
                 ),
               ),
@@ -545,8 +624,9 @@ class _ExerciseOverlayState extends State<ExerciseOverlay> {
     super.initState();
     exercises = List.from(widget.availableExercises);
     if (exercises.isEmpty) {
-      debugPrint("ExerciseOverlay initState: La lista inicial 'availableExercises' está vacía. Intentando refrescar...");
-      refreshExercises(); // Intenta cargar si la lista inicial está vacía
+      debugPrint(
+          "ExerciseOverlay initState: La lista inicial 'availableExercises' está vacía. Intentando refrescar...");
+      refreshExercises();
     }
   }
 
@@ -554,8 +634,11 @@ class _ExerciseOverlayState extends State<ExerciseOverlay> {
     debugPrint("ExerciseOverlay: Refrescando ejercicios...");
     final freshList = await widget.getAvailableExercises();
     if (mounted) {
-      setState(() { exercises = freshList; });
-      debugPrint("ExerciseOverlay refreshExercises: ${freshList.length} ejercicios cargados. Lista vacía: ${freshList.isEmpty}");
+      setState(() {
+        exercises = freshList;
+      });
+      debugPrint(
+          "ExerciseOverlay refreshExercises: ${freshList.length} ejercicios cargados. Lista vacía: ${freshList.isEmpty}");
     }
   }
 
@@ -564,131 +647,232 @@ class _ExerciseOverlayState extends State<ExerciseOverlay> {
     List<Map<String, dynamic>> filteredExercises = exercises.where((exercise) {
       final name = exercise['name']?.toString() ?? '';
       final nameMatch = name.toLowerCase().contains(searchQuery.toLowerCase());
-      final categoryOfExercise = exercise['category']?.toString() ?? exercise['muscle_group']?.toString() ?? '';
-      final categoryMatch = filterCategory.isEmpty || categoryOfExercise == filterCategory;
+      final categoryOfExercise =
+          exercise['category']?.toString() ?? exercise['muscle_group']?.toString() ?? '';
+      final categoryMatch =
+          filterCategory.isEmpty || categoryOfExercise == filterCategory;
       return nameMatch && categoryMatch;
     }).toList();
-    filteredExercises.sort((a, b) => (a['name']?.toString() ?? '').compareTo(b['name']?.toString() ?? ''));
+    filteredExercises.sort((a, b) =>
+        (a['name']?.toString() ?? '').compareTo(b['name']?.toString() ?? ''));
 
     return Container(
-      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.85),
+      constraints:
+      BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.85),
       padding: EdgeInsets.all(16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Expanded(child: TextField(decoration: InputDecoration(labelText: "Buscar ejercicio", prefixIcon: Icon(Icons.search)), onChanged: (value) => setState(() => searchQuery = value))),
-            IconButton(icon: Icon(Icons.close), onPressed: () => Navigator.pop(context))
+            Expanded(
+                child: TextField(
+                    decoration: InputDecoration(
+                        labelText: "Buscar ejercicio",
+                        prefixIcon: Icon(Icons.search)),
+                    onChanged: (value) =>
+                        setState(() => searchQuery = value))),
+            IconButton(
+                icon: Icon(Icons.close),
+                onPressed: () => Navigator.pop(context))
           ]),
-          Padding(padding: const EdgeInsets.symmetric(vertical: 8.0), child: Row(children: [
-            Text("Categoría: "), SizedBox(width: 10),
-            Expanded(child: DropdownButton<String>(
-              isExpanded: true, value: filterCategory.isEmpty ? null : filterCategory, hint: Text("Todas"),
-              items: <String>['', 'Pecho', 'Pierna', 'Espalda', 'Brazos', 'Cardio', 'Hombros', 'Abdomen', 'Otro']
-                  .map((cat) => DropdownMenuItem(value: cat, child: Text(cat.isEmpty ? "Todas" : cat))).toList(),
-              onChanged: (value) => setState(() => filterCategory = value ?? ''),
-            )),
-          ])),
-          Flexible(child: filteredExercises.isEmpty
-              ? Center(child: Padding(padding: const EdgeInsets.all(16.0), child: Text(exercises.isEmpty ? "Cargando o no hay ejercicios..." : "No se encontraron ejercicios.", textAlign: TextAlign.center)))
-              : ListView.builder(
-            shrinkWrap: true, itemCount: filteredExercises.length,
-            itemBuilder: (context, index) {
+          Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Row(children: [
+                Text("Categoría: "),
+                SizedBox(width: 10),
+                Expanded(
+                    child: DropdownButton<String>(
+                      isExpanded: true,
+                      value: filterCategory.isEmpty ? null : filterCategory,
+                      hint: Text("Todas"),
+                      items: <String>[
+                        '', 'Pecho', 'Pierna', 'Espalda', 'Brazos', 'Cardio', 'Hombros', 'Abdomen', 'Otro'
+                      ]
+                          .map((cat) => DropdownMenuItem(
+                          value: cat, child: Text(cat.isEmpty ? "Todas" : cat)))
+                          .toList(),
+                      onChanged: (value) =>
+                          setState(() => filterCategory = value ?? ''),
+                    )),
+              ])),
+          Flexible(
+              child: filteredExercises.isEmpty
+                  ? Center(
+                  child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                          exercises.isEmpty
+                              ? "Cargando o no hay ejercicios..."
+                              : "No se encontraron ejercicios.",
+                          textAlign: TextAlign.center)))
+                  : ListView.builder(
+                shrinkWrap: true,
+                itemCount: filteredExercises.length,
+                itemBuilder: (context, index) {
+                  final exercise = filteredExercises[index];
+                  final bool isSelected = widget
+                      .selectedExercisesForCheckboxes
+                      .any((selectedEx) =>
+                  selectedEx['name'] == exercise['name']);
+                  final String? exerciseImage =
+                  exercise['image'] as String?;
+                  final String exerciseName =
+                      exercise['name']?.toString() ?? "Ejercicio sin nombre";
 
-              final exercise = filteredExercises[index];
+                  List<Widget> trailingItems = [];
 
-              final bool isSelected = widget.selectedExercisesForCheckboxes.any((selectedEx) => selectedEx['name'] == exercise['name']);
-              final String? exerciseImage = exercise['image'] as String?; //
-              final String exerciseName = exercise['name']?.toString() ?? "Ejercicio sin nombre";
+                  if (exercise['isManual'] == true) {
+                    trailingItems.add(SizedBox(
+                        width: iconButtonWidth,
+                        child: IconButton(
+                          padding: EdgeInsets.zero,
+                          icon: Icon(Icons.delete_forever,
+                              color: Colors.red.shade700),
+                          tooltip: "Borrar permanentemente",
+                          onPressed: () async {
+                            final String exerciseNameForDialog =
+                                exercise['name']?.toString() ??
+                                    'Ejercicio sin nombre';
+                            final confirmed =
+                            await showDialog<bool>(
+                                context: context,
+                                builder: (ctx) => AlertDialog(
+                                  title: Text("¿Borrar Ejercicio?"),
+                                  content: Text(
+                                      "'$exerciseNameForDialog' se eliminará permanentemente."),
+                                  actions: [
+                                    TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(
+                                                ctx, false),
+                                        child: Text("Cancelar")),
+                                    TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(
+                                                ctx, true),
+                                        child: Text("Borrar"),
+                                        style: TextButton.styleFrom(
+                                            foregroundColor:
+                                            Colors.red))
+                                  ],
+                                ));
+                            if (confirmed == true) {
+                              bool wasSelected = widget
+                                  .selectedExercisesForCheckboxes
+                                  .any((ex) =>
+                              ex['name'] == exercise['name']);
+                              await DatabaseHelper.instance
+                                  .deleteCategory(exercise['id']);
+                              if (wasSelected)
+                                widget.onExerciseUnchecked(exercise);
+                              await refreshExercises();
+                              if (mounted)
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(SnackBar(
+                                    content: Text(
+                                        "Ejercicio '$exerciseNameForDialog' eliminado.")));
+                            }
+                          },
+                        )));
+                  } else {
+                    trailingItems.add(SizedBox(width: iconButtonWidth));
+                  }
+                  trailingItems.add(Checkbox(
+                      value: isSelected,
+                      onChanged: (bool? newValue) {
+                        if (newValue == true)
+                          widget.onExerciseChecked(exercise);
+                        else
+                          widget.onExerciseUnchecked(exercise);
+                      }));
 
-              List<Widget> trailingItems = [];
-
-              if (exercise['isManual'] == true) {
-                trailingItems.add(SizedBox(width: iconButtonWidth, child: IconButton(
-                  padding: EdgeInsets.zero, icon: Icon(Icons.delete_forever, color: Colors.red.shade700), tooltip: "Borrar permanentemente",
-                  onPressed: () async {
-                    final String exerciseNameForDialog = exercise['name']?.toString() ?? 'Ejercicio sin nombre';
-                    final confirmed = await showDialog<bool>(context: context, builder: (ctx) => AlertDialog(
-                      title: Text("¿Borrar Ejercicio?"), content: Text("'$exerciseNameForDialog' se eliminará permanentemente."),
-                      actions: [ TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text("Cancelar")), TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text("Borrar"), style: TextButton.styleFrom(foregroundColor: Colors.red))],
-                    ));
-                    if (confirmed == true) {
-                      bool wasSelected = widget.selectedExercisesForCheckboxes.any((ex) => ex['name'] == exercise['name']);
-                      await DatabaseHelper.instance.deleteCategory(exercise['id']);
-                      if (wasSelected) widget.onExerciseUnchecked(exercise);
-                      await refreshExercises();
-                      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Ejercicio '$exerciseNameForDialog' eliminado.")));
-                    }
-                  },
-                )));
-              } else { trailingItems.add(SizedBox(width: iconButtonWidth)); }
-              trailingItems.add(Checkbox(value: isSelected, onChanged: (bool? newValue) {
-                if (newValue == true) widget.onExerciseChecked(exercise); else widget.onExerciseUnchecked(exercise);
-              }));
-
-
-              return Card(
-                margin: EdgeInsets.symmetric(vertical: 4.0),
-                child: ListTile(
-                  leading: Container( // Contenedor para un tamaño fijo y borde redondeado
-                    width: 50, // Ajusta el tamaño según necesites
-                    height: 50,
-                    clipBehavior: Clip.antiAlias, // Para que el borde redondeado afecte a la imagen
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200], // Color de fondo si no hay imagen o mientras carga
-                      borderRadius: BorderRadius.circular(8.0),
+                  return Card(
+                    margin: EdgeInsets.symmetric(vertical: 4.0),
+                    child: ListTile(
+                      leading: Container(
+                        width: 50,
+                        height: 50,
+                        clipBehavior: Clip.antiAlias,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                        child: (exerciseImage != null &&
+                            exerciseImage.isNotEmpty)
+                            ? (exerciseImage.startsWith('assets/'))
+                            ? Image.asset(
+                          exerciseImage,
+                          fit: BoxFit.cover,
+                          errorBuilder:
+                              (context, error, stackTrace) =>
+                              Icon(Icons.fitness_center,
+                                  color: Colors.grey[400],
+                                  size: 30),
+                        )
+                            : Image.file(
+                          File(exerciseImage),
+                          fit: BoxFit.cover,
+                          errorBuilder:
+                              (context, error, stackTrace) =>
+                              Icon(Icons.broken_image,
+                                  color: Colors.grey[400],
+                                  size: 30),
+                        )
+                            : Icon(Icons.fitness_center,
+                            color: Colors.grey[400], size: 30),
+                      ),
+                      title: Text(exerciseName),
+                      trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: trailingItems),
+                      onTap: () {
+                        if (isSelected) {
+                          widget.onExerciseUnchecked(exercise);
+                        } else {
+                          widget.onExerciseChecked(exercise);
+                        }
+                      },
                     ),
-                    child: (exerciseImage != null && exerciseImage.isNotEmpty)
-                        ? (exerciseImage.startsWith('assets/'))
-                        ? Image.asset( // Imagen desde assets
-                      exerciseImage,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) =>
-                          Icon(Icons.fitness_center, color: Colors.grey[400], size: 30),
-                    )
-                        : Image.file( // Imagen desde archivo local
-                      File(exerciseImage),
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) =>
-                          Icon(Icons.broken_image, color: Colors.grey[400], size: 30),
-                    )
-                        : Icon(Icons.fitness_center, color: Colors.grey[400], size: 30), // Placeholder si no hay imagen
-                  ),
-                  title: Text(exerciseName),
-                  trailing: Row(mainAxisSize: MainAxisSize.min, children: trailingItems),
-                  onTap: () {
-                    if (isSelected) {
-                      widget.onExerciseUnchecked(exercise);
-                    } else {
-                      widget.onExerciseChecked(exercise);
-                    }
-                  },
-                ),
-              );
-
-
-            },
-          )),
-          Padding(padding: const EdgeInsets.only(top: 8.0), child: ElevatedButton.icon(
-            icon: Icon(Icons.add_circle_outline), label: Text('Crear Nuevo Ejercicio Manual'),
-            style: ElevatedButton.styleFrom(minimumSize: Size(double.infinity, 40)),
-            onPressed: () async {
-              await showDialog(context: context, barrierDismissible: false, builder: (dialogCtx) => NewExerciseDialog(
-                onExerciseCreated: (newExerciseData) { widget.onNewExercise(newExerciseData); },
-              ));
-              await refreshExercises(); // Siempre refresca después de cerrar el diálogo de creación
-            },
-          )),
+                  );
+                },
+              )),
+          Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: ElevatedButton.icon(
+                icon: Icon(Icons.add_circle_outline),
+                label: Text('Crear Nuevo Ejercicio Manual'),
+                style:
+                ElevatedButton.styleFrom(minimumSize: Size(double.infinity, 40)),
+                onPressed: () async {
+                  await showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (dialogCtx) => NewExerciseDialog(
+                        // onExerciseCreated se pasa aquí
+                        onExerciseCreated: (newExerciseData) {
+                          widget.onNewExercise(newExerciseData);
+                        },
+                        // exerciseToEdit es opcional, no se pasa para "Crear Nuevo"
+                      ));
+                  await refreshExercises();
+                },
+              )),
         ],
       ),
     );
   }
 }
 
-// ----------- NewExerciseDialog Widget -----------
+// ----------- NewExerciseDialog Widget (ÚNICA DEFINICIÓN - MÁS COMPLETA)-----------
 class NewExerciseDialog extends StatefulWidget {
-  final Function(Map<String, dynamic> newExerciseData) onExerciseCreated;
-  const NewExerciseDialog({Key? key, required this.onExerciseCreated}) : super(key: key);
+  final Function(Map<String, dynamic> newExerciseData)? onExerciseCreated;
+  final Map<String, dynamic>? exerciseToEdit; // Para modo edición
+
+  const NewExerciseDialog({
+    Key? key,
+    this.onExerciseCreated,
+    this.exerciseToEdit,
+  }) : super(key: key);
 
   @override
   _NewExerciseDialogState createState() => _NewExerciseDialogState();
@@ -699,137 +883,127 @@ class _NewExerciseDialogState extends State<NewExerciseDialog> {
   TextEditingController nameController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
   String? selectedMuscleGroup;
-  File? _imageFile; // Para almacenar el archivo de imagen seleccionado
+  File? _imageFile;
   final ImagePicker _picker = ImagePicker();
+  bool _imageWasRemovedOrReplaced = false;
+  String? _initialImagePathPreview;
 
-  final List<String> muscleGroups = ['Pecho', 'Pierna', 'Espalda', 'Brazos', 'Hombros', 'Abdomen', 'Cardio', 'Otro'];
-  // Dentro de _NewExerciseDialogState en training_screen.dart
+  final List<String> muscleGroups = [
+    'Pecho', 'Pierna', 'Espalda', 'Brazos', 'Hombros', 'Abdomen', 'Cardio', 'Otro'
+  ];
+
+  bool get isEditMode => widget.exerciseToEdit != null;
+
+  @override
+  void initState() {
+    super.initState();
+    if (isEditMode && widget.exerciseToEdit != null) {
+      nameController.text = widget.exerciseToEdit!['name'] ?? '';
+      descriptionController.text =
+          widget.exerciseToEdit!['description'] ?? '';
+      selectedMuscleGroup = widget.exerciseToEdit!['muscle_group'] ??
+          widget.exerciseToEdit!['category'];
+
+      final String? imagePath = widget.exerciseToEdit!['image'];
+      if (imagePath != null && imagePath.isNotEmpty) {
+        _initialImagePathPreview = imagePath;
+        if (!imagePath.startsWith('assets/')) {
+          _imageFile = File(imagePath); // Intenta cargar si es un archivo local
+        }
+      }
+    }
+  }
 
   Future<void> _pickImage(ImageSource source) async {
-    debugPrint(" Iniciando _pickImage con fuente: $source"); // LOG 1
-
+    debugPrint(" Iniciando _pickImage con fuente: $source");
     Map<Permission, PermissionStatus> statuses;
-
     if (source == ImageSource.camera) {
-      debugPrint(" Solicitando permiso de CAMARA..."); // LOG 2
+      debugPrint(" Solicitando permiso de CAMARA...");
       statuses = await [Permission.camera].request();
-      debugPrint(" Estado del permiso de CAMARA: $statuses"); // LOG 3
-    } else { // Galería
+      debugPrint(" Estado del permiso de CAMARA: $statuses");
+    } else {
       int? sdkVersion = await _getAndroidSDKVersion();
-      debugPrint(" Versión SDK de Android obtenida: $sdkVersion"); // LOG 4
-
+      debugPrint(" Versión SDK de Android obtenida: $sdkVersion");
       if (Platform.isAndroid) {
-        if (sdkVersion != null && sdkVersion >= 33) { // Android 13 (API 33) o superior
-          debugPrint(" Solicitando Permission.photos (Android 13+)..."); // LOG 5
+        if (sdkVersion != null && sdkVersion >= 33) {
+          debugPrint(" Solicitando Permission.photos (Android 13+)...");
           statuses = await [Permission.photos].request();
-          debugPrint(" Estado de Permission.photos: $statuses"); // LOG 6
-        } else { // Android inferior a 13
-          debugPrint(" Solicitando Permission.storage (Android < 13)..."); // LOG 7
+          debugPrint(" Estado de Permission.photos: $statuses");
+        } else {
+          debugPrint(" Solicitando Permission.storage (Android < 13)...");
           statuses = await [Permission.storage].request();
-          debugPrint(" Estado de Permission.storage: $statuses"); // LOG 8
+          debugPrint(" Estado de Permission.storage: $statuses");
         }
-      } else { // No es Android (iOS u otros)
-        debugPrint(" Solicitando Permission.photos (iOS u otra plataforma)..."); // LOG 9
-        statuses = await [Permission.photos].request(); // Para iOS, Permission.photos es común
-        debugPrint(" Estado de Permission.photos (iOS u otra): $statuses"); // LOG 10
+      } else {
+        debugPrint(" Solicitando Permission.photos (iOS u otra plataforma)...");
+        statuses = await [Permission.photos].request();
+        debugPrint(" Estado de Permission.photos (iOS u otra): $statuses");
       }
     }
 
     bool permissionsGranted = true;
     statuses.forEach((permission, permissionStatus) async {
-      debugPrint(" Procesando permiso: $permission, Estado: $permissionStatus"); // LOG 11
+      debugPrint(" Procesando permiso: $permission, Estado: $permissionStatus");
       if (permissionStatus.isPermanentlyDenied) {
         debugPrint(" ¡ALERTA! Permiso $permission DENEGADO PERMANENTEMENTE.");
-        if (mounted) { // Asegúrate que el widget esté montado
+        if (mounted) {
           await showDialog(
-          context: context,
-          builder: (BuildContext context) => AlertDialog(
-            title: Text("Permiso Requerido"),
-            content: Text("Esta función requiere permisos que fueron denegados permanentemente. Por favor, habilítalos en la configuración de la aplicación."),
-            actions: <Widget>[
-              TextButton(
-                child: Text("Cancelar"),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-              TextButton(
-                child: Text("Abrir Configuración"),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  openAppSettings(); // Abre la configuración de la app
-                },
-              ),
-            ],
-          ),
+            context: context, // Usar el context del _NewExerciseDialogState
+            builder: (BuildContext dialogContext) => AlertDialog( // Renombrar a dialogContext
+              title: Text("Permiso Requerido"),
+              content: Text(
+                  "Esta función requiere permisos que fueron denegados permanentemente. Por favor, habilítalos en la configuración de la aplicación."),
+              actions: <Widget>[
+                TextButton(
+                  child: Text("Cancelar"),
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                ),
+                TextButton(
+                  child: Text("Abrir Configuración"),
+                  onPressed: () {
+                    Navigator.of(dialogContext).pop();
+                    openAppSettings();
+                  },
+                ),
+              ],
+            ),
           );
         }
+        permissionsGranted = false; // Marcar como no concedido si está permanentemente denegado
+      } else if (!permissionStatus.isGranted) {
+        permissionsGranted = false;
       }
-    }
-    );
+    });
 
-    for (var entry in statuses.entries) {
-      final permission = entry.key;
-      final permissionStatus = entry.value;
-      debugPrint(" Procesando permiso: $permission, Estado: $permissionStatus"); // LOG 11 (se mantiene)
-
-      if (!permissionStatus.isGranted) {
-        permissionsGranted = false; // Si CUALQUIER permiso no está concedido, marcamos como false
-
-        if (permissionStatus.isPermanentlyDenied) {
-          debugPrint(" ¡ALERTA! Permiso $permission DENEGADO PERMANENTEMENTE."); // LOG 12 (se mantiene)
-          if (mounted) {
-            // Mostramos un diálogo para guiar al usuario a la configuración de la app
-            await showDialog(
-              context: context,
-              builder: (BuildContext dialogContext) => AlertDialog( // Usar dialogContext aquí
-                title: Text("Permiso Requerido"),
-                content: Text("Esta función requiere permisos que fueron denegados permanentemente. Por favor, habilítalos en la configuración de la aplicación."),
-                actions: <Widget>[
-                  TextButton(
-                    child: Text("Cancelar"),
-                    onPressed: () => Navigator.of(dialogContext).pop(),
-                  ),
-                  TextButton(
-                    child: Text("Abrir Configuración"),
-                    onPressed: () {
-                      Navigator.of(dialogContext).pop();
-                      openAppSettings(); // Función de permission_handler
-                    },
-                  ),
-                ],
-              ),
-            );
-          }
-          // Importante: Si un permiso está denegado permanentemente, salimos temprano
-          // ya que permissionsGranted será false y el return de abajo se encargará.
-        }
-      }
-    }
     if (!permissionsGranted) {
-      debugPrint(" Permisos NO concedidos. Mostrando SnackBar."); // LOG 13 (se mantiene)
+      debugPrint(" Permisos NO concedidos. Mostrando SnackBar.");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Se requieren permisos. Habilítalos en la configuración de la app.')),
+          SnackBar(
+              content: Text(
+                  'Se requieren permisos. Habilítalos en la configuración de la app.')),
         );
       }
-      return; // Salir de la función si los permisos no fueron concedidos
+      return;
     }
 
     debugPrint(" Permisos CONCEDIDOS. Procediendo a seleccionar imagen...");
-    debugPrint(" Permisos CONCEDIDOS. Procediendo a seleccionar imagen..."); // LOG 14
     try {
       final XFile? pickedFile = await _picker.pickImage(source: source);
       if (pickedFile != null) {
-        debugPrint(" Imagen seleccionada: ${pickedFile.path}"); // LOG 15
+        debugPrint(" Imagen seleccionada: ${pickedFile.path}");
         if (mounted) {
           setState(() {
             _imageFile = File(pickedFile.path);
+            _imageWasRemovedOrReplaced = true;
+            _initialImagePathPreview = null;
           });
         }
       } else {
-        debugPrint(" Selección de imagen cancelada o pickedFile es null."); // LOG 16
+        debugPrint(" Selección de imagen cancelada o pickedFile es null.");
       }
     } catch (e) {
-      debugPrint(" EXCEPCIÓN al seleccionar imagen: $e"); // LOG 17
+      debugPrint(" EXCEPCIÓN al seleccionar imagen: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error al seleccionar imagen: $e')),
@@ -837,150 +1011,250 @@ class _NewExerciseDialogState extends State<NewExerciseDialog> {
       }
     }
   }
+
   Future<int?> _getAndroidSDKVersion() async {
     if (Platform.isAndroid) {
       final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
       final AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-      debugPrint("Versión real del SDK de Android: ${androidInfo.version.sdkInt}");
+      debugPrint(
+          "Versión real del SDK de Android: ${androidInfo.version.sdkInt}");
       return androidInfo.version.sdkInt;
     }
-    return null; // Retorna null si no es Android
+    return null;
   }
+
   @override
   Widget build(BuildContext context) {
+    Widget imagePreviewWidget;
+    if (_imageFile != null) {
+      imagePreviewWidget = Image.file(
+        _imageFile!,
+        height: 100,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) => Container(
+            height: 100,
+            color: Colors.grey[200],
+            child: Center(
+                child: Text("Error al cargar preview",
+                    style: TextStyle(color: Colors.red)))),
+      );
+    } else if (_initialImagePathPreview != null &&
+        _initialImagePathPreview!.isNotEmpty) {
+      if (_initialImagePathPreview!.startsWith('assets/')) {
+        imagePreviewWidget = Image.asset(_initialImagePathPreview!,
+            height: 100, fit: BoxFit.contain);
+      } else {
+        imagePreviewWidget = Image.file(File(_initialImagePathPreview!),
+            height: 100,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) => Container(
+                height: 100,
+                color: Colors.grey[200],
+                child: Center(
+                    child: Icon(Icons.broken_image,
+                        color: Colors.grey[600], size: 40))));
+      }
+    } else {
+      imagePreviewWidget = Container(
+        height: 100,
+        decoration: BoxDecoration(
+            color: Colors.grey[200],
+            border: Border.all(color: Colors.grey),
+            borderRadius: BorderRadius.circular(8)),
+        child: Center(
+            child: Icon(Icons.image_not_supported,
+                color: Colors.grey[600], size: 40)),
+      );
+    }
     return Dialog(
       insetPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
-        child: Form(key: _formKey, child: SingleChildScrollView(child: Column(
-          mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              Text("Crear Nuevo Ejercicio", style: Theme.of(context).textTheme.titleLarge), // Usar titleLarge
-              IconButton(icon: Icon(Icons.close), onPressed: () => Navigator.pop(context))
-            ]),
-            SizedBox(height: 16),
-            TextFormField(controller: nameController, textCapitalization: TextCapitalization.sentences,
-              decoration: InputDecoration(labelText: "Nombre del ejercicio *", border: OutlineInputBorder(), hintText: "Ej: Press de Banca"),
-              validator: (value) => (value == null || value.trim().isEmpty) ? 'El nombre es requerido' : null,
-            ),
-            SizedBox(height: 12),
-            DropdownButtonFormField<String>(value: selectedMuscleGroup,
-              decoration: InputDecoration(labelText: "Grupo Muscular *", border: OutlineInputBorder()),
-              hint: Text("Selecciona un grupo"),
-              items: muscleGroups.map((group) => DropdownMenuItem(value: group, child: Text(group))).toList(),
-              onChanged: (value) => setState(() => selectedMuscleGroup = value),
-              validator: (value) => value == null ? 'Selecciona un grupo muscular' : null,
-            ),
-            SizedBox(height: 12),
-            TextFormField(controller: descriptionController, textCapitalization: TextCapitalization.sentences,
-              decoration: InputDecoration(labelText: "Descripción (opcional)", border: OutlineInputBorder(), hintText: "Ej: Movimiento principal..."),
-              maxLines: 3,
-            ),
-            SizedBox(height: 12),
+        child: Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              isEditMode
+                                  ? (widget.exerciseToEdit!['name'] ??
+                                  'Editar Ejercicio')
+                                  : "Crear Nuevo Ejercicio",
+                              style: Theme.of(context).textTheme.titleLarge,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          IconButton(
+                              icon: Icon(Icons.close),
+                              onPressed: () => Navigator.pop(context))
+                        ]),
+                    SizedBox(height: 16),
+                    TextFormField(
+                      controller: nameController,
+                      textCapitalization: TextCapitalization.sentences,
+                      decoration: InputDecoration(
+                          labelText: "Nombre del ejercicio *",
+                          border: OutlineInputBorder(),
+                          hintText: "Ej: Press de Banca"),
+                      validator: (value) => (value == null ||
+                          value.trim().isEmpty)
+                          ? 'El nombre es requerido'
+                          : null,
+                    ),
+                    SizedBox(height: 12),
+                    DropdownButtonFormField<String>(
+                      value: selectedMuscleGroup,
+                      decoration: InputDecoration(
+                          labelText: "Grupo Muscular *",
+                          border: OutlineInputBorder()),
+                      hint: Text("Selecciona un grupo"),
+                      items: muscleGroups
+                          .map((group) =>
+                          DropdownMenuItem(value: group, child: Text(group)))
+                          .toList(),
+                      onChanged: (value) =>
+                          setState(() => selectedMuscleGroup = value),
+                      validator: (value) =>
+                      value == null ? 'Selecciona un grupo muscular' : null,
+                    ),
+                    SizedBox(height: 12),
+                    TextFormField(
+                      controller: descriptionController,
+                      textCapitalization: TextCapitalization.sentences,
+                      decoration: InputDecoration(
+                          labelText: "Descripción (opcional)",
+                          border: OutlineInputBorder(),
+                          hintText: "Ej: Movimiento principal..."),
+                      maxLines: 3,
+                    ),
+                    SizedBox(height: 12),
+                    Text("Imagen del Ejercicio (opcional):",
+                        style: Theme.of(context).textTheme.titleSmall),
+                    SizedBox(height: 8),
+                    Center(child: imagePreviewWidget),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        TextButton.icon(
+                            icon: Icon(Icons.photo_library),
+                            label: Text("Galería"),
+                            onPressed: () => _pickImage(ImageSource.gallery)),
+                        TextButton.icon(
+                            icon: Icon(Icons.camera_alt),
+                            label: Text("Cámara"),
+                            onPressed: () => _pickImage(ImageSource.camera)),
+                      ],
+                    ),
+                    if (_imageFile != null ||
+                        (_initialImagePathPreview != null &&
+                            _initialImagePathPreview!.isNotEmpty))
+                      TextButton.icon(
+                        icon: Icon(Icons.delete_outline, color: Colors.red),
+                        label:
+                        Text("Quitar Imagen", style: TextStyle(color: Colors.red)),
+                        onPressed: () {
+                          setState(() {
+                            _imageFile = null;
+                            _initialImagePathPreview = null;
+                            _imageWasRemovedOrReplaced = true;
+                          });
+                        },
+                      ),
+                    SizedBox(height: 20),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          minimumSize: Size(double.infinity, 40)),
+                      onPressed: () async {
+                        if (_formKey.currentState!.validate()) {
+                          String trimmedName = nameController.text.trim();
+                          String? imagePathToSave;
+                          if (_imageFile != null) {
+                            imagePathToSave = _imageFile!.path;
+                          } else if (_imageWasRemovedOrReplaced) {
+                            imagePathToSave = null;
+                          } else if (isEditMode) {
+                            imagePathToSave = widget.exerciseToEdit!['image'];
+                          } else {
+                            imagePathToSave = null;
+                          }
 
-            Text("Imagen del Ejercicio (opcional):", style: Theme.of(context).textTheme.titleSmall),
-            SizedBox(height: 8),
-            if (_imageFile != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: Image.file(
-                  _imageFile!,
-                  // ... otros parámetros ...
-                  errorBuilder: (context, error, stackTrace) {
-                    debugPrint("Error al cargar la previsualización de Image.file: $error");
-                    // Programar para que _imageFile se anule después del ciclo de construcción actual
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (mounted) { // Asegura que el widget aún está montado
-                        setState(() {
-                          _imageFile = null; // Esto mostrará el placeholder en la siguiente reconstrucción
-                        });
-                      }
-                    });
-                    return Center(child: Text("Error al cargar la previsualización.", style: TextStyle(color: Colors.red)));
-                  },
-                ),
-              )
-            else
-              Container(
-                height: 100,
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Center(child: Icon(Icons.image_not_supported, color: Colors.grey[600], size: 40)),
-              ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                TextButton.icon(
-                  icon: Icon(Icons.photo_library),
-                  label: Text("Galería"),
-                  onPressed: () => _pickImage(ImageSource.gallery),
-                ),
-                TextButton.icon(
-                  icon: Icon(Icons.camera_alt),
-                  label: Text("Cámara"),
-                  onPressed: () => _pickImage(ImageSource.camera),
-                ),
-              ],
-            ),
-            if (_imageFile != null)
-              TextButton.icon(
-                icon: Icon(Icons.delete_outline, color: Colors.red),
-                label: Text("Quitar Imagen", style: TextStyle(color: Colors.red)),
-                onPressed: () {
-                  setState(() {
-                    _imageFile = null;
-                  });
-                },
-              ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(minimumSize: Size(double.infinity, 40)),
-              onPressed: () async {
-                if (_formKey.currentState!.validate()) {
-                  String trimmedName = nameController.text.trim();
-                  String? imagePathToSave = _imageFile?.path;
+                          Map<String, dynamic> exerciseDataForDb = {
+                            'name': trimmedName,
+                            'muscle_group': selectedMuscleGroup,
+                            'image': imagePathToSave,
+                            'description': descriptionController.text.trim(),
+                          };
 
-                  Map<String, dynamic> newExerciseDataForDb = {
-                    'name': trimmedName, 'muscle_group': selectedMuscleGroup,
-                    'image': imagePathToSave, 'description': descriptionController.text.trim(),
-                    'date': null, 'workout_id': null, 'category_id': null, 'weight': null,
-                    'weightUnit': null, 'reps': null, 'sets': null, 'notes': null, 'dateTime': null,
-                  };
-                  final id = await DatabaseHelper.instance.insertCategory(newExerciseDataForDb);
-                  Map<String, dynamic> exerciseForCallback = {
-                    ...newExerciseDataForDb, 'id': id, 'isManual': true,
-                    'category': selectedMuscleGroup,
-                  };
-                  widget.onExerciseCreated(exerciseForCallback);
-                  Navigator.pop(context);
-                }
-              },
-              child: Text("Confirmar y Guardar Ejercicio"),
-            ),
-          ],
-        ))),
+                          if (isEditMode) {
+                            final id = widget.exerciseToEdit!['id'];
+                            final String oldName = widget.exerciseToEdit!['name'];
+                            await DatabaseHelper.instance
+                                .updateCategory(id, exerciseDataForDb);
+                            if (trimmedName != oldName) {
+                              await DatabaseHelper.instance
+                                  .updateExerciseLogsName(oldName, trimmedName);
+                            }
+                            Navigator.pop(context, {
+                              'id': id,
+                              ...exerciseDataForDb,
+                              'category': selectedMuscleGroup,
+                              'isManual': widget.exerciseToEdit!['isManual'] ?? true,
+                            });
+                          } else {
+                            final id = await DatabaseHelper.instance
+                                .insertCategory(exerciseDataForDb);
+                            Map<String, dynamic> exerciseForCallback = {
+                              ...exerciseDataForDb,
+                              'id': id,
+                              'isManual': true,
+                              'category': selectedMuscleGroup,
+                            };
+                            if (widget.onExerciseCreated != null) {
+                              widget.onExerciseCreated!(exerciseForCallback);
+                            }
+                            Navigator.pop(context);
+                          }
+                        }
+                      },
+                      child: Text(isEditMode
+                          ? "Guardar Cambios"
+                          : "Confirmar y Guardar Ejercicio"),
+                    ),
+                  ],
+                ))),
       ),
     );
   }
 }
 
-// ----------- ExerciseDataDialog Widget -----------
+// ----------- ExerciseDataDialog Widget (ÚNICA DEFINICIÓN - MÁS COMPLETA) -----------
 class ExerciseDataDialog extends StatefulWidget {
   final Map<String, dynamic> exercise;
   final Map<String, dynamic>? lastLog;
   final Function(Map<String, dynamic> updatedExerciseData) onDataUpdated;
+  final VoidCallback onExerciseDefinitionChanged;
 
-  const ExerciseDataDialog({ Key? key, required this.exercise, this.lastLog, required this.onDataUpdated }) : super(key: key);
+  const ExerciseDataDialog({
+    Key? key,
+    required this.exercise,
+    this.lastLog,
+    required this.onDataUpdated,
+    required this.onExerciseDefinitionChanged,
+  }) : super(key: key);
 
   @override
   _ExerciseDataDialogState createState() => _ExerciseDataDialogState();
 }
 
-class _ExerciseDataDialogState extends State<ExerciseDataDialog> with SingleTickerProviderStateMixin {
+class _ExerciseDataDialogState extends State<ExerciseDataDialog>
+    with SingleTickerProviderStateMixin {
+  final _formKeyCurrentDataTab = GlobalKey<FormState>();
   late TabController _tabController;
   late TextEditingController seriesController;
   late TextEditingController weightController;
@@ -991,24 +1265,39 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog> with SingleTick
   late int seriesCountFromInput;
   String seriesWarningText = '';
 
+  late Map<String, dynamic> _currentExerciseData;
+
   @override
   void initState() {
     super.initState();
+    _currentExerciseData = Map<String, dynamic>.from(widget.exercise);
+
     _tabController = TabController(length: 3, vsync: this);
-    seriesController = TextEditingController(text: widget.exercise['series']?.toString() ?? '');
-    weightController = TextEditingController(text: widget.exercise['weight']?.toString() ?? '');
-    notesController = TextEditingController(text: widget.exercise['notes']?.toString() ?? '');
-    weightUnit = widget.exercise['weightUnit']?.toString() ?? 'kg';
+    seriesController = TextEditingController(
+        text: _currentExerciseData['series']?.toString() ??
+            widget.exercise['series']?.toString() ??
+            '');
+    weightController = TextEditingController(
+        text: _currentExerciseData['weight']?.toString() ??
+            widget.exercise['weight']?.toString() ??
+            '');
+    notesController = TextEditingController(
+        text: _currentExerciseData['notes']?.toString() ??
+            widget.exercise['notes']?.toString() ??
+            '');
+    weightUnit = _currentExerciseData['weightUnit']?.toString() ??
+        widget.exercise['weightUnit']?.toString() ??
+        'kg';
     seriesCountFromInput = int.tryParse(seriesController.text) ?? 0;
 
-    // Inicializa repControllers y repWarnings como listas vacías antes de llamar a _initializeRepControllersBasedOnSeriesCount
     repControllers = [];
     repWarnings = [];
-
     _initializeRepControllersBasedOnSeriesCount();
 
-    if (widget.exercise['reps'] is List) {
-      List<dynamic> repsList = widget.exercise['reps'];
+    if (_currentExerciseData['reps'] is List ||
+        widget.exercise['reps'] is List) {
+      List<dynamic> repsList =
+      (_currentExerciseData['reps'] ?? widget.exercise['reps']) as List;
       for (int i = 0; i < repControllers.length && i < repsList.length; i++) {
         repControllers[i].text = repsList[i]?.toString() ?? '';
       }
@@ -1016,251 +1305,383 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog> with SingleTick
   }
 
   void _initializeRepControllersBasedOnSeriesCount() {
-    int targetSeriesForRepFields = seriesCountFromInput; // Número de series que el usuario ingresó
-
-    // Aplicar lógica de advertencia y límite según tu especificación
+    int targetSeriesForRepFields = seriesCountFromInput;
     if (seriesCountFromInput > 4) {
-      seriesWarningText =
-      "Se recomienda menos de 4 series para no sobrentrenar"; // ADVISORY
-      targetSeriesForRepFields =
-      4; // Limita la cantidad de campos de repeticiones a 4
+      seriesWarningText = "Se recomienda menos de 4 series para no sobrentrenar";
+      targetSeriesForRepFields = 4;
     } else if (seriesCountFromInput < 0) {
-      seriesWarningText = "Número de series inválido."; // BLOCKING ERROR
+      seriesWarningText = "Número de series inválido.";
       targetSeriesForRepFields = 0;
-    } else { // 0 a 4 series
-      seriesWarningText = ""; // Sin advertencia ni error
+    } else {
+      seriesWarningText = "";
     }
 
-    List<TextEditingController> newRepControllers = List.generate(
-        targetSeriesForRepFields, (i) {
+    List<TextEditingController> newRepControllers =
+    List.generate(targetSeriesForRepFields, (i) {
       return (i < repControllers.length)
           ? repControllers[i]
           : TextEditingController();
     });
-    List<String> newRepWarnings = List.generate(targetSeriesForRepFields, (i) {
-      // Conserva las advertencias de repeticiones existentes si el índice aún es válido
+    List<String> newRepWarnings =
+    List.generate(targetSeriesForRepFields, (i) {
       return (i < repWarnings.length) ? repWarnings[i] : '';
     });
 
     repControllers = newRepControllers;
     repWarnings = newRepWarnings;
-
-
-    // Solo llama a setState si las listas han cambiado de tamaño o contenido para evitar bucles innecesarios
-    // Esta comparación es superficial, para una profunda necesitarías comparar cada elemento.
-    bool changed = repControllers.length != newRepControllers.length;
-    if (!changed) {
-      for(int i=0; i< repControllers.length; i++) {
-        if(repControllers[i].text != newRepControllers[i].text) { // Ejemplo de comparación más profunda
-          changed = true;
-          break;
-        }
-      }
-    }
-
-    // Actualiza las listas principales
-    repControllers = newRepControllers;
-    repWarnings = newRepWarnings;
-
-    // Si se llama desde onChanged, el setState de allí se encargará.
-    // Si se llama desde initState, no es necesario setState.
-    // Si se necesita un setState explícito aquí, debe ser condicional.
-    // Por ahora, el setState en onChanged de seriesController maneja la reconstrucción.
   }
 
   void _validateRepValue(String value, int index) {
     if (index >= repControllers.length) {
       return;
     }
-
     String trimmedValue = value.trim();
     setState(() {
       if (trimmedValue.isEmpty) {
-        // Si el campo de repetición está vacío, es un error "Requerido"
-        repWarnings[index] = "Requerido"; // Esto será un error BLOQUEANTE
+        repWarnings[index] = "Requerido";
       } else {
         int? reps = int.tryParse(trimmedValue);
-        if (reps != null) { // Si es un número válido
-          // --- LÓGICA DE ADVERTENCIA DE REPETICIONES RESTAURADA ---
+        if (reps != null) {
           if (reps < 6) {
-            repWarnings[index] = 'Se recomienda bajar el peso para un mejor entrenamiento'; // ADVISORY
+            repWarnings[index] =
+            'Se recomienda bajar el peso para un mejor entrenamiento';
           } else if (reps > 12) {
-            repWarnings[index] = "Te recomendamos subir el peso"; // ADVISORY
+            repWarnings[index] = "Te recomendamos subir el peso";
           } else {
-            repWarnings[index] = ""; // Reps válidas y sin consejo
+            repWarnings[index] = "";
           }
-          // --- FIN LÓGICA DE ADVERTENCIA DE REPETICIONES ---
-
-          // Adicionalmente, podrías querer errores bloqueantes para rangos imposibles
-          if (reps < 1) { // Ejemplo de error bloqueante
-            repWarnings[index] = "Mínimo 1 repetición."; // ERROR BLOQUEANTE
-          } else if (reps > 99) { // Ejemplo de límite superior práctico
-            repWarnings[index] = "Máximo 99 reps."; // ERROR BLOQUEANTE
+          if (reps < 1) {
+            repWarnings[index] = "Mínimo 1 repetición.";
+          } else if (reps > 99) {
+            repWarnings[index] = "Máximo 99 reps.";
           }
-          // Nota: Si una condición de error bloqueante se cumple, sobrescribirá la advertencia advisory.
-          // Prioriza los errores bloqueantes.
-
-        } else { // No es un número
-          repWarnings[index] = "Valor inválido"; // ERROR BLOQUEANTE
+        } else {
+          repWarnings[index] = "Valor inválido";
         }
       }
     });
   }
 
+  // CORRECCIÓN 2: Eliminada la primera definición duplicada de _confirmAndSaveData
+  // Esta es la versión completa y correcta.
   void _confirmAndSaveData() {
     bool hasBlockingErrors = false;
-    // Valida número de series
-    // Llama a setState dentro de _initialize para que se actualice el warning si es necesario
-    setState(() {
-    seriesCountFromInput = int.tryParse(seriesController.text.trim()) ?? 0;
-    _initializeRepControllersBasedOnSeriesCount();
-  });
-    if (seriesWarningText == "Número de series inválido." ||
-        seriesWarningText == "Máximo 6 series permitidas." /* o tu límite máximo real */) {
+    if (!_formKeyCurrentDataTab.currentState!.validate()) {
       hasBlockingErrors = true;
     }
-    // Valida repeticiones
-    for (int i = 0; i < repControllers.length; i++) {
-      _validateRepValue(repControllers[i].text, i); // Esto llamará a setState internamente
+    setState(() {
+      seriesCountFromInput = int.tryParse(seriesController.text.trim()) ?? 0;
+      _initializeRepControllersBasedOnSeriesCount();
+    });
+    if (seriesWarningText == "Número de series inválido." ||
+        seriesWarningText == "Máximo 6 series permitidas.") { // Ajusta si tu límite es otro
+      hasBlockingErrors = true;
+    }
 
-      // Verifica si la advertencia actual para esta repetición es un error bloqueante
-      if (repWarnings[i] == "Requerido" ||
-          repWarnings[i] == "Valor inválido" ||
-          repWarnings[i] == "Mínimo 1 repetición." || // Asegúrate que coincida con el texto exacto del error
-          repWarnings[i] == "Máximo 99 reps."  // Asegúrate que coincida con el texto exacto del error
-      /* Añade aquí otros textos de error de repeticiones que consideres bloqueantes */
-      ) {
-        hasBlockingErrors = true;
+    for (int i = 0; i < repControllers.length; i++) {
+      // Es importante llamar a _validateRepValue SIN setState aquí,
+      // porque ya estamos en un proceso de guardado y _validateRepValue llama a setState.
+      // Para obtener el estado más reciente de repWarnings, lo recalculamos:
+      String currentRepValue = repControllers[i].text;
+      String tempWarning = "";
+      if (currentRepValue.trim().isEmpty) {
+        tempWarning = "Requerido";
+      } else {
+        int? reps = int.tryParse(currentRepValue.trim());
+        if (reps != null) {
+          if (reps < 1) tempWarning = "Mínimo 1 repetición.";
+          else if (reps > 99) tempWarning = "Máximo 99 reps.";
+        } else {
+          tempWarning = "Valor inválido";
+        }
+      }
+      // Ahora comprobamos tempWarning para errores bloqueantes
+      if (tempWarning == "Requerido" ||
+          tempWarning == "Valor inválido" ||
+          tempWarning == "Mínimo 1 repetición." ||
+          tempWarning == "Máximo 99 reps.") {
+        if (hasBlockingErrors) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text("Corrige los errores marcados antes de guardar."),
+              backgroundColor: Colors.redAccent));
+          return;
+        }
+        // Actualizar el warning visual por si acaso no se hizo en el último onChanged
+        if (mounted && i < repWarnings.length) {
+          setState(() {
+            repWarnings[i] = tempWarning;
+          });
+        }
       }
     }
 
+
     if (hasBlockingErrors) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Corrige los errores marcados en rojo antes de guardar."), backgroundColor: Colors.redAccent)
-      );
-      return; // No guardar si hay errores bloqueantes
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Corrige los errores marcados en rojo antes de guardar."),
+          backgroundColor: Colors.redAccent));
+      return;
     }
 
-    List<String> repsData = repControllers.map((c) => c.text.trim()).toList();
-    Map<String, dynamic> updatedExerciseData = {
-      ...widget.exercise,
-      'series': seriesController.text.trim(),
-      'weight': weightController.text.trim(),
-      'weightUnit': weightUnit,
-      'reps': repsData,
-      'notes': notesController.text.trim(),
-    };
+    List<String> repsData =
+    repControllers.map((c) => c.text.trim()).toList();
 
-    widget.onDataUpdated(updatedExerciseData);
+    // Usar _currentExerciseData para mantener la definición y actualizar solo los datos del log
+    _currentExerciseData['series'] = seriesController.text.trim();
+    _currentExerciseData['weight'] = weightController.text.trim();
+    _currentExerciseData['weightUnit'] = weightUnit;
+    _currentExerciseData['reps'] = repsData; // Esto es una lista de Strings
+    _currentExerciseData['notes'] = notesController.text.trim();
+
+    widget.onDataUpdated(_currentExerciseData); // Pasa el mapa completo
     Navigator.pop(context);
   }
 
   @override
   void dispose() {
-    // ... (dispose de controladores) ...
     _tabController.dispose();
     seriesController.dispose();
     weightController.dispose();
     notesController.dispose();
-    for (var controller in repControllers) { controller.dispose(); }
+    for (var controller in repControllers) {
+      controller.dispose();
+    }
     super.dispose();
+  }
+
+  Future<void> _openEditExerciseDialog(
+      BuildContext parentDialogContext) async {
+    final result = await showDialog<Map<String, dynamic>>(
+      context: parentDialogContext,
+      barrierDismissible: false,
+      builder: (dialogCtx) => NewExerciseDialog(
+        exerciseToEdit: Map<String, dynamic>.from(_currentExerciseData),
+      ),
+    );
+
+    if (result != null && mounted) {
+      setState(() {
+        _currentExerciseData = result;
+      });
+      widget.onExerciseDefinitionChanged();
+      debugPrint(
+          "Ejercicio actualizado en ExerciseDataDialog: ${_currentExerciseData['name']}");
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // ... (Build principal de ExerciseDataDialog sin cambios, ya es complejo) ...
     final lastLogData = widget.lastLog;
-    return Dialog( /* ... */ child: Column(mainAxisSize: MainAxisSize.min, children: [
-      Stack(alignment: Alignment.centerRight, children: [
-        TabBar(controller: _tabController, labelColor: Theme.of(context).primaryColor, unselectedLabelColor: Colors.grey, tabs: const [Tab(text: 'Actual'), Tab(text: 'Historial'), Tab(text: 'Info')]),
-        IconButton(icon: Icon(Icons.close), onPressed: () => Navigator.pop(context), tooltip: "Cerrar")
-      ]),
-      Flexible(child: Container(constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.65), child: TabBarView(controller: _tabController, children: [
-        _buildCurrentDataTab(), _buildHistoryTab(lastLogData), _buildDescriptionTab(),
-      ]))),
-    ]));
+    return Dialog(
+        insetPadding: EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Stack(alignment: Alignment.centerRight, children: [
+              TabBar(
+                controller: _tabController,
+                labelColor: Theme.of(context).primaryColor,
+                unselectedLabelColor: Colors.grey,
+                tabs: const [
+                  Tab(text: 'Actual'),
+                  Tab(text: 'Historial'),
+                  Tab(text: 'Info'),
+                ],
+              ),
+              Positioned(
+                right: 0, top: 0, bottom: 0,
+                child: IconButton(
+                    icon: Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                    tooltip: "Cerrar"),
+              )
+            ]),
+            Flexible(
+                child: Container(
+                  constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(context).size.height * 0.7),
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _buildCurrentDataTab(),
+                      _buildHistoryTab(lastLogData),
+                      _buildDescriptionTab(),
+                    ],
+                  ),
+                )),
+          ],
+        ));
   }
 
   Widget _buildCurrentDataTab() {
-    return SingleChildScrollView(padding: const EdgeInsets.all(16.0), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      TextField(controller: seriesController, keyboardType: TextInputType.number,
-        decoration: InputDecoration(labelText: 'Número de Series', border: OutlineInputBorder(), errorText: seriesWarningText.isEmpty ? null : seriesWarningText),
-        onChanged: (value) { setState(() { seriesCountFromInput = int.tryParse(value) ?? 0; _initializeRepControllersBasedOnSeriesCount(); }); },
-      ),
-      SizedBox(height: 12),
-      Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Expanded(child: TextField(controller: weightController, keyboardType: TextInputType.numberWithOptions(decimal: true), decoration: InputDecoration(labelText: 'Peso', border: OutlineInputBorder()))),
-        SizedBox(width: 8),
-        SizedBox(width: 90, child: DropdownButtonFormField<String>(value: weightUnit, decoration: InputDecoration(border: OutlineInputBorder()),
-          items: ['kg', 'lb'].map((unit) => DropdownMenuItem(value: unit, child: Text(unit))).toList(),
-          onChanged: (value) => setState(() => weightUnit = value ?? 'kg'),
-        )),
-      ]),
-      SizedBox(height: 16),
-      Text('Repeticiones por Serie:', style: Theme.of(context).textTheme.bodyLarge), // Usar bodyLarge
-      if (repControllers.isEmpty && seriesCountFromInput > 0) Padding(padding: const EdgeInsets.symmetric(vertical: 8.0), child: Text("Ajusta el número de series.", style: TextStyle(color: Colors.grey)))
-      else ListView.builder(shrinkWrap: true, physics: NeverScrollableScrollPhysics(), itemCount: repControllers.length, itemBuilder: (context, index) {
-        return Padding(padding: const EdgeInsets.only(top: 8.0), child: TextField(controller: repControllers[index], keyboardType: TextInputType.number,
-          decoration: InputDecoration(labelText: 'Reps Serie ${index + 1}', border: OutlineInputBorder(), errorText: (repWarnings.length > index && repWarnings[index].isNotEmpty) ? repWarnings[index] : null),
-          onChanged: (value) => _validateRepValue(value, index),
-        ));
-      }),
-      SizedBox(height: 16),
-      TextField(controller: notesController, decoration: InputDecoration(labelText: 'Notas (opcional)', border: OutlineInputBorder()), maxLines: 3, textCapitalization: TextCapitalization.sentences),
-      SizedBox(height: 24),
-      if (widget.lastLog != null) ...[
-        Text("Último Registro:", style: Theme.of(context).textTheme.bodyLarge), SizedBox(height: 4),
-        Text("  Series: ${widget.lastLog!['series'] ?? '-'}, Peso: ${widget.lastLog!['weight'] ?? '-'} ${widget.lastLog!['weightUnit'] ?? ''}"),
-        Text("  Reps: ${widget.lastLog!['reps'] ?? '-'}"),
-        if (widget.lastLog!['notes'] != null && (widget.lastLog!['notes'] as String).isNotEmpty) Text("  Notas: ${widget.lastLog!['notes']}"),
-        SizedBox(height: 24),
-      ],
-      ElevatedButton(onPressed: _confirmAndSaveData, child: Text('Guardar Cambios'), style: ElevatedButton.styleFrom(padding: EdgeInsets.symmetric(vertical: 12))),
-    ]));
+    return SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child:
+        Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          TextField(
+            controller: seriesController,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+                labelText: 'Número de Series',
+                border: OutlineInputBorder(),
+                errorText:
+                seriesWarningText.isEmpty ? null : seriesWarningText),
+            onChanged: (value) {
+              setState(() {
+                seriesCountFromInput = int.tryParse(value) ?? 0;
+                _initializeRepControllersBasedOnSeriesCount();
+              });
+            },
+          ),
+          SizedBox(height: 12),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: TextFormField( // Tu TextFormField existente para Peso
+                  controller: weightController,
+                  keyboardType: TextInputType.numberWithOptions(decimal: true),
+                  decoration: InputDecoration(
+                    labelText: 'Peso *', // Ya lo tienes así, indica obligatorio
+                    border: OutlineInputBorder(),
+                    hintText: "Ej: 70.5",
+                  ),
+                  validator: (value) { // Tu validador existente
+                    if (value == null || value.trim().isEmpty) {
+                      return 'El peso es requerido';
+                    }
+                    final n = double.tryParse(value.trim().replaceAll(',', '.')); // Reemplaza coma por punto
+                    if (n == null) {
+                      return 'Ingresa un número válido';
+                    }
+                    if (n <= 0) {
+                      return 'El peso debe ser mayor a 0';
+                    }
+                    return null;
+                  },
+                ),
+              ),
+              SizedBox(width: 8),
+              SizedBox(
+                width: 90,
+                child: DropdownButtonFormField<String>(
+                  value: weightUnit,
+                  decoration: InputDecoration(border: OutlineInputBorder()),
+                  items: ['kg', 'lb']
+                      .map((unit) =>
+                      DropdownMenuItem(value: unit, child: Text(unit)))
+                      .toList(),
+                  onChanged: (value) =>
+                      setState(() => weightUnit = value ?? 'kg'),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 16),
+          Text('Repeticiones por Serie:',
+              style: Theme.of(context).textTheme.titleMedium),
+          if (repControllers.isEmpty && seriesCountFromInput > 0)
+            Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Text("Ajusta el número de series.",
+                    style: TextStyle(color: Colors.grey)))
+          else
+            ListView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: repControllers.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: TextField(
+                        controller: repControllers[index],
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                            labelText: 'Reps Serie ${index + 1}',
+                            border: OutlineInputBorder(),
+                            errorText: (repWarnings.length > index &&
+                                repWarnings[index].isNotEmpty)
+                                ? repWarnings[index]
+                                : null),
+                        onChanged: (value) => _validateRepValue(value, index),
+                      ));
+                }),
+          SizedBox(height: 16),
+          TextField(
+              controller: notesController,
+              decoration: InputDecoration(
+                  labelText: 'Notas (opcional)',
+                  border: OutlineInputBorder()),
+              maxLines: 3,
+              textCapitalization: TextCapitalization.sentences),
+          SizedBox(height: 24),
+          if (widget.lastLog != null) ...[
+            Text("Último Registro:",
+                style: Theme.of(context).textTheme.titleMedium),
+            SizedBox(height: 4),
+            Text(
+                "  Series: ${widget.lastLog!['series'] ?? '-'}, Peso: ${widget.lastLog!['weight'] ?? '-'} ${widget.lastLog!['weightUnit'] ?? ''}"),
+            Text("  Reps: ${widget.lastLog!['reps'] ?? '-'}"),
+            if (widget.lastLog!['notes'] != null &&
+                (widget.lastLog!['notes'] as String).isNotEmpty)
+              Text("  Notas: ${widget.lastLog!['notes']}"),
+            SizedBox(height: 24),
+          ],
+          ElevatedButton(
+              onPressed: _confirmAndSaveData,
+              child: Text('Guardar Cambios del Log'),
+              style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 12))),
+        ]));
   }
 
+  // CORRECCIÓN 3: Añadidos itemCount, separatorBuilder, e itemBuilder
   Widget _buildHistoryTab(Map<String, dynamic>? currentLastLog) {
     return FutureBuilder<List<Map<String, dynamic>>>(
-      future: DatabaseHelper.instance.getExerciseLogs(widget.exercise['name'] ?? ''),
+      future:
+      DatabaseHelper.instance.getExerciseLogs(_currentExerciseData['name'] ?? ''),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
         }
         if (snapshot.hasError) {
-          return Center(child: Text("Error cargando historial: ${snapshot.error}"));
+          return Center(
+              child: Text("Error cargando historial: ${snapshot.error}"));
         }
-
         final logs = snapshot.data ?? [];
-
-        // --- INICIO DE LÓGICA RESTAURADA ---
         if (logs.isEmpty) {
-          return Center(child: Text("Sin registros anteriores")); // Tu mensaje específico
+          return Center(
+              child: Text(
+                  "Sin registros anteriores para '${_currentExerciseData['name'] ?? 'ejercicio actual'}'"));
         }
-        // --- FIN DE LÓGICA RESTAURADA ---
-
-        // El resto del método para mostrar la lista de logs se mantiene igual:
         return ListView.separated(
           padding: EdgeInsets.all(16),
-          itemCount: logs.length,
-          separatorBuilder: (_, __) => Divider(height: 20),
-          itemBuilder: (context, index) {
+          itemCount: logs.length, // Parámetro itemCount
+          separatorBuilder: (_, __) => Divider(height: 20), // Parámetro separatorBuilder
+          itemBuilder: (context, index) { // Parámetro itemBuilder
             final log = logs[index];
             String formattedDate = "Fecha desconocida";
             if (log['dateTime'] != null) {
               try {
                 DateTime dt = DateTime.parse(log['dateTime']);
-                formattedDate = "${dt.day.toString().padLeft(2,'0')}/${dt.month.toString().padLeft(2,'0')}/${dt.year} ${dt.hour.toString().padLeft(2,'0')}:${dt.minute.toString().padLeft(2, '0')}";
+                formattedDate =
+                "${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}";
               } catch (_) {}
             }
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(formattedDate, style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).primaryColorDark)),
+                Text(formattedDate,
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).primaryColorDark)),
                 SizedBox(height: 4),
                 Text("  Series: ${log['series'] ?? '-'}"),
-                Text("  Peso: ${log['weight'] ?? '-'} ${log['weightUnit'] ?? ''}"),
+                Text(
+                    "  Peso: ${log['weight'] ?? '-'} ${log['weightUnit'] ?? ''}"),
                 Text("  Reps: ${log['reps'] ?? '-'}"),
-                if (log['notes'] != null && (log['notes'] as String).isNotEmpty)
+                if (log['notes'] != null &&
+                    (log['notes'] as String).isNotEmpty)
                   Text("  Notas: ${log['notes']}"),
               ],
             );
@@ -1271,9 +1692,10 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog> with SingleTick
   }
 
   Widget _buildDescriptionTab() {
-    final exerciseImage = widget.exercise['image'] as String?;
-    final exerciseDescription = widget.exercise['description'] as String?;
-    final exerciseName = widget.exercise['name']?.toString();
+    final exerciseImage = _currentExerciseData['image'] as String?;
+    final exerciseDescription = _currentExerciseData['description'] as String?;
+    final exerciseName = _currentExerciseData['name']?.toString();
+    final bool isManualExercise = _currentExerciseData['isManual'] == true;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
@@ -1281,31 +1703,32 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog> with SingleTick
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (exerciseImage != null && exerciseImage.isNotEmpty)
+
             Center(
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 16.0),
                 child: Container(
-                  height: 150, // Ajusta según necesites
+                  height: 150,
                   width: double.infinity,
                   clipBehavior: Clip.antiAlias,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(8.0),
                   ),
                   child: exerciseImage.startsWith('assets/')
-                      ? Image.asset( // Imagen desde assets
+                      ? Image.asset(
                     exerciseImage,
-                    fit: BoxFit.contain,
+                    fit: BoxFit.contain, // Cambiado a contain para mejor visualización
                     errorBuilder: (_, __, ___) => Center(child: Text("No se pudo cargar imagen.", textAlign: TextAlign.center, style: TextStyle(color: Colors.orange))),
                   )
-                      : Image.file( // Imagen desde archivo local
+                      : Image.file(
                     File(exerciseImage),
-                    fit: BoxFit.contain,
+                    fit: BoxFit.contain, // Cambiado a contain
                     errorBuilder: (_, __, ___) => Center(child: Text("No se pudo cargar imagen.", textAlign: TextAlign.center, style: TextStyle(color: Colors.red))),
                   ),
                 ),
               ),
             )
-          else // Placeholder si no hay ruta de imagen
+          else
             Center(
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 16.0),
@@ -1320,16 +1743,33 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog> with SingleTick
                 ),
               ),
             ),
-          Text(exerciseName ?? "Ejercicio", style: Theme.of(context).textTheme.headlineSmall),
+          Center( // Widget para centrar
+            child: Text(
+              exerciseName ?? "Ejercicio",
+              style: Theme.of(context).textTheme.headlineSmall,
+              textAlign: TextAlign.center, // Opcional: para centrar el texto si tiene múltiples líneas
+            ),
+          ),
           SizedBox(height: 8),
-          Text( // Aquí se muestra la descripción o el mensaje por defecto
+          Text(
             exerciseDescription != null && exerciseDescription.isNotEmpty
-                ? exerciseDescription // Muestra la descripción real si existe
-                : "No hay descripción disponible.", // Mensaje por defecto
+                ? exerciseDescription
+                : "No hay descripción disponible.",
             style: Theme.of(context).textTheme.bodyMedium,
           ),
+          SizedBox(height: 20),
+          if (isManualExercise)
+            Center(
+              child: ElevatedButton.icon(
+                icon: Icon(Icons.edit),
+                label: Text('Editar Información del Ejercicio'),
+                onPressed: () {
+                  _openEditExerciseDialog(context);
+                },
+              ),
+            ),
         ],
       ),
     );
   }
-  }
+}

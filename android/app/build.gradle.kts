@@ -28,8 +28,6 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-        versionCode 1 // Es bueno establecer esto, aunque no causa el error actual
-        versionName "1.0"
     }
 
     buildTypes {
