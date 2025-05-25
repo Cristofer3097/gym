@@ -1274,26 +1274,25 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
   }
 
   void _initializeSeriesSpecificFields() {
-    int targetFieldsCount = seriesCountFromInput;
-
-    if (seriesCountFromInput <= 0) {
-      seriesWarningText = seriesCountFromInput < 0 ? "Número de series inválido." : "";
-      targetFieldsCount = 0;
-    } else if (seriesCountFromInput > 10) {
-      seriesWarningText = "Máximo 10 series permitidas.";
-      targetFieldsCount = 10;
+    int targetSeriesForRepFields = seriesCountFromInput;
+    if (seriesCountFromInput > 4) { // Límite que quieres restaurar
+      seriesWarningText = "Se recomienda menos de 4 series para no sobrentrenar";
+      targetSeriesForRepFields = 4; // Limitar a 4 campos
+    } else if (seriesCountFromInput < 0) {
+      seriesWarningText = "Número de series inválido.";
+      targetSeriesForRepFields = 0; // No mostrar campos si es inválido
     } else {
-      seriesWarningText = "";
+      seriesWarningText = ""; // Limpiar advertencia para casos válidos (0 a 4 series)
     }
 
     List<String> oldRepValues = repControllers.map((c) => c.text).toList();
     List<String> oldWeightValues = weightControllers.map((c) => c.text).toList();
 
-    repControllers = List.generate(targetFieldsCount, (i) => TextEditingController(text: i < oldRepValues.length ? oldRepValues[i] : ''));
-    repWarnings = List.generate(targetFieldsCount, (_) => '');
+    repControllers = List.generate(targetSeriesForRepFields, (i) => TextEditingController(text: i < oldRepValues.length ? oldRepValues[i] : ''));
+    repWarnings = List.generate(targetSeriesForRepFields, (_) => '');
 
-    weightControllers = List.generate(targetFieldsCount, (i) => TextEditingController(text: i < oldWeightValues.length ? oldWeightValues[i] : ''));
-    weightWarnings = List.generate(targetFieldsCount, (_) => '');
+    weightControllers = List.generate(targetSeriesForRepFields, (i) => TextEditingController(text: i < oldWeightValues.length ? oldWeightValues[i] : ''));
+    weightWarnings = List.generate(targetSeriesForRepFields, (_) => '');
   }
 
 
@@ -1352,7 +1351,7 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
     if (currentSeriesCount < 0) {
       setState(() => seriesWarningText = "Número de series inválido."); hasBlockingErrors = true;
     } else if (currentSeriesCount > 10) {
-      setState(() => seriesWarningText = "Máximo 10 series permitidas."); hasBlockingErrors = true;
+      setState(() => seriesWarningText = "Máximo 4 series permitidas."); hasBlockingErrors = true;
     } else {
       setState(() => seriesWarningText = "");
     }
@@ -1378,7 +1377,6 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
           else if (w > 9999) { setState(() => weightWarnings[i] = "Máx. 9999"); hasBlockingErrors = true;}
           else { setState(() => weightWarnings[i] = "");}
         }
-        // No hay validación bloqueante para la unidad, ya que siempre tendrá un valor.
       }
     }
 
@@ -1392,11 +1390,18 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
     List<String> repsData = currentSeriesCount > 0 ? repControllers.map((c) => c.text.trim()).toList() : [];
     List<String> weightsData = currentSeriesCount > 0 ? weightControllers.map((c) => c.text.trim().replaceAll(',', '.')).toList() : [];
 
-
+    String unitsForDb;
+    if (currentSeriesCount > 0) {
+      // Repite la unidad de peso seleccionada para cada serie
+      unitsForDb = List.generate(currentSeriesCount, (_) => weightUnit.trim()).join(',');
+    } else {
+      // Si no hay series, la cadena de unidades debe estar vacía
+      unitsForDb = "";
+    }
     _currentExerciseDataLog['series'] = seriesController.text.trim();
     _currentExerciseDataLog['reps'] = repsData;
     _currentExerciseDataLog['weight'] = weightsData.join(',');
-    _currentExerciseDataLog['weightUnit'] = weightUnit; // Guardar string de unidades
+    _currentExerciseDataLog['weightUnit'] = unitsForDb;  // Guardar string de unidades
     _currentExerciseDataLog['notes'] = notesController.text.trim();
 
     widget.onDataUpdated(_currentExerciseDataLog);
@@ -1473,6 +1478,31 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
   }
 
   Widget _buildCurrentDataTab() {
+    final theme = Theme.of(context);
+    final inputDecorationTheme = theme.inputDecorationTheme;
+    // Determina si la advertencia "Se recomienda..." está activa
+    bool isAdvisoryWarningActive = seriesWarningText.isNotEmpty;
+
+    // Define los estilos del campo "Número de Series" basados en si la advertencia está activa
+    // y permite que los estilos de error del validador tomen precedencia si hay un error de validación.
+
+    // Color para la etiqueta del campo de Series
+    TextStyle seriesLabelStyle = TextStyle(
+      color: isAdvisoryWarningActive
+          ? theme.colorScheme.error // Rojo si la advertencia está activa
+          : inputDecorationTheme.labelStyle?.color, // Color normal del tema si no
+    );
+
+    // BorderSide para el campo de Series cuando está habilitado (no enfocado)
+    BorderSide seriesEnabledBorderSide = isAdvisoryWarningActive
+        ? BorderSide(color: theme.colorScheme.error, width: 1.0) // Borde rojo si advertencia activa
+        : inputDecorationTheme.enabledBorder?.borderSide ?? BorderSide(color: Colors.grey[700]!, width: 0.5);
+
+    // BorderSide para el campo de Series cuando está enfocado
+    BorderSide seriesFocusedBorderSide = isAdvisoryWarningActive
+        ? BorderSide(color: theme.colorScheme.error, width: 2.0) // Borde rojo más grueso si advertencia activa
+        : inputDecorationTheme.focusedBorder?.borderSide ?? BorderSide(color: const Color(0xFFFFC107), width: 1.5); // Amarillo (amarilloPrincipal)
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Form(
@@ -1480,32 +1510,75 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
         child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              TextFormField( controller: seriesController, keyboardType: TextInputType.number, decoration: InputDecoration( labelText: 'Número de Series *', border: OutlineInputBorder(), errorText: seriesWarningText.isEmpty ? null : seriesWarningText, ),
-                onChanged: (value) { setState(() { seriesCountFromInput = int.tryParse(value.trim()) ?? 0; _initializeSeriesSpecificFields(); }); },
-                validator: (value) { if (value == null || value.trim().isEmpty) return 'Requerido'; final n = int.tryParse(value.trim()); if (n == null) return 'Inválido'; if (n < 0) return 'No negativo'; if (n > 10) return 'Máx. 10';
-                return null; },
-              ),
-        SizedBox(height: 12),
-        Row(
-            children: [
-
-              SizedBox(
-                width: 120, // El ancho que quieras
-                child: DropdownButtonFormField<String>(
-                  value: weightUnit,
-                  decoration: InputDecoration(
-                    labelText: 'Unidad de Peso',
-                    border: OutlineInputBorder(),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start, // Alinea los elementos al inicio si tienen alturas diferentes (debido a errores)
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: TextFormField(
+                      controller: seriesController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: 'Número de Series *',
+                        labelStyle: seriesLabelStyle, // Aplicar estilo de etiqueta dinámico
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)), // Borde base
+                        enabledBorder: OutlineInputBorder( // Borde cuando está habilitado
+                          borderRadius: BorderRadius.circular(8.0),
+                          borderSide: seriesEnabledBorderSide,
+                        ),
+                        focusedBorder: OutlineInputBorder( // Borde cuando está enfocado
+                          borderRadius: BorderRadius.circular(8.0),
+                          borderSide: seriesFocusedBorderSide,
+                        ),
+                        // No se establece errorText aquí; el validador se encarga.
+                        // Si el validador retorna un error, TextFormField usará errorBorder, errorStyle, etc.
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          seriesCountFromInput = int.tryParse(value.trim()) ?? 0;
+                          _initializeSeriesSpecificFields();
+                        });
+                      },
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) return 'Requerido';
+                        final n = int.tryParse(value.trim());
+                        if (n == null) return 'Inválido';
+                        if (n < 0) return 'No negativo';
+                        if (n > 10) return 'Máx. 10';
+                        return null;
+                      },
+                    ),
                   ),
-                  items: ['lb', 'kg']
-                      .map((unit) => DropdownMenuItem(value: unit, child: Text(unit)))
-                      .toList(),
-                  onChanged: (value) => setState(() => weightUnit = value ?? 'lb'),
-                  validator: (value) => value == null || value.isEmpty ? 'Selecciona unidad' : null,
-                ),
+                  SizedBox(width: 12),
+                  Expanded(
+                    flex: 1,
+                    child: DropdownButtonFormField<String>(
+                      value: weightUnit,
+                      decoration: InputDecoration(
+                        labelText: 'Unidad de Peso',
+                        border: OutlineInputBorder(),
+                        // Los estilos de error para este campo son manejados por defecto
+                      ),
+                      items: ['lb', 'kg']
+                          .map((unit) => DropdownMenuItem(value: unit, child: Text(unit)))
+                          .toList(),
+                      onChanged: (value) => setState(() => weightUnit = value ?? 'lb'),
+                      validator: (value) => value == null || value.isEmpty ? 'Selecciona unidad' : null,
+                    ),
+                  ),
+                ],
               ),
-            ],
-        ),
+              if (seriesWarningText.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 5.0, left: 4.0, right: 4.0),
+                  child: Text(
+                    seriesWarningText,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                      fontSize: 12.0,
+                    ),
+                  ),
+                ),
               SizedBox(height: 12),
               Text('Detalles por Serie:', style: Theme.of(context).textTheme.titleMedium),
               if (seriesCountFromInput <= 0 && repControllers.isEmpty && weightControllers.isEmpty) Padding( padding: const EdgeInsets.symmetric(vertical: 10.0), child: Text("Define el número de series arriba.", style: TextStyle(color: Colors.grey.shade600, fontStyle: FontStyle.italic)))
