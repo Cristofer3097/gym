@@ -1207,7 +1207,7 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
   late TextEditingController seriesController;
   late List<TextEditingController> repControllers;
   late List<TextEditingController> weightControllers;
-  late List<String> currentSeriesWeightUnits; // NUEVO: para unidades de peso por serie
+  late String weightUnit;
   late TextEditingController notesController;
 
   late List<String> repWarnings;
@@ -1227,9 +1227,24 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
     notesController = TextEditingController(text: _currentExerciseDataLog['notes']?.toString() ?? '');
     seriesCountFromInput = int.tryParse(seriesController.text.trim()) ?? 0;
 
+    String initialUnit = 'lb'; // Default a 'lb'
+    final dynamic existingUnitData = _currentExerciseDataLog['weightUnit'];
+    if (existingUnitData is String && existingUnitData.isNotEmpty) {
+      if (existingUnitData.contains(',')) { // Era una lista de unidades
+        List<String> unitsList = existingUnitData.split(',');
+        if (unitsList.isNotEmpty) {
+          initialUnit = unitsList[0].trim().toLowerCase();
+          if (initialUnit != 'kg' && initialUnit != 'lb') initialUnit = 'lb';
+        }
+      } else { // Era una sola unidad
+        initialUnit = existingUnitData.trim().toLowerCase();
+        if (initialUnit != 'kg' && initialUnit != 'lb') initialUnit = 'lb';
+      }
+    }
+    weightUnit = initialUnit;
+
     repControllers = [];
     weightControllers = [];
-    currentSeriesWeightUnits = []; // Inicializar
     repWarnings = [];
     weightWarnings = [];
 
@@ -1248,7 +1263,6 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
       repControllers[i].text = initialReps[i];
     }
 
-    // Pesos
     final String weightsString = _currentExerciseDataLog['weight']?.toString() ?? '';
     if (weightsString.isNotEmpty) {
       List<String> initialWeights = weightsString.split(',').map((s) => s.trim()).toList();
@@ -1256,23 +1270,7 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
         weightControllers[i].text = initialWeights[i];
       }
     }
-
-    // Unidades de Peso
-    final String unitsString = _currentExerciseDataLog['weightUnit']?.toString() ?? '';
-    if (unitsString.isNotEmpty) {
-      List<String> initialUnits = unitsString.split(',').map((u) => u.trim().toLowerCase()).where((u) => u == 'kg' || u == 'lb').toList();
-      for (int i = 0; i < currentSeriesWeightUnits.length && i < initialUnits.length; i++) {
-        currentSeriesWeightUnits[i] = initialUnits[i];
-      }
-      // Si hay menos unidades que series, rellenar con 'lb'
-      for (int i = initialUnits.length; i < currentSeriesWeightUnits.length; i++) {
-        currentSeriesWeightUnits[i] = 'lb';
-      }
-    } else { // Si no hay string de unidades, todas a 'lb'
-      for (int i = 0; i < currentSeriesWeightUnits.length; i++) {
-        currentSeriesWeightUnits[i] = 'lb';
-      }
-    }
+    // No es necesario poblar currentSeriesWeightUnits
   }
 
   void _initializeSeriesSpecificFields() {
@@ -1290,15 +1288,12 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
 
     List<String> oldRepValues = repControllers.map((c) => c.text).toList();
     List<String> oldWeightValues = weightControllers.map((c) => c.text).toList();
-    List<String> oldUnitValues = List.from(currentSeriesWeightUnits); // Copia profunda
 
     repControllers = List.generate(targetFieldsCount, (i) => TextEditingController(text: i < oldRepValues.length ? oldRepValues[i] : ''));
     repWarnings = List.generate(targetFieldsCount, (_) => '');
 
     weightControllers = List.generate(targetFieldsCount, (i) => TextEditingController(text: i < oldWeightValues.length ? oldWeightValues[i] : ''));
     weightWarnings = List.generate(targetFieldsCount, (_) => '');
-
-    currentSeriesWeightUnits = List.generate(targetFieldsCount, (i) => (i < oldUnitValues.length ? oldUnitValues[i] : 'lb')); // Default a 'lb'
   }
 
 
@@ -1396,13 +1391,12 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
 
     List<String> repsData = currentSeriesCount > 0 ? repControllers.map((c) => c.text.trim()).toList() : [];
     List<String> weightsData = currentSeriesCount > 0 ? weightControllers.map((c) => c.text.trim().replaceAll(',', '.')).toList() : [];
-    List<String> unitsData = currentSeriesCount > 0 ? currentSeriesWeightUnits.map((u) => u).toList() : [];
 
 
     _currentExerciseDataLog['series'] = seriesController.text.trim();
     _currentExerciseDataLog['reps'] = repsData;
     _currentExerciseDataLog['weight'] = weightsData.join(',');
-    _currentExerciseDataLog['weightUnit'] = unitsData.join(','); // Guardar string de unidades
+    _currentExerciseDataLog['weightUnit'] = weightUnit; // Guardar string de unidades
     _currentExerciseDataLog['notes'] = notesController.text.trim();
 
     widget.onDataUpdated(_currentExerciseDataLog);
@@ -1488,9 +1482,31 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
             children: [
               TextFormField( controller: seriesController, keyboardType: TextInputType.number, decoration: InputDecoration( labelText: 'Número de Series *', border: OutlineInputBorder(), errorText: seriesWarningText.isEmpty ? null : seriesWarningText, ),
                 onChanged: (value) { setState(() { seriesCountFromInput = int.tryParse(value.trim()) ?? 0; _initializeSeriesSpecificFields(); }); },
-                validator: (value) { if (value == null || value.trim().isEmpty) return 'Requerido'; final n = int.tryParse(value.trim()); if (n == null) return 'Inválido'; if (n < 0) return 'No negativo'; if (n > 10) return 'Máx. 10'; return null; },
+                validator: (value) { if (value == null || value.trim().isEmpty) return 'Requerido'; final n = int.tryParse(value.trim()); if (n == null) return 'Inválido'; if (n < 0) return 'No negativo'; if (n > 10) return 'Máx. 10';
+                return null; },
               ),
-              SizedBox(height: 16),
+        SizedBox(height: 12),
+        Row(
+            children: [
+
+              SizedBox(
+                width: 120, // El ancho que quieras
+                child: DropdownButtonFormField<String>(
+                  value: weightUnit,
+                  decoration: InputDecoration(
+                    labelText: 'Unidad de Peso',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: ['lb', 'kg']
+                      .map((unit) => DropdownMenuItem(value: unit, child: Text(unit)))
+                      .toList(),
+                  onChanged: (value) => setState(() => weightUnit = value ?? 'lb'),
+                  validator: (value) => value == null || value.isEmpty ? 'Selecciona unidad' : null,
+                ),
+              ),
+            ],
+        ),
+              SizedBox(height: 12),
               Text('Detalles por Serie:', style: Theme.of(context).textTheme.titleMedium),
               if (seriesCountFromInput <= 0 && repControllers.isEmpty && weightControllers.isEmpty) Padding( padding: const EdgeInsets.symmetric(vertical: 10.0), child: Text("Define el número de series arriba.", style: TextStyle(color: Colors.grey.shade600, fontStyle: FontStyle.italic)))
               else if (repControllers.isEmpty && weightControllers.isEmpty && seriesCountFromInput > 0) Padding( padding: const EdgeInsets.symmetric(vertical: 10.0), child: Text("Ajustando campos para $seriesCountFromInput series...", style: TextStyle(color: Colors.grey.shade600, fontStyle: FontStyle.italic)))
@@ -1502,31 +1518,62 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
                     itemBuilder: (context, index) {
                       return Padding(
                           padding: const EdgeInsets.only(top: 10.0),
+
                           child: Column(
+
                             children: [
+                          Text(
+                          'Serie ${index + 1}',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w500, // Un poco más de énfasis
+                              fontSize: 16, // Tamaño legible
+                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.85), // Color del texto
+                            ),
+                          ),
+                          SizedBox(height: 6), // Espacio entre el título de la serie y los campos de entrada
+
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Expanded( child: TextFormField( controller: repControllers[index], keyboardType: TextInputType.number, decoration: InputDecoration( labelText: 'Reps S.${index + 1}', border: OutlineInputBorder(), errorMaxLines: 2, errorText: (repWarnings.length > index && repWarnings[index].isNotEmpty) ? repWarnings[index] : null), onChanged: (value) => _validateRepValue(value, index), ), ),
+                                  Expanded(
+                                    flex: 2, // 2/3 para reps
+                                    child: TextFormField(
+                                      controller: repControllers[index],
+                                      keyboardType: TextInputType.number,
+                                      decoration: InputDecoration(
+                                        labelText: 'Repeticiones',
+                                        border: OutlineInputBorder(),
+                                        errorMaxLines: 2,
+                                        errorText: (repWarnings.length > index && repWarnings[index].isNotEmpty)
+                                            ? repWarnings[index]
+                                            : null,
+                                      ),
+                                      onChanged: (value) => _validateRepValue(value, index),
+                                    ),
+                                  ),
                                   SizedBox(width: 8),
-                                  Expanded( child: TextFormField( controller: weightControllers[index], keyboardType: TextInputType.numberWithOptions(decimal: true), decoration: InputDecoration( labelText: 'Peso S.${index + 1}', border: OutlineInputBorder(), errorMaxLines: 2, errorText: (weightWarnings.length > index && weightWarnings[index].isNotEmpty) ? weightWarnings[index] : null), onChanged: (value) => _validateWeightValue(value, index), ), ),
-                                  SizedBox(width: 8),
-                                  SizedBox( // Dropdown para la unidad de esta serie
-                                    width: 75, // Ancho ajustado para 'lb'/'kg'
-                                    child: DropdownButtonFormField<String>(
-                                      value: currentSeriesWeightUnits.length > index ? currentSeriesWeightUnits[index] : 'lb',
-                                      decoration: InputDecoration(border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 15)), // Ajustar padding
-                                      items: ['lb', 'kg'].map((unit) => DropdownMenuItem(value: unit, child: Text(unit))).toList(),
-                                      onChanged: (value) => setState(() { if(currentSeriesWeightUnits.length > index) currentSeriesWeightUnits[index] = value ?? 'lb';}),
-                                      validator: (value) => value == null || value.isEmpty ? '!' : null, // Simple validador
+                                  Expanded(
+                                    flex: 1, // 1/3 para peso
+                                    child: TextFormField(
+                                      controller: weightControllers[index],
+                                      keyboardType: TextInputType.numberWithOptions(decimal: true),
+                                      decoration: InputDecoration(
+                                        labelText: 'Peso',
+                                        border: OutlineInputBorder(),
+                                        errorMaxLines: 2,
+                                        errorText: (weightWarnings.length > index && weightWarnings[index].isNotEmpty)
+                                            ? weightWarnings[index]
+                                            : null,
+                                      ),
+                                      onChanged: (value) => _validateWeightValue(value, index),
                                     ),
                                   ),
                                 ],
-                              ),
+                              )
                             ],
                           ));
                     }),
-              SizedBox(height: 16),
+              SizedBox(height: 20),
               TextFormField( controller: notesController, decoration: InputDecoration( labelText: 'Notas (opcional)', border: OutlineInputBorder(), alignLabelWithHint: true, hintText: "Técnica, sensaciones, etc."), maxLines: 3, minLines: 1, textCapitalization: TextCapitalization.sentences),
               SizedBox(height: 24),
 
@@ -1571,7 +1618,9 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
     final int seriesCount = int.tryParse(lastLog['series']?.toString() ?? '0') ?? 0;
     final List<String> reps = (lastLog['reps']?.toString() ?? '').split(',');
     final List<String> weights = (lastLog['weight']?.toString() ?? '').split(',');
-    final List<String> units = (lastLog['weightUnit']?.toString() ?? '').split(',');
+    // Ahora 'weightUnit' del log es una sola string.
+    final String logUnit = (lastLog['weightUnit']?.toString() ?? 'lb').split(',')[0].trim(); // Tomar la primera si era lista, o la unidad.
+    final String notes = lastLog['notes']?.toString() ?? '';
 
     List<TableRow> rows = [
       TableRow(
@@ -1590,7 +1639,7 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
           Padding(padding: const EdgeInsets.all(8.0), child: Text('${i + 1}')),
           Padding(padding: const EdgeInsets.all(8.0), child: Text(i < reps.length ? reps[i].trim() : '-', textAlign: TextAlign.center)),
           Padding(padding: const EdgeInsets.all(8.0), child: Text(
-              (i < weights.length ? weights[i].trim() : '-') + " " + (i < units.length ? units[i].trim() : (units.isNotEmpty ? units[0].trim() : 'lb')),
+              (i < weights.length ? weights[i].trim() : '-') + " " + logUnit, // Usar la unidad global del log
               textAlign: TextAlign.center
           )),
         ],
@@ -1668,16 +1717,23 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
     final int seriesCount = int.tryParse(log['series']?.toString() ?? '0') ?? 0;
     final List<String> reps = (log['reps']?.toString() ?? '').split(',');
     final List<String> weights = (log['weight']?.toString() ?? '').split(',');
-    final List<String> units = (log['weightUnit']?.toString() ?? '').split(',');
+    // 'weightUnit' del log es una sola string.
+    final String logUnit = (log['weightUnit']?.toString() ?? 'lb').split(',')[0].trim(); // Tomar la primera si era lista, o la unidad.
     final String notes = log['notes']?.toString() ?? '';
+
+    const TextStyle whiteTextStyle = TextStyle(color: Colors.white, fontSize: 13);
+    const TextStyle whiteBoldTextStyle = TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13);
+
 
     List<TableRow> rows = [
       TableRow(
-        decoration: BoxDecoration(color: theme.colorScheme.onSurface.withOpacity(0.08)),
+        decoration: BoxDecoration(color: theme.colorScheme.surfaceVariant.withOpacity(0.2)),
         children: [
-          Padding(padding: const EdgeInsets.symmetric(vertical: 7.0, horizontal: 5.0), child: Text('Serie', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5), textAlign: TextAlign.center)),
-          Padding(padding: const EdgeInsets.symmetric(vertical: 7.0, horizontal: 5.0), child: Text('Reps', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5), textAlign: TextAlign.center)),
-          Padding(padding: const EdgeInsets.symmetric(vertical: 7.0, horizontal: 5.0), child: Text('Peso', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5), textAlign: TextAlign.center)),
+          Padding(padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0), child: Text('Serie', style: whiteBoldTextStyle, textAlign: TextAlign.center)),
+          Padding(padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0), child: Text('Reps', style: whiteBoldTextStyle, textAlign: TextAlign.center)),
+          Padding(padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0), child: Text('Peso', style: whiteBoldTextStyle, textAlign: TextAlign.center)),
+          // Quitar columna Notas si se decide así para el historial también
+          // Padding(padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0), child: Text('Notas', style: whiteBoldTextStyle, textAlign: TextAlign.center)),
         ],
       ),
     ];
@@ -1685,34 +1741,44 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
     for (int i = 0; i < seriesCount; i++) {
       rows.add(TableRow(
         children: [
-          Padding(padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 5.0), child: Text('${i + 1}', textAlign: TextAlign.center, style: TextStyle(fontSize: 12.5))),
-          Padding(padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 5.0), child: Text(i < reps.length ? reps[i].trim() : '-', textAlign: TextAlign.center, style: TextStyle(fontSize: 12.5))),
-          Padding(padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 5.0), child: Text(
-              (i < weights.length ? weights[i].trim() : '-') + " " + (i < units.length ? units[i].trim() : (units.isNotEmpty ? units[0].trim() : 'lb')),
-              textAlign: TextAlign.center, style: TextStyle(fontSize: 12.5)
+          Padding(padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 4.0), child: Text('${i + 1}', style: whiteTextStyle, textAlign: TextAlign.center)),
+          Padding(padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 4.0), child: Text(i < reps.length ? reps[i].trim() : '-', style: whiteTextStyle, textAlign: TextAlign.center)),
+          Padding(padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 4.0), child: Text(
+              (i < weights.length ? weights[i].trim() : '-') + " " + logUnit, // Usar la unidad global del log
+              textAlign: TextAlign.center
           )),
+          // Quitar celda de Notas si se quita la columna
+          // Padding(padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 4.0), child: Text(i == 0 ? notes : '', style: whiteTextStyle.copyWith(fontStyle: FontStyle.italic, fontSize: 12), textAlign: TextAlign.left)),
         ],
       ));
     }
     if (seriesCount == 0) {
       rows.add(TableRow(children: [
-        Padding(padding: const EdgeInsets.all(6.0), child: Text('-', textAlign: TextAlign.center, style: TextStyle(fontSize: 12.5))),
-        Padding(padding: const EdgeInsets.all(6.0), child: Text('-', textAlign: TextAlign.center, style: TextStyle(fontSize: 12.5))),
-        Padding(padding: const EdgeInsets.all(6.0), child: Text('-', textAlign: TextAlign.center, style: TextStyle(fontSize: 12.5))),
+        Padding(padding: const EdgeInsets.all(6.0), child: Text('-', style: whiteTextStyle, textAlign: TextAlign.center)),
+        Padding(padding: const EdgeInsets.all(6.0), child: Text('-', style: whiteTextStyle, textAlign: TextAlign.center)),
+        Padding(padding: const EdgeInsets.all(6.0), child: Text('-', style: whiteTextStyle, textAlign: TextAlign.center)),
+        // Quitar celda de Notas si se quita la columna
+        // Padding(padding: const EdgeInsets.all(6.0), child: Text(notes, style: whiteTextStyle.copyWith(fontStyle: FontStyle.italic, fontSize: 12), textAlign: TextAlign.left)),
       ]));
     }
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Table(
           border: TableBorder.all(color: theme.primaryColor, width: 1.0),
-          columnWidths: const {0: FlexColumnWidth(1), 1: FlexColumnWidth(1.5), 2: FlexColumnWidth(2)},
+          // Ajustar columnWidths si la columna Notas se quita
+          columnWidths: const {
+            0: FlexColumnWidth(0.8),
+            1: FlexColumnWidth(1.2),
+            2: FlexColumnWidth(1.8),
+            // 3: FlexColumnWidth(2.2), // Para Notas, si se mantiene en la tabla
+          },
           children: rows,
         ),
-        if (log['notes'] != null && (log['notes'] as String).isNotEmpty) ...[
+        // Si las notas no están en la tabla, mostrarlas aquí:
+        if (notes.isNotEmpty) ...[
           SizedBox(height: 6),
-          Text("Notas: ${log['notes']}", style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic, color: Colors.grey.shade400)),
+          Text("Notas: $notes", style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic, color: Colors.white70)),
         ]
       ],
     );

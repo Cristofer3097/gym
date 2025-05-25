@@ -155,6 +155,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final List<String> reps = (log['reps']?.toString() ?? '').split(',');
     final List<String> weights = (log['weight']?.toString() ?? '').split(',');
     final List<String> units = (log['weightUnit']?.toString() ?? '').split(',');
+    final String logUnit = (log['weightUnit']?.toString() ?? 'lb').split(',')[0].trim(); // Tomar la primera unidad o la unidad única
     final String notes = log['notes']?.toString() ?? '';
 
     List<TableRow> rows = [
