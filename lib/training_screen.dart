@@ -1034,7 +1034,26 @@ class _NewExerciseDialogState extends State<NewExerciseDialog> {
       final exerciseData = widget.exerciseToEdit!;
       nameController.text = exerciseData['name'] ?? '';
       descriptionController.text = exerciseData['description'] ?? '';
-      selectedMuscleGroup = exerciseData['muscle_group'] ?? exerciseData['category'];
+
+      // --- MODIFICACIÓN IMPORTANTE AQUÍ ---
+      // Obtiene el valor del grupo muscular que viene del ejercicio a editar.
+      // Recuerda que en _openEditExerciseDialog, 'muscle_group' se pobló con widget.exercise['category'].
+      String? initialMuscleGroupValue = exerciseData['muscle_group']?.toString();
+
+      if (initialMuscleGroupValue != null && initialMuscleGroupValue.isEmpty) {
+        // Si el valor es una cadena vacía, trátalo como nulo para el Dropdown.
+        selectedMuscleGroup = null;
+      } else if (initialMuscleGroupValue != null && !muscleGroups.contains(initialMuscleGroupValue)) {
+        // Si el valor no es nulo, no está vacío, PERO NO ESTÁ EN LA LISTA de opciones válidas,
+        // también trátalo como nulo. Esto puede pasar con datos antiguos o inconsistentes.
+        print(
+            "Advertencia: El ejercicio a editar tiene un grupo muscular desconocido ('$initialMuscleGroupValue'). Se restablecerá para que selecciones uno nuevo.");
+        selectedMuscleGroup = null;
+      } else {
+        // Si el valor es nulo o es una cadena válida de la lista, úsalo.
+        selectedMuscleGroup = initialMuscleGroupValue;
+      }
+
       final String? imagePath = exerciseData['image'];
       if (imagePath != null && imagePath.isNotEmpty) {
         _initialImagePathPreview = imagePath;
@@ -1138,7 +1157,9 @@ class _NewExerciseDialogState extends State<NewExerciseDialog> {
                     SizedBox(height: 20),
                     TextFormField( controller: nameController, textCapitalization: TextCapitalization.sentences, decoration: InputDecoration( labelText: "Nombre del ejercicio *", border: OutlineInputBorder(), hintText: "Ej: Press de Banca"), validator: (value) => (value == null || value.trim().isEmpty) ? 'El nombre es requerido' : null, ),
                     SizedBox(height: 16),
-                    DropdownButtonFormField<String>( value: selectedMuscleGroup, decoration: InputDecoration( labelText: "Grupo Muscular *", border: OutlineInputBorder()), hint: Text("Selecciona un grupo"), items: muscleGroups .map((group) => DropdownMenuItem(value: group, child: Text(group))) .toList(), onChanged: (value) => setState(() => selectedMuscleGroup = value), validator: (value) => value == null ? 'Selecciona un grupo muscular' : null, ),
+                    DropdownButtonFormField<String>(
+                      value: selectedMuscleGroup,
+                      decoration: InputDecoration( labelText: "Grupo Muscular *", border: OutlineInputBorder()), hint: Text("Selecciona un grupo"), items: muscleGroups .map((group) => DropdownMenuItem(value: group, child: Text(group))) .toList(), onChanged: (value) => setState(() => selectedMuscleGroup = value), validator: (value) => value == null ? 'Selecciona un grupo muscular' : null, ),
                     SizedBox(height: 16),
                     TextFormField( controller: descriptionController, textCapitalization: TextCapitalization.sentences, decoration: InputDecoration( labelText: "Descripción (opcional)", border: OutlineInputBorder(), alignLabelWithHint: true, hintText: "Ej: Movimiento principal para pectorales..."), maxLines: 3, minLines: 1, ),
                     SizedBox(height: 16),
@@ -1155,14 +1176,17 @@ class _NewExerciseDialogState extends State<NewExerciseDialog> {
                           if (_imageFile != null) { imagePathToSave = _imageFile!.path;
                           } else if (_imageWasRemovedOrReplaced) { imagePathToSave = null;
                           } else if (isEditMode) { imagePathToSave = widget.exerciseToEdit!['image']; }
-                          Map<String, dynamic> exerciseDataForDb = { 'name': trimmedName, 'muscle_group': selectedMuscleGroup, 'image': imagePathToSave, 'description': descriptionController.text.trim(), };
+                          Map<String, dynamic> exerciseDataForDb = { 'name': trimmedName,
+                            'muscle_group': selectedMuscleGroup,
+                            'image': imagePathToSave, 'description': descriptionController.text.trim(), };
                           final db = DatabaseHelper.instance;
                           if (isEditMode) {
                             final idToUpdate = widget.exerciseToEdit!['id'];
                             final String oldName = widget.exerciseToEdit!['name'];
                             await db.updateCategory(idToUpdate, exerciseDataForDb);
                             if (trimmedName != oldName) { await db.updateExerciseLogsName(oldName, trimmedName); }
-                            Navigator.pop(context, { 'id': idToUpdate, ...exerciseDataForDb, 'category': selectedMuscleGroup, 'isManual': true, });
+                            Navigator.pop(context, { 'id': idToUpdate, ...exerciseDataForDb,
+                              'category': selectedMuscleGroup, 'isManual': true, });
                           } else {
                             final newExerciseId = await db.insertCategory(exerciseDataForDb);
                             Map<String, dynamic> newExerciseFullData = { 'id': newExerciseId, ...exerciseDataForDb, 'isManual': true, 'category': selectedMuscleGroup, };
