@@ -3,6 +3,7 @@ import 'package:path/path.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:intl/intl.dart';
+import 'database_exercise.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -116,6 +117,31 @@ class DatabaseHelper {
     // Insertar datos de ejemplo
     await _insertDefaultData(db);
   }
+  Future<void> _insertDefaultData(Database db) async {
+    // Insertar ejercicios predefinidos desde database_exercise.dart
+    for (final exerciseData in predefinedExerciseList) { // predefinedExerciseList vendrá de database_exercise.dart
+      try {
+        await db.insert(
+          'categories',
+          {
+            'name': exerciseData['name'],
+            'muscle_group': exerciseData['muscle_group'],
+            'image': exerciseData['image'] ?? 'assets/exercises/placeholder.png',
+            'description': exerciseData['description'] ?? 'Descripción no disponible.',
+            'is_predefined': 1, // Marcar como predefinido
+            // Asegúrate que otros campos NOT NULL tengan un valor por defecto o sean nullable
+          },
+          conflictAlgorithm: ConflictAlgorithm.ignore, // Ignorar si ya existe (por el UNIQUE name)
+        );
+      } catch (e) {
+        print("Error insertando ejercicio predefinido ${exerciseData['name']}: $e");
+      }
+    }
+    print("${predefinedExerciseList.length} ejercicios predefinidos procesados para inserción.");
+    // Ya no insertamos la plantilla "Pierna" ni sus ejercicios en template_exercises aquí,
+    // ya que los ejercicios predefinidos ahora están directamente en 'categories'.
+  }
+
   Future<void> insertExerciseLog(Map<String, dynamic> log) async {
     final db = await database;
     await db.insert('exercise_logs', log);
@@ -148,27 +174,40 @@ class DatabaseHelper {
   }
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
     // ... (tus upgrades anteriores para version < 5)
-    if (oldVersion < 6) { // Nueva versión para estos cambios
-      print("Aplicando upgrade a V6: Creando tabla training_sessions y modificando exercise_logs...");
-      await db.execute('''
-      CREATE TABLE IF NOT EXISTS training_sessions (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        session_title TEXT NOT NULL,
-        session_dateTime TEXT NOT NULL
-      );
-    ''');
+    print("Actualizando base de datos de versión $oldVersion a $newVersion");
+    if (oldVersion < 7) {
+      // Cambios para la versión 7: Añadir is_predefined y UNIQUE a categories.name
       try {
-        // Verifica si la columna ya existe antes de intentar añadirla
-        var tableInfo = await db.rawQuery('PRAGMA table_info(exercise_logs)');
-        bool columnExists = tableInfo.any((column) => column['name'] == 'session_id');
-        if (!columnExists) {
-          await db.execute('ALTER TABLE exercise_logs ADD COLUMN session_id INTEGER REFERENCES training_sessions(id) ON DELETE CASCADE');
-          print("Columna session_id añadida a exercise_logs.");
-        } else {
-          print("Columna session_id ya existe en exercise_logs.");
-        }
+        await db.execute(
+            'ALTER TABLE categories ADD COLUMN is_predefined INTEGER DEFAULT 0');
+        print("Columna is_predefined añadida a categories.");
       } catch (e) {
-        print("Error en upgrade V6 (exercise_logs): $e");
+        print(
+            "Error añadiendo columna is_predefined (puede que ya exista): $e");
+      }
+      try {
+        await db.execute('DROP TABLE IF EXISTS templates_old');
+        await db.execute('ALTER TABLE templates RENAME TO templates_old');
+        await db.execute('''
+          CREATE TABLE templates (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL UNIQUE
+          );
+        ''');
+        await db.execute(
+            'INSERT INTO templates (id, name) SELECT id, name FROM templates_old');
+        await db.execute('DROP TABLE templates_old');
+        print("Tabla templates recreada con name UNIQUE.");
+      } catch (e) {
+        print("Error actualizando tabla templates: $e");
+        // Si falla, recrear la tabla templates como estaba definida en _createDB (con UNIQUE)
+        await db.execute('DROP TABLE IF EXISTS templates');
+        await db.execute('''
+            CREATE TABLE templates (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              name TEXT NOT NULL UNIQUE
+            );
+          ''');
       }
     }
   }
@@ -181,35 +220,6 @@ class DatabaseHelper {
     });
   }
 
-  Future<void> _insertDefaultData(Database db) async {
-    int piernaId = await db.insert('categories', {
-    'name': 'Pierna',
-    'muscle_group': 'Piernas', // Opcional: Define el grupo muscular para la categoría
-    'description': 'Conjunto de ejercicios enfocados en el desarrollo de los músculos de las piernas.'
-    })
-    ;
-    int templateId = await db.insert('templates', {'name': 'Pierna'});
-
-    await db.insert('template_exercises', {
-      'template_id': templateId,
-      'category_id': piernaId, // Asumiendo que esto es relevante
-      'name': 'Sentadilla',
-      'image': 'assets/sentadilla.png',
-      'description': 'Descripción detallada de la sentadilla...' // Añadir descripción
-    });
-    await db.insert('template_exercises', {
-      'template_id': templateId,
-      'category_id': piernaId,
-      'name': 'Extensiones',
-      'image': 'assets/extensiones.png'
-    });
-    await db.insert('template_exercises', {
-      'template_id': templateId,
-      'category_id': piernaId,
-      'name': 'Prens',
-      'image': 'assets/prens.png'
-    });
-  }
   Future<int> updateCategory(int id, Map<String, dynamic> category) async {
     final db = await database;
     return await db.update('categories', category, where: 'id = ?', whereArgs: [id]);
@@ -293,8 +303,11 @@ class DatabaseHelper {
 
   Future<List<Map<String, dynamic>>> getCategories() async {
     final db = await database;
-    return await db.query('categories');
+    // Devuelve todos los campos, incluyendo is_predefined
+    return await db.query('categories', orderBy: 'name ASC');
   }
+
+
 
   Future<List<Map<String, dynamic>>> getWorkouts() async {
     final db = await database;
@@ -349,12 +362,23 @@ class DatabaseHelper {
 // Agrega este método para obtener los ejercicios de una plantilla
   Future<List<Map<String, dynamic>>> getTemplateExercises(int templateId) async {
     final db = await database;
-    return await db.query(
-      'template_exercises',
-      where: 'template_id = ?',
-      whereArgs: [templateId],
-    );
+    final String sql = '''
+    SELECT
+      te.id,
+      te.template_id,
+      te.name,
+      te.image,
+      te.description,
+      te.category_id,
+      c.muscle_group  -- Obtener el nombre del grupo muscular de la tabla categories
+    FROM template_exercises te
+    LEFT JOIN categories c ON te.category_id = c.id
+    WHERE te.template_id = ?
+      ''';
+    final List<Map<String, dynamic>> result = await db.rawQuery(sql, [templateId]);
+    return result;
   }
+
   Future<List<DateTime>> getDatesWithTrainingSessions() async {
     final db = await database;
     final List<Map<String, dynamic>> result = await db.rawQuery(

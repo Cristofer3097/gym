@@ -105,11 +105,14 @@ class _TrainingScreenState extends State<TrainingScreen> {
   Future<List<Map<String, dynamic>>> _loadAvailableExercises() async {
     final db = DatabaseHelper.instance;
     debugPrint("Cargando ejercicios disponibles desde DB...");
-    List<Map<String, dynamic>> templateExercises = [];
+
+
+
+    List<Map<String, dynamic>> templateExercisesFromDb = [];
     List<Map<String, dynamic>> customExercises = [];
 
     try {
-      templateExercises = await db.getTemplateExercises(1);
+      templateExercisesFromDb = await db.getTemplateExercises(1);
       customExercises = await db.getCategories();
     } catch (e) {
       debugPrint("Error cargando ejercicios de la DB: $e");
@@ -123,9 +126,16 @@ class _TrainingScreenState extends State<TrainingScreen> {
       return availableExercises;
     }
 
-    final templateMapped = templateExercises.map((ex) {
-      final name = ex['name']?.toString() ?? ex['exercise_name']?.toString();
-      return {...ex, 'name': name, 'isManual': false};
+    final templateMapped = templateExercisesFromDb.map((ex) {
+      final name = ex['name']?.toString(); // Simplificado, ya que 'name' debe venir de la tabla.
+      return {
+        ...ex, // Propaga todos los campos existentes (id, name, image, description, category_id, muscle_group)
+        'name': name,
+        'isManual': false,
+        // --- CAMBIO IMPORTANTE AQUÍ ---
+        // Asegura que el campo 'category' (usado para filtrar) se popule desde 'muscle_group'
+        'category': ex['muscle_group']?.toString() ?? '',
+      };
     }).toList();
 
     final customExercisesMapped = customExercises.map((ex) {
