@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'training_screen.dart'; //
 import 'calendar.dart'; //
 import '../database/database_helper.dart'; //
+import 'package:intl/date_symbol_data_local.dart';
+
 
 // Define los colores principales basados en la imagen y tus preferencias
 const Color amarilloPrincipal = Color(0xFFFFC107); // Un tono de amarillo vibrante (Ámbar)
@@ -11,7 +13,11 @@ const Color negroBoton = Color(0xFF121212); //Colors.black; // Fondo de los boto
 const Color grisContenedor = Color(0xFF1E1E1E); // Un gris oscuro para tarjetas y diálogos
 const Color grisTextField = Color(0xFF2C2C2C); // Un gris para el fondo de campos de texto
 
-void main() => runApp(const MyApp());
+Future<void> main() async { // Hacerla async y retornar Future<void>
+  WidgetsFlutterBinding.ensureInitialized(); // Asegurar que los bindings estén inicializados
+  await initializeDateFormatting('es_ES', null); // Inicializar datos para español
+  runApp(const MyApp());
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

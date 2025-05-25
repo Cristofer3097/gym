@@ -19,6 +19,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Map<DateTime, List<dynamic>> _events = {};
   List<Map<String, dynamic>> _selectedDaySessions = []; // Almacenará las sesiones del día
 
+
+
   @override
   void initState() {
     super.initState();
@@ -98,6 +100,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
+
   // Diálogo de acciones para una SESIÓN COMPLETA
   void _showSessionActionsDialog(BuildContext screenContext, Map<String, dynamic> session) {
     final String sessionTitle = session['session_title']?.toString() ?? 'Entrenamiento';
@@ -146,6 +149,72 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
+  Widget _buildExerciseTableForCalendar(Map<String, dynamic> log, BuildContext context) {
+    final theme = Theme.of(context);
+    final int seriesCount = int.tryParse(log['series']?.toString() ?? '0') ?? 0;
+    final List<String> reps = (log['reps']?.toString() ?? '').split(',');
+    final List<String> weights = (log['weight']?.toString() ?? '').split(',');
+    final List<String> units = (log['weightUnit']?.toString() ?? '').split(',');
+    final String notes = log['notes']?.toString() ?? '';
+
+    List<TableRow> rows = [
+      TableRow(
+        decoration: BoxDecoration(color: theme.colorScheme.onSurface.withOpacity(0.08)),
+        children: [
+          Padding(padding: const EdgeInsets.symmetric(vertical: 7.0, horizontal: 5.0), child: Text('Serie', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5), textAlign: TextAlign.center)),
+          Padding(padding: const EdgeInsets.symmetric(vertical: 7.0, horizontal: 5.0), child: Text('Reps', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5), textAlign: TextAlign.center)),
+          Padding(padding: const EdgeInsets.symmetric(vertical: 7.0, horizontal: 5.0), child: Text('Peso', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5), textAlign: TextAlign.center)),
+        ],
+      ),
+    ];
+
+    for (int i = 0; i < seriesCount; i++) {
+      rows.add(TableRow(
+        children: [
+          Padding(padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 5.0), child: Text('${i + 1}', textAlign: TextAlign.center, style: TextStyle(fontSize: 12.5))),
+          Padding(padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 5.0), child: Text(i < reps.length ? reps[i].trim() : '-', textAlign: TextAlign.center, style: TextStyle(fontSize: 12.5))),
+          Padding(padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 5.0), child: Text(
+              (i < weights.length ? weights[i].trim() : '-') + " " + (i < units.length ? units[i].trim() : (units.isNotEmpty ? units[0].trim() : 'lb')),
+              textAlign: TextAlign.center, style: TextStyle(fontSize: 12.5)
+          )),
+        ],
+      ));
+    }
+    if (seriesCount == 0) {
+      rows.add(TableRow(children: [
+        Padding(padding: const EdgeInsets.all(6.0), child: Text('-', textAlign: TextAlign.center, style: TextStyle(fontSize: 12.5))),
+        Padding(padding: const EdgeInsets.all(6.0), child: Text('-', textAlign: TextAlign.center, style: TextStyle(fontSize: 12.5))),
+        Padding(padding: const EdgeInsets.all(6.0), child: Text('-', textAlign: TextAlign.center, style: TextStyle(fontSize: 12.5))),
+      ]));
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Table(
+          // Asegurar que todos los bordes (internos y externos) sean visibles y amarillos.
+          // Cambiamos el width a 1.0 para mayor consistencia en el renderizado.
+          border: TableBorder.all(color: theme.primaryColor, width: 1.0), // Borde amarillo y más grueso
+          columnWidths: const {
+            0: FlexColumnWidth(0.8), // Serie
+            1: FlexColumnWidth(1.2), // Reps
+            2: FlexColumnWidth(1.8), // Peso
+          },
+          children: rows,
+        ),
+        if (notes.isNotEmpty) ...[
+          SizedBox(height: 6),
+          Padding(
+            padding: const EdgeInsets.only(left: 4.0, right: 4.0),
+            child: Text(
+              "Notas: $notes",
+              style: TextStyle(fontSize: 11.5, fontStyle: FontStyle.italic, color: Colors.grey.shade400),
+            ),
+          )
+        ]
+      ],
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -214,36 +283,48 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     style: TextStyle(fontSize: 16, color: Colors.grey.shade600)),
               ),
             )
-                : ListView.builder( // Lista de SESIONES de entrenamiento
+                : ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
               itemCount: _selectedDaySessions.length,
               itemBuilder: (context, sessionIndex) {
                 final session = _selectedDaySessions[sessionIndex];
                 final String sessionTitle = session['session_title']?.toString() ?? 'Entrenamiento Sin Título';
+                String sessionTime = "Hora desconocida";
+                try { DateTime dt = DateTime.parse(session['session_dateTime']); sessionTime = DateFormat.Hm('es_ES').format(dt); } catch (_) {}
 
                 return Card(
-                  elevation: 3.0,
-                  margin: const EdgeInsets.symmetric(vertical: 7.0, horizontal: 8.0),
-                  clipBehavior: Clip.antiAlias,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+                  // ... card properties ...
                   child: InkWell(
-                    onTap: () {
-                      _showSessionActionsDialog(context, session);
-                    },
+                    onTap: () { _showSessionActionsDialog(context, session); },
                     child: Padding(
                       padding: const EdgeInsets.all(12.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          Text( // Título de la SESIÓN (el que era editable)
-                            "${sessionIndex + 1}. $sessionTitle",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                            ),
+                          // ... Row para título de sesión y hora ...
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  "${sessionIndex + 1}. $sessionTitle",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                    color: Theme.of(context).primaryColor,
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                sessionTime,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey.shade500,
+                                ),
+                              ),
+                            ],
                           ),
-                          SizedBox(height: 10.0),
-                          // FutureBuilder para cargar y mostrar los ejercicios de ESTA sesión
+                          SizedBox(height: 12.0),
                           FutureBuilder<List<Map<String, dynamic>>>(
                             future: DatabaseHelper.instance.getExerciseLogsForSession(session['id'] as int),
                             builder: (context, exerciseSnapshot) {
@@ -260,42 +341,33 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                 );
                               }
                               final exercisesInSession = exerciseSnapshot.data!;
-                              return Padding(
-                                padding: const EdgeInsets.only(left: 16.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: exercisesInSession.asMap().entries.map((entry) {
-                                    int exerciseIdx = entry.key;
-                                    Map<String, dynamic> log = entry.value;
-                                    return Padding(
-                                      padding: const EdgeInsets.only(top: 6.0),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text( // Nombre del ejercicio dentro de la sesión
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: exercisesInSession.asMap().entries.map((entry) {
+                                  int exerciseIdx = entry.key;
+                                  Map<String, dynamic> log = entry.value;
+                                  return Padding(
+                                    padding: const EdgeInsets.only(top:10.0, bottom: 4.0),
+                                    child: Column( // Columna para nombre de ejercicio y luego la tabla
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        // Nombre del ejercicio (como en la imagen de referencia)
+                                        Padding(
+                                          padding: const EdgeInsets.only(left: 8.0, bottom: 6.0), // Indentación y espacio
+                                          child: Text(
                                             "${exerciseIdx + 1}. ${log['exercise_name']}",
-                                            style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
+                                            style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16.5), // Tamaño consistente
                                           ),
-                                          Padding( // Detalles del ejercicio
-                                            padding: const EdgeInsets.only(left: 18.0, top: 2.0),
-                                            child: Text(
-                                              "Series: ${log['series'] ?? '-'} | Reps: ${log['reps'] ?? '-'} | Peso: ${log['weight'] ?? '-'} ${log['weightUnit'] ?? ''}",
-                                              style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
-                                            ),
-                                          ),
-                                          if (log['notes'] != null && (log['notes'] as String).isNotEmpty)
-                                            Padding(
-                                              padding: const EdgeInsets.only(left: 18.0, top: 2.0),
-                                              child: Text(
-                                                "Notas: ${log['notes']}",
-                                                style: TextStyle(fontSize: 13, fontStyle: FontStyle.italic, color: Colors.grey.shade600),
-                                              ),
-                                            ),
-                                        ],
-                                      ),
-                                    );
-                                  }).toList(),
-                                ),
+                                        ),
+                                        // Tabla de detalles del ejercicio
+                                        Padding(
+                                          padding: const EdgeInsets.only(left: 8.0, right: 4.0), // Indentación para la tabla
+                                          child: _buildExerciseTableForCalendar(log, context),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }).toList(),
                               );
                             },
                           ),
