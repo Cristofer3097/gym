@@ -119,6 +119,7 @@ class DatabaseHelper {
     await _insertDefaultData(db);
   }
   Future<void> _insertDefaultData(Database db) async {
+    Map<String, Map<String, dynamic>> exerciseDetailsCache = {};
     // Insertar ejercicios predefinidos desde database_exercise.dart
     for (final exerciseData in predefinedExerciseList) { // predefinedExerciseList vendrá de database_exercise.dart
       try {
@@ -134,13 +135,95 @@ class DatabaseHelper {
           },
           conflictAlgorithm: ConflictAlgorithm.ignore, // Ignorar si ya existe (por el UNIQUE name)
         );
-      } catch (e) {
+        exerciseDetailsCache[exerciseData['name'] as String] = {
+          'image': exerciseData['image'] ?? 'assets/exercises/placeholder.png',
+          'description': exerciseData['description'] ??
+              'Descripción no disponible.'
+        };
+        } catch (e) {
         print("Error insertando ejercicio predefinido ${exerciseData['name']}: $e");
       }
     }
     print("${predefinedExerciseList.length} ejercicios predefinidos procesados para inserción.");
     // Ya no insertamos la plantilla "Pierna" ni sus ejercicios en template_exercises aquí,
     // ya que los ejercicios predefinidos ahora están directamente en 'categories'.
+    Map<int, String> sourceIdToNameMap = {};
+    for (var ex in predefinedExerciseList) { //
+      sourceIdToNameMap[ex['id'] as int] = ex['name'] as String; //
+    }
+    List<Map<String, dynamic>> predefinedTemplatesData = [
+      {
+        'templateName': 'Rutina de Pecho Completa',
+        'exerciseSourceIds': [0, 1, 4, 5, 8], // IDs de predefinedExerciseList
+        // (Press de Banca, Press Inclinado Barra, Press Inclinado Manc, Aperturas, Cruce Poleas)
+      },
+      {
+        'templateName': 'Espalda Fuerte',
+        'exerciseSourceIds': [9, 11, 12, 14], // (Dominadas, Remo Barra, Remo Mancuerna, Remo Sentado)
+      },
+      {
+        'templateName': 'Día de Pierna Básico',
+        'exerciseSourceIds': [16, 17, 19, 22], // (Sentadilla, Prensa, Curl Femoral Tumbado, Elev. Talones)
+      },
+      // Puedes añadir más plantillas aquí
+    ];
+    for (var templateData in predefinedTemplatesData) {
+      try {
+        String templateNameStr = templateData['templateName'] as String;
+        List<int> exerciseSourceIds = templateData['exerciseSourceIds'] as List<int>;
+        int templateId = await db.insert(
+          'templates',
+          {'name': templateNameStr},
+          conflictAlgorithm: ConflictAlgorithm.ignore, // Ignorar si ya existe una plantilla con ese nombre
+        );
+
+        if (templateId > 0) { // Si la plantilla se insertó (o ya existía y se ignoró)
+          print("Plantilla '$templateNameStr' insertada/encontrada con ID: $templateId");
+
+          for (int sourceId in exerciseSourceIds) {
+            String? exerciseName = sourceIdToNameMap[sourceId];
+            if (exerciseName == null) {
+              print("Advertencia: Ejercicio con source_id $sourceId no encontrado en sourceIdToNameMap.");
+              continue;
+            }
+
+            // Buscar el ejercicio en la tabla 'categories' por su nombre para obtener su ID real
+            final List<Map<String, dynamic>> exerciseEntry = await db.query(
+              'categories',
+              columns: ['id'], // Solo necesitamos el id de la tabla categories
+              where: 'name = ?',
+              whereArgs: [exerciseName],
+              limit: 1,
+            );
+
+            if (exerciseEntry.isNotEmpty) {
+              int categoryDbId = exerciseEntry.first['id'] as int;
+              Map<String, dynamic> details = exerciseDetailsCache[exerciseName] ?? {};
+
+              await db.insert(
+                'template_exercises',
+                {
+                  'template_id': templateId,
+                  'category_id': categoryDbId, // Este es el ID real de la tabla 'categories'
+                  'name': exerciseName, // Guardamos el nombre para fácil acceso
+                  'image': details['image'], // Guardamos la imagen
+                  'description': details['description'], // Puedes poner una descripción general o específica para la plantilla
+                },
+                conflictAlgorithm: ConflictAlgorithm.replace,
+              );
+            } else {
+              print("Advertencia: Ejercicio '$exerciseName' (source_id $sourceId) no encontrado en la tabla 'categories' al crear la plantilla '$templateNameStr'.");
+            }
+          }
+        } else {
+          print("Plantilla '$templateNameStr' ya existía y no se reinsertó debido a UNIQUE constraint.");
+          // Si quieres actualizar una plantilla existente, necesitarías otra lógica (borrar y reinsertar o update)
+        }
+      } catch (e) {
+        print("Error insertando plantilla predefinida '${templateData['templateName']}': $e");
+      }
+    }
+    print("Plantillas predefinidas procesadas.");
   }
 
   Future<void> insertExerciseLog(Map<String, dynamic> log) async {
@@ -187,10 +270,8 @@ class DatabaseHelper {
       }
       // Logic to make templates.name UNIQUE
       try {
-        await db.execute(
-            'DROP TABLE IF EXISTS templates_old_for_unique_constraint'); // Temporary name
-        await db.execute(
-            'ALTER TABLE templates RENAME TO templates_old_for_unique_constraint');
+        await db.execute('DROP TABLE IF EXISTS templates_old_for_unique_constraint'); // Temporary name
+        await db.execute('ALTER TABLE templates RENAME TO templates_old_for_unique_constraint');
         await db.execute('''
           CREATE TABLE templates (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -363,10 +444,6 @@ class DatabaseHelper {
     return await db.insert('workouts', workout);
   }
 
-  Future<int> insertExercise(Map<String, dynamic> exercise) async {
-    final db = await database;
-    return await db.insert('exercises', exercise);
-  }
   Future<void> deleteTemplate(int templateId) async {
     final db = await database;
     await db.delete('templates', where: 'id = ?', whereArgs: [templateId]);
@@ -383,12 +460,6 @@ class DatabaseHelper {
   Future<List<Map<String, dynamic>>> getWorkouts() async {
     final db = await database;
     return await db.query('workouts');
-  }
-
-  Future<List<Map<String, dynamic>>> getExercises(int workoutId) async {
-    final db = await database;
-    return await db.query(
-        'exercises', where: 'workout_id = ?', whereArgs: [workoutId]);
   }
 
   Future<List<Map<String, dynamic>>> getTemplates() async {

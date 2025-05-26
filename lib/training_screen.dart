@@ -819,7 +819,7 @@ class _ExerciseOverlayState extends State<ExerciseOverlay> {
                       style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
                       dropdownColor: Theme.of(context).cardColor,
                       items: <String>[
-                        '', 'Pecho', 'Pierna', 'Espalda', 'Brazos', 'Cardio', 'Hombros', 'Abdomen', 'Otro'
+                        '', 'Pecho', 'Pierna', 'Espalda', 'Brazos', 'Hombros', 'Abdomen', 'Otro'
                       ]
                           .map((cat) => DropdownMenuItem(
                           value: cat, child: Text(cat.isEmpty ? "Todas" : cat)))
@@ -1023,7 +1023,7 @@ class _NewExerciseDialogState extends State<NewExerciseDialog> {
   String? _initialImagePathPreview;
 
   final List<String> muscleGroups = [
-    'Pecho', 'Pierna', 'Espalda', 'Brazos', 'Hombros', 'Abdomen', 'Cardio', 'Otro'
+    'Pecho', 'Pierna', 'Espalda', 'Brazos', 'Hombros', 'Abdomen', 'Otro'
   ];
 
   bool get isEditMode => widget.exerciseToEdit != null;
