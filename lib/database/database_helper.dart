@@ -151,22 +151,7 @@ class DatabaseHelper {
     for (var ex in predefinedExerciseList) { //
       sourceIdToNameMap[ex['id'] as int] = ex['name'] as String; //
     }
-    List<Map<String, dynamic>> predefinedTemplatesData = [
-      {
-        'templateName': 'Rutina de Pecho Completa',
-        'exerciseSourceIds': [0, 1, 4, 5, 8], // IDs de predefinedExerciseList
-        // (Press de Banca, Press Inclinado Barra, Press Inclinado Manc, Aperturas, Cruce Poleas)
-      },
-      {
-        'templateName': 'Espalda Fuerte',
-        'exerciseSourceIds': [9, 11, 12, 14], // (Dominadas, Remo Barra, Remo Mancuerna, Remo Sentado)
-      },
-      {
-        'templateName': 'Día de Pierna Básico',
-        'exerciseSourceIds': [16, 17, 19, 22], // (Sentadilla, Prensa, Curl Femoral Tumbado, Elev. Talones)
-      },
-      // Puedes añadir más plantillas aquí
-    ];
+
     for (var templateData in predefinedTemplatesData) {
       try {
         String templateNameStr = templateData['templateName'] as String;
