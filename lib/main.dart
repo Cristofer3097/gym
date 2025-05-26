@@ -189,6 +189,16 @@ class _HomeScreenState extends State<HomeScreen> {
               child: const Text('Iniciar Entrenamiento'), //
             ),
             const SizedBox(height: 24),
+      Expanded( // Para que esta sección tome el espacio disponible
+        child: Container(
+          padding: const EdgeInsets.all(12.0), // Padding interno para el contenido
+          decoration: BoxDecoration(
+            color: grisContenedor, // Color de fondo gris
+            borderRadius: BorderRadius.circular(10.0), // Bordes redondeados como las cards
+          ),
+    child: Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
             Text(
               'Plantillas',
               style: TextStyle(
@@ -283,11 +293,15 @@ class _HomeScreenState extends State<HomeScreen> {
                             _loadTemplates(); //
                           }
                         },
-                        child: Text(templateName, textAlign: TextAlign.center), //
+                        child: Text(templateName, textAlign: TextAlign.center),
                       ),
                     );
                   }),
             ),
+    ],
+    ),
+        ),
+      ),
             const SizedBox(height: 12),
             ElevatedButton.icon(
               icon: const Icon(Icons.calendar_month), //
@@ -296,13 +310,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const CalendarScreen()), //
-                );
-              },
-              // No necesita style override si el tamaño por defecto del tema es adecuado.
-            )
-          ],
-        ),
-      ),
+    );
+    },
+    )
+    ],
+    ),
+    ),
     );
   }
 }

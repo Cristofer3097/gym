@@ -274,7 +274,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
         'template_id': templateId,
         'name': ex['name'],
         'image': ex['image'],
-        'category_id': ex['db_category_id'],
+        'category_id': ex['db_category_id'] ?? ex['id'],
         'description': ex['description'],
       };
     }).toList();
@@ -493,7 +493,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
       return;
     }
     final nameController = TextEditingController(text: trainingTitle);
-    final result = await showDialog<String>(
+    final templateNameFromDialog = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text("Guardar como Nueva Plantilla"),
@@ -501,6 +501,8 @@ class _TrainingScreenState extends State<TrainingScreen> {
           controller: nameController,
           decoration: InputDecoration(labelText: "Nombre de la plantilla"),
           autofocus: true,
+          textCapitalization: TextCapitalization.sentences,
+
         ),
         actions: [
           TextButton(
@@ -523,10 +525,43 @@ class _TrainingScreenState extends State<TrainingScreen> {
         ],
       ),
     );
-    if (result != null && result.isNotEmpty) {
-      await _saveTemplate(result, selectedExercises);
+    if (templateNameFromDialog != null && templateNameFromDialog.isNotEmpty) {
+      final db = DatabaseHelper.instance;
+      final actualDb = await db.database; // Obtener la instancia de Database
+
+      List<Map<String, dynamic>> existingTemplates = await actualDb.query( // Usar actualDb.query
+        'templates',
+        where: 'LOWER(name) = ?',
+        whereArgs: [templateNameFromDialog.toLowerCase()],
+        limit: 1,
+      );
+
+      if (existingTemplates.isNotEmpty) {
+        if (mounted) {
+          showDialog(
+            context: context, // Usar el contexto de _TrainingScreenState
+            builder: (BuildContext dialogContext) {
+              return AlertDialog(
+                title: Text("Nombre Duplicado"),
+                content: Text("Ya existe una plantilla con el nombre '$templateNameFromDialog'. Por favor, elige un nombre diferente."),
+                actions: <Widget>[
+                  TextButton(
+                    child: Text("Cerrar"),
+                    onPressed: () {
+                      Navigator.of(dialogContext).pop();
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+        }
+        return; // Detener la ejecución si el nombre está duplicado
+      }
+      await _saveTemplate(templateNameFromDialog, selectedExercises);
     }
   }
+
 
   void _confirmCancelTraining() async {
     await _onWillPop();
@@ -1174,9 +1209,15 @@ class _NewExerciseDialogState extends State<NewExerciseDialog> {
                         if (_formKey.currentState!.validate()) {
                           String trimmedName = nameController.text.trim();
                           String? imagePathToSave;
-                          if (_imageFile != null) { imagePathToSave = _imageFile!.path;
-                          } else if (_imageWasRemovedOrReplaced) { imagePathToSave = null;
-                          } else if (isEditMode) { imagePathToSave = widget.exerciseToEdit!['image']; }
+
+                          if (_imageFile != null) {
+                            imagePathToSave = _imageFile!.path;
+                          } else if (_imageWasRemovedOrReplaced) {
+                            imagePathToSave = null;
+                          } else if (isEditMode) {
+                            imagePathToSave = widget.exerciseToEdit!['image']; }
+
+
                           Map<String, dynamic> exerciseDataForDb = { 'name': trimmedName,
                             'muscle_group': selectedMuscleGroup,
                             'image': imagePathToSave, 'description': descriptionController.text.trim(), };
@@ -1184,15 +1225,99 @@ class _NewExerciseDialogState extends State<NewExerciseDialog> {
                           if (isEditMode) {
                             final idToUpdate = widget.exerciseToEdit!['id'];
                             final String oldName = widget.exerciseToEdit!['name'];
+
+
+
+                            if (trimmedName.toLowerCase() != oldName.toLowerCase()) {
+                              final actualDb = await db.database;
+                              List<Map<String, dynamic>> existingExercises = await actualDb.query(
+                                'categories',
+                                where: 'LOWER(name) = ?',
+                                whereArgs: [trimmedName.toLowerCase()],
+                                limit: 1,
+                              );
+                              if (existingExercises.isNotEmpty) {
+                                if (mounted) {
+                                  showDialog(
+                                    context: context,
+                                    builder: (BuildContext dialogContext) {
+                                      return AlertDialog(
+                                        title: Text("Nombre Duplicado"),
+                                        content: Text("Ya existe otro ejercicio con el nombre '$trimmedName'. Por favor, elige un nombre diferente."),
+                                        actions: <Widget>[
+                                          TextButton(
+                                            child: Text("Cerrar"),
+                                            onPressed: () {
+                                              Navigator.of(dialogContext).pop();
+                                            },
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );
+                                }
+                                return; // Detener la ejecución
+                              }
+                            }
+                            // Proceder con la actualización
                             await db.updateCategory(idToUpdate, exerciseDataForDb);
-                            if (trimmedName != oldName) { await db.updateExerciseLogsName(oldName, trimmedName); }
-                            Navigator.pop(context, { 'id': idToUpdate, ...exerciseDataForDb,
-                              'category': selectedMuscleGroup, 'isManual': true, });
-                          } else {
+                            if (trimmedName != oldName) {
+                              await db.updateExerciseLogsName(oldName, trimmedName);
+                            }
+                            if (mounted) {
+                              Navigator.pop(context, {
+                                'id': idToUpdate,
+                                ...exerciseDataForDb,
+                                'category': selectedMuscleGroup, // 'category' es como se usa 'muscle_group' en la app
+                                'isManual': true, // Los ejercicios editados desde aquí son manuales
+                              });
+                            }
+                          } else { // Creando un nuevo ejercicio
+                            // --- Verificación de nombre duplicado ANTES de insertar ---
+                            final actualDb = await db.database;
+                            List<Map<String, dynamic>> existingExercises = await actualDb.query(
+                              'categories',
+                              where: 'LOWER(name) = ?',
+                              whereArgs: [trimmedName.toLowerCase()],
+                              limit: 1,
+                            );
+
+                            if (existingExercises.isNotEmpty) {
+                              if (mounted) {
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext dialogContext) {
+                                    return AlertDialog(
+                                      title: Text("Nombre Duplicado"),
+                                      content: Text("Ya existe un ejercicio con el nombre '$trimmedName'. Por favor, elige un nombre diferente."),
+                                      actions: <Widget>[
+                                        TextButton(
+                                          child: Text("Cerrar"),
+                                          onPressed: () {
+                                            Navigator.of(dialogContext).pop();
+                                          },
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              }
+                              return; // Detener la ejecución si el nombre está duplicado
+                            }
+                            // --- Fin de la verificación ---
+
+                            // Si no hay duplicados, proceder con la inserción
                             final newExerciseId = await db.insertCategory(exerciseDataForDb);
-                            Map<String, dynamic> newExerciseFullData = { 'id': newExerciseId, ...exerciseDataForDb, 'isManual': true, 'category': selectedMuscleGroup, };
+                            Map<String, dynamic> newExerciseFullData = {
+                              'id': newExerciseId,
+                              ...exerciseDataForDb,
+                              'isManual': true, // Los ejercicios nuevos son manuales
+                              'category': selectedMuscleGroup, // 'category' es como se usa 'muscle_group' en la app
+                            };
                             widget.onExerciseCreated?.call(newExerciseFullData);
-                            Navigator.pop(context);
+                            if (mounted) {
+                              Navigator.pop(context); // Cerrar el diálogo de NewExerciseDialog
+                            }
                           }
                         }
                       },
@@ -1332,8 +1457,8 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
         if (reps != null) {
           if (reps < 1) repWarnings[index] = "Mín. 1";
           else if (reps > 99) repWarnings[index] = "Máx. 99";
-          else if (reps < 6 && (weightWarnings[index].isEmpty || !weightWarnings[index].contains("Debe ser >0"))) repWarnings[index] = '¿Bajar peso?';
-          else if (reps > 12 && (weightWarnings[index].isEmpty || !weightWarnings[index].contains("Debe ser >0"))) repWarnings[index] = '¿Subir peso?';
+          else if (reps < 6 && (weightWarnings[index].isEmpty || !weightWarnings[index].contains("Debe ser >0"))) repWarnings[index] = 'Se recomienda bajar el peso';
+          else if (reps > 12 && (weightWarnings[index].isEmpty || !weightWarnings[index].contains("Debe ser >0"))) repWarnings[index] = 'Se recomienda subir el peso';
           else repWarnings[index] = "";
         } else {
           repWarnings[index] = "Inválido";
