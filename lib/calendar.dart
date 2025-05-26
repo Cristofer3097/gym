@@ -225,7 +225,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       body: Column(
         children: [
           TableCalendar(
-            // ... (configuración del TableCalendar sin cambios respecto a la respuesta anterior) ...
+            locale: 'es_ES',
             firstDay: DateTime.utc(2020, 1, 1),
             lastDay: DateTime.utc(2030, 12, 31),
             focusedDay: _focusedDay,
@@ -247,9 +247,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 return null;
               },
             ),
-            headerStyle: HeaderStyle(formatButtonVisible: true, titleCentered: true, formatButtonShowsNext: false),
+            headerStyle: HeaderStyle(
+                formatButtonVisible: true,
+                titleCentered: true,
+                formatButtonShowsNext: false),
             calendarStyle: CalendarStyle(
-              todayDecoration: BoxDecoration(color: Theme.of(context).colorScheme.secondary.withOpacity(0.5), shape: BoxShape.circle),
+              todayDecoration: BoxDecoration(color: Theme.of(context).colorScheme.secondary.withOpacity(0.5),
+                  shape: BoxShape.circle),
               selectedDecoration: BoxDecoration(color: Theme.of(context).primaryColor, shape: BoxShape.circle),
             ),
             onFormatChanged: (format) {
@@ -263,7 +267,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Text(
-                "Entrenamientos del ${DateFormat.yMMMMd().format(_selectedDay!)}:",
+                "Entrenamientos del ${DateFormat.yMMMMd('es_ES').format(_selectedDay!)}:",
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
