@@ -23,7 +23,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 6, // Actualizamos la versión a 4
+      version: 7, // Actualizamos la versión a 4
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -34,7 +34,7 @@ class DatabaseHelper {
     final path = join(documentsDirectory.path, filePath);
     return await openDatabase(
       path,
-      version: 6, // <--- ASEGÚRATE QUE ESTA VERSIÓN SEA LA CORRECTA (EJ. 6)
+      version: 7, // <--- ASEGÚRATE QUE ESTA VERSIÓN SEA LA CORRECTA (EJ. 6)
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -61,7 +61,7 @@ class DatabaseHelper {
     await db.execute('''
       CREATE TABLE IF NOT EXISTS categories (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
+        name TEXT NOT NULL UNIQUE,
         date TEXT,
         muscle_group TEXT,
         workout_id INTEGER,
@@ -74,6 +74,7 @@ class DatabaseHelper {
         notes TEXT,
         description TEXT,
         dateTime TEXT,
+        is_predefined INTEGER DEFAULT 0,
         FOREIGN KEY (workout_id) REFERENCES workouts (id) ON DELETE CASCADE,
         FOREIGN KEY (category_id) REFERENCES categories (id)
       );
@@ -173,21 +174,23 @@ class DatabaseHelper {
     return null;
   }
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
-    // ... (tus upgrades anteriores para version < 5)
     print("Actualizando base de datos de versión $oldVersion a $newVersion");
-    if (oldVersion < 7) {
-      // Cambios para la versión 7: Añadir is_predefined y UNIQUE a categories.name
+    if (oldVersion < 7) { // Check against the new version number
       try {
+        // Add is_predefined if it wasn't there (idempotent for _createDB)
         await db.execute(
-            'ALTER TABLE categories ADD COLUMN is_predefined INTEGER DEFAULT 0');
-        print("Columna is_predefined añadida a categories.");
+            'ALTER TABLE categories ADD COLUMN is_predefined INTEGER DEFAULT 0'); //
+        print("Columna is_predefined añadida a categories."); //
       } catch (e) {
         print(
-            "Error añadiendo columna is_predefined (puede que ya exista): $e");
+            "Error añadiendo columna is_predefined (puede que ya exista): $e"); //
       }
+      // Logic to make templates.name UNIQUE
       try {
-        await db.execute('DROP TABLE IF EXISTS templates_old');
-        await db.execute('ALTER TABLE templates RENAME TO templates_old');
+        await db.execute(
+            'DROP TABLE IF EXISTS templates_old_for_unique_constraint'); // Temporary name
+        await db.execute(
+            'ALTER TABLE templates RENAME TO templates_old_for_unique_constraint');
         await db.execute('''
           CREATE TABLE templates (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -195,12 +198,13 @@ class DatabaseHelper {
           );
         ''');
         await db.execute(
-            'INSERT INTO templates (id, name) SELECT id, name FROM templates_old');
-        await db.execute('DROP TABLE templates_old');
-        print("Tabla templates recreada con name UNIQUE.");
+            'INSERT OR IGNORE INTO templates (id, name) SELECT id, name FROM templates_old_for_unique_constraint'); //
+        await db.execute('DROP TABLE templates_old_for_unique_constraint'); //
+        print("Tabla templates actualizada con constraint UNIQUE en name.");
       } catch (e) {
-        print("Error actualizando tabla templates: $e");
-        // Si falla, recrear la tabla templates como estaba definida en _createDB (con UNIQUE)
+        print(
+            "Error actualizando tabla templates para constraint UNIQUE: $e"); //
+        // Fallback: Recreate if critical error
         await db.execute('DROP TABLE IF EXISTS templates');
         await db.execute('''
             CREATE TABLE templates (
@@ -208,6 +212,73 @@ class DatabaseHelper {
               name TEXT NOT NULL UNIQUE
             );
           ''');
+      }
+
+      // Logic to make categories.name UNIQUE (if it wasn't already from _createDB)
+      // This is more complex due to existing data and potential duplicates.
+      // For new installs, _createDB handles it. For upgrades:
+      try {
+        // Similar to templates, ensure categories.name is UNIQUE
+        await db.execute(
+            'DROP TABLE IF EXISTS categories_old_for_unique_constraint');
+        await db.execute(
+            'ALTER TABLE categories RENAME TO categories_old_for_unique_constraint');
+        // Recreate categories table using the definition from _createDB which includes UNIQUE name and is_predefined
+        await db.execute('''
+            CREATE TABLE categories (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              name TEXT NOT NULL UNIQUE,
+              date TEXT,
+              muscle_group TEXT,
+              workout_id INTEGER,
+              category_id INTEGER,
+              image TEXT,
+              weight REAL,
+              weightUnit TEXT,
+              reps INTEGER,
+              sets INTEGER,
+              notes TEXT,
+              description TEXT,
+              dateTime TEXT,
+              is_predefined INTEGER DEFAULT 0,
+              FOREIGN KEY (workout_id) REFERENCES workouts (id) ON DELETE CASCADE,
+              FOREIGN KEY (category_id) REFERENCES categories (id)
+            );
+        ''');
+        // Copy data, ignoring duplicates in 'name'
+        await db.execute('''
+            INSERT OR IGNORE INTO categories
+            (id, name, date, muscle_group, workout_id, category_id, image, weight, weightUnit, reps, sets, notes, description, dateTime, is_predefined)
+        SELECT id, name, date, muscle_group, workout_id, category_id, image, weight, weightUnit, reps, sets, notes, description, dateTime, COALESCE(is_predefined, 0)
+        FROM categories_old_for_unique_constraint
+        ''');
+    await db.execute('DROP TABLE categories_old_for_unique_constraint');
+    print("Tabla categories actualizada con constraint UNIQUE en name.");
+      } catch (e) {
+        print("Error actualizando tabla categories para constraint UNIQUE: $e");
+        // Fallback: Recreate categories if critical error, using the full schema
+        await db.execute('DROP TABLE IF EXISTS categories');
+        await db.execute('''
+            CREATE TABLE categories (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              name TEXT NOT NULL UNIQUE,
+              date TEXT,
+              muscle_group TEXT,
+              workout_id INTEGER,
+              category_id INTEGER,
+              image TEXT,
+              weight REAL,
+              weightUnit TEXT,
+              reps INTEGER,
+              sets INTEGER,
+              notes TEXT,
+              description TEXT,
+              dateTime TEXT,
+              is_predefined INTEGER DEFAULT 0,
+              FOREIGN KEY (workout_id) REFERENCES workouts (id) ON DELETE CASCADE,
+              FOREIGN KEY (category_id) REFERENCES categories (id)
+            );
+        ''');
       }
     }
   }

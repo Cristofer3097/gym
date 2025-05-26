@@ -8,6 +8,8 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:intl/intl.dart'; // Para formateo de fechas si es necesario
 
 
+
+
 // Clase principal de la pantalla de Entrenamiento
 class TrainingScreen extends StatefulWidget {
   final List<Map<String, dynamic>>? initialExercises;
@@ -106,14 +108,10 @@ class _TrainingScreenState extends State<TrainingScreen> {
     final db = DatabaseHelper.instance;
     debugPrint("Cargando ejercicios disponibles desde DB...");
 
-
-
-    List<Map<String, dynamic>> templateExercisesFromDb = [];
-    List<Map<String, dynamic>> customExercises = [];
-
+    List<Map<String, dynamic>> exercisesFromDb;
     try {
-      templateExercisesFromDb = await db.getTemplateExercises(1);
-      customExercises = await db.getCategories();
+      // getCategories fetches all exercises, both predefined and user-created
+      exercisesFromDb = await db.getCategories(); //
     } catch (e) {
       debugPrint("Error cargando ejercicios de la DB: $e");
       if (mounted) {
@@ -123,53 +121,46 @@ class _TrainingScreenState extends State<TrainingScreen> {
               backgroundColor: Colors.red),
         );
       }
-      return availableExercises;
+      return availableExercises; // Return current list or empty if error
     }
 
-    final templateMapped = templateExercisesFromDb.map((ex) {
-      final name = ex['name']?.toString(); // Simplificado, ya que 'name' debe venir de la tabla.
-      return {
-        ...ex, // Propaga todos los campos existentes (id, name, image, description, category_id, muscle_group)
-        'name': name,
-        'isManual': false,
-        // --- CAMBIO IMPORTANTE AQUÍ ---
-        // Asegura que el campo 'category' (usado para filtrar) se popule desde 'muscle_group'
-        'category': ex['muscle_group']?.toString() ?? '',
-      };
-    }).toList();
+    final Map<String, Map<String, dynamic>> allAvailableExercisesMap = {};
 
-    final customExercisesMapped = customExercises.map((ex) {
+    for (var ex in exercisesFromDb) {
       final name = ex['name']?.toString();
-      return {
-        'name': name,
-        'image': ex['image']?.toString() ?? '',
-        'category': ex['muscle_group']?.toString() ?? '',
-        'description': ex['description']?.toString() ?? '',
-        'id': ex['id'],
-        'isManual': true,
-        'db_category_id': ex['id'],
-      };
-    }).toList();
+      if (name != null && name.isNotEmpty) {
+        // The 'is_predefined' column should exist if DB version is updated.
+        // It's 1 for predefined exercises, 0 or null for user-created ones.
+        bool isPredefined = (ex['is_predefined'] == 1);
 
-    final allAvailableExercisesMap = <String, Map<String, dynamic>>{};
-    for (var ex in [...templateMapped, ...customExercisesMapped]) {
-      if (ex['name'] != null) {
-        allAvailableExercisesMap[ex['name']] = ex; // Prefiere la última entrada si hay duplicados (custom sobreescribe template)
+        allAvailableExercisesMap[name] = {
+          'id': ex['id'], // ID from the 'categories' table
+          'name': name,
+          'image': ex['image']?.toString() ?? '',
+          // 'category' for filtering in overlay, 'muscle_group' is the DB field name
+          'category': ex['muscle_group']?.toString() ?? '', //
+          'description': ex['description']?.toString() ?? '', //
+          'isManual': !isPredefined, // THIS IS THE KEY CHANGE: 'isManual' is true if NOT predefined
+          'db_category_id': ex['id'], // Using the exercise's own ID from 'categories' table
+          // Ensure all fields expected by ExerciseOverlay are present
+        };
       }
     }
+
     final allUniqueAvailableExercises = allAvailableExercisesMap.values.toList();
+    allUniqueAvailableExercises.sort((a, b) => (a['name'] ?? '').compareTo(b['name'] ?? ''));
 
 
     if (mounted) {
       setState(() {
-        availableExercises = allUniqueAvailableExercises;
+        availableExercises = allUniqueAvailableExercises; //
       });
     }
     debugPrint(
-        "Total de ejercicios cargados para el overlay: ${allUniqueAvailableExercises.length}");
+        "Total de ejercicios cargados para el overlay: ${allUniqueAvailableExercises.length}"); //
     if (allUniqueAvailableExercises.isEmpty) {
       debugPrint(
-          "Advertencia: La lista de 'availableExercises' está vacía después de cargar.");
+          "Advertencia: La lista de 'availableExercises' está vacía después de cargar."); //
     }
     return allUniqueAvailableExercises;
   }
@@ -190,7 +181,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
           'description': exercise['description'],
           'isManual': exercise['isManual'] ?? false,
           'id': exercise['id'],
-          'db_category_id': exercise['isManual'] == true ? exercise['id'] : exercise['category_id'],
+          'db_category_id': exercise['db_category_id'],
         });
         _didDataChange = true;
       }

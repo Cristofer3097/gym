@@ -1,4 +1,4 @@
-// database_exercise.dart
+import 'package:sqflite/sqflite.dart';
 
 const List<Map<String, dynamic>> predefinedExerciseList = [
   // Pecho
