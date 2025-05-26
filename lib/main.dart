@@ -3,6 +3,7 @@ import 'training_screen.dart'; //
 import 'calendar.dart'; //
 import '../database/database_helper.dart'; //
 import 'package:intl/date_symbol_data_local.dart';
+import 'extras.dart';
 
 
 // Define los colores principales basados en la imagen y tus preferencias
@@ -302,17 +303,38 @@ class _HomeScreenState extends State<HomeScreen> {
     ),
         ),
       ),
-            const SizedBox(height: 12),
-            ElevatedButton.icon(
-              icon: const Icon(Icons.calendar_month), //
-              label: const Text('Calendario'), //
-              onPressed: () { //
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const CalendarScreen()), //
-    );
-    },
-    )
+            const SizedBox(height: 16), // Un poco más de espacio antes de la fila de botones
+
+            // --- FILA PARA BOTONES DE CALENDARIO Y CONSEJOS ---
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.calendar_month),
+                    label: const Text('Calendario'),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const CalendarScreen()),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12), // Espacio entre los botones
+                Expanded(
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.lightbulb_outline_rounded), // Icono para consejos
+                    label: const Text('Consejos'), // Etiqueta más corta para mejor ajuste
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const TipsExtrasScreen()), // Navegar a la nueva pantalla
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
     ],
     ),
     ),
