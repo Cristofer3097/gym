@@ -82,7 +82,7 @@ class TipsExtrasScreen extends StatelessWidget {
             _buildTip(
               context,
               'Libro Recomendado', // Título del consejo
-              'Un libro que me ayudó a entender la importancia del entrenamiento efectivo y de alta intensidad es "Heavy Duty" del fisicoculturista Mike Mentzer.', // Contenido del consejo
+              'Un libro que me ayudó a entender la importancia del entrenamiento efectivo y de alta intensidad es "Heavy Duty".', // Contenido del consejo
               actionButton: ElevatedButton.icon( // El botón que quieres integrar
                 icon: const Icon(Icons.menu_book_rounded, size: 20), // Icono más apropiado para un libro
                 label: const Text('Link del libro'), // Texto del botón
@@ -96,13 +96,13 @@ class TipsExtrasScreen extends StatelessWidget {
                 },
               ),
             ),
-            _buildTip(context, 'Constancia:', 'La clave del progreso es ser constante con tus entrenamientos y nutrición.'),
+            _buildTip(context, 'Constancia:', 'La clave del progreso es ser constante con tus entrenamientos y nutrición. Recuerda que la constancia lleva a la superacion'),
             _buildTip(context, 'Calentamiento:', 'No olvides calentar antes de cada sesión para prevenir lesiones y preparar tus músculos.'),
-            _buildTip(context, 'Aproximidad:', 'Antes de llegar al fallo moscular, entrenar 2 series con un peso del 50% - 80% de tu peso máximo y de 2-4 repeticiones por debajo del fallo antes de llegar a tu serie efectiva.'),
+            _buildTip(context, 'Aproximidad:', 'Antes de llegar a tu serie efectiva, entrena 2 series con un peso del 50% - 80% de tu peso máximo y de 2-4 repeticiones por debajo del fallo moscular.'),
             _buildTip(context, 'Técnica > Peso:', 'Prioriza una buena técnica sobre levantar más peso, especialmente al iniciar. Esto maximiza la efectividad y previene lesiones.'),
             _buildTip(context, 'Evita la sobrecarga de entrenamiento:', 'Realizar entre 6 y 7 ejercicios en una sesión de gimnasio. es importante elegir ejercicios que sean efectivos para los objetivos de entrenamiento y evitar la sobrecarga para evitar el escancamiento y lesiones.'),
             _buildTip(context, 'Progresión Gradual:', 'Aumenta la intensidad, el volumen o la frecuencia de tus entrenamientos pero se paciente, con agregar 5 Lb más es suficiente para una mejorar tu serie efectiva. Si haces mas de 10 repeticiones es hora de subir de peso'),
-            _buildTip(context, 'Descanso:', 'El descanso es tan importante como el ejercicio. Duerme bien (7-9 horas) y permite que tus músculos se recuperen entre sesiones. Te recomiendo un descanso de 48 a 72 horas entre sesiones para el mismo grupo muscular. '),
+            _buildTip(context, 'Descanso:', 'El descanso es tan importante como el ejercicio. Duerme bien (7-9 horas) eso permite que tus músculos se recuperen entre sesiones. Te recomiendo un descanso de 48 a 72 horas entre sesiones para el mismo grupo muscular. '),
             _buildTip(context, 'Descanso entre series :', 'De 3-5 minutos:Son ideales para entrenamientos que buscan aumentar la fuerza máxima y la potencia. Permiten una recuperación más completa del sistema neuromuscular y energético, lo que facilita una mayor intensidad y volumen en las series subsecuentes.'),
             _buildTip(context, 'Conoce tu cuerpo:', 'No ignores el dolor (diferente a la fatiga muscular). Si algo no se siente bien, detente y evalúa.'),
             _buildTip(context, 'Nutrición:', 'Una alimentación balanceada es fundamental.\n -Es importante llegar a tus calorias de mantenimiento o con un poco de superávit calórico (100 - 200) es suficiente para ganancias mosculares. (Hay muchas paginas web para calcular tus calorias necesarias)  \n -Asegúrate de consumir suficientes proteínas (1.8 gr de proteina multiplicado por tu peso) para la reparación muscular. \n -Los Carbohidratos son tambien fundamentales, antes del entrenamiento es crucial para optimizar el rendimiento, especialmente en ejercicios de larga duración o alta intensidad. \n -Unos Carbohidratos de absorción lenta, como pan integral o frutas, puede ayudar a mantener los niveles de energía estables a lo largo del entrenamiento.'),

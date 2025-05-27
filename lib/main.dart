@@ -6,7 +6,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'extras.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart'; // Importa esto
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+//import 'package:gym/l10n/app_localizations.dart';
 
 
 
@@ -139,7 +139,7 @@ class _MyAppState extends State<MyApp> {
         ),
       ),
         localizationsDelegates: const [
-          AppLocalizations.delegate, // Delegado generado para tus traducciones
+          //AppLocalizations.delegate, // Delegado generado para tus traducciones
           GlobalMaterialLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
@@ -188,6 +188,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Gym Diary'), // Título de la AppBar
+        //title: Text(l10n.appTitle),
         centerTitle: true, //
         // Puedes añadir un menú lateral (Drawer) o acciones si lo deseas:
         // leading: IconButton(icon: Icon(Icons.menu), onPressed: () { /* Lógica del menú */ }),

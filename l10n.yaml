@@ -1,0 +1,5 @@
+arb-dir: l10n  # Directorio donde están tus archivos .arb (app_en.arb, app_es.arb)
+template-arb-file: app_en.arb # Archivo ARB que se usa como plantilla (usualmente el de tu idioma por defecto)
+output-localization-file: app_localizations.dart # Nombre del archivo .dart principal que se generará
+output-dir: lib/l10n  # <-- ESTO ES CLAVE para que tu import funcione
+nullable-getter: false

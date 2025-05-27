@@ -5,7 +5,7 @@
     <uses-permission android:name="android.permission.CAMERA" />
 
     <application
-        android:label="gym"
+        android:label="Gym Diary"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
