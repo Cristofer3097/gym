@@ -4,6 +4,10 @@ import 'calendar.dart'; //
 import '../database/database_helper.dart'; //
 import 'package:intl/date_symbol_data_local.dart';
 import 'extras.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart'; // Importa esto
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 
 
 
@@ -21,8 +25,24 @@ Future<void> main() async { // Hacerla async y retornar Future<void>
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+  static void setLocale(BuildContext context, Locale newLocale) {
+    _MyAppState? state = context.findAncestorStateOfType<_MyAppState>();
+    state?.setLocale(newLocale);
+  }
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+class _MyAppState extends State<MyApp> {
+  Locale _locale = const Locale('en', ''); // Inglés como predeterminado
+
+  void setLocale(Locale locale) {
+    setState(() {
+      _locale = locale;
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -118,6 +138,17 @@ class MyApp extends StatelessWidget {
           thickness: 0.5,
         ),
       ),
+        localizationsDelegates: const [
+          AppLocalizations.delegate, // Delegado generado para tus traducciones
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+        Locale('en', ''), // Inglés (sin código de país)
+      Locale('es', ''),
+        ],
+      locale: _locale,
       home: const HomeScreen(),
     );
   }

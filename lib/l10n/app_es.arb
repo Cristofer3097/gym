@@ -1,0 +1,77 @@
+{
+  "@@locale": "es",
+  "appTitle": "Diario de Gimnasio",
+  "startTraining": "Iniciar Entrenamiento",
+  "templates": "Plantillas",
+  "noTemplatesSaved": "No hay plantillas guardadas.\n¡Crea una nueva o guarda un entrenamiento!",
+  "calendar": "Calendario",
+  "tipsAndExtras": "Consejos y Extras",
+  "creatorCredit": "Creador Cristofer3097",
+  "trainingScreenTitle": "Entrenamiento",
+  "cancel": "Cancelar",
+  "editTrainingTitle": "Editar Título del Entrenamiento",
+  "title": "Título",
+  "save": "Guardar",
+  "addExerciseButton": "Añadir Ejer.",
+  "createTemplateButton": "Crear Plantilla",
+  "addExercisesToTraining": "Añade ejercicios a tu entrenamiento.",
+  "finishAndSaveTraining": "Terminar y Guardar Entrenamiento",
+  "confirmFinishTrainingTitle": "Terminar Entrenamiento",
+  "confirmFinishTrainingContent": "¿Guardar y terminar el entrenamiento actual?",
+  "no": "No",
+  "yesSaveChanges": "Sí, Guardar",
+  "trainingSavedSuccess": "Entrenamiento '{trainingTitle}' guardado con éxito",
+  "errorSavingTraining": "Error al guardar entrenamiento: {error}",
+  "addAtLeastOneExerciseToFinish": "Añade al menos un ejercicio para terminar el entrenamiento.",
+  "exerciseHasNoSeries": "El ejercicio '{exerciseName}' no tiene series definidas.",
+  "incompleteRepsData": "Datos de repeticiones incompletos para '{exerciseName}'.",
+  "incompleteWeightData": "Datos de peso incompletos para '{exerciseName}'.",
+  "incompleteWeightUnits": "Unidades de peso incompletas para '{exerciseName}'.",
+  "saveAsNewTemplateTitle": "Guardar como Nueva Plantilla",
+  "templateNameLabel": "Nombre de la plantilla",
+  "saveTemplateButton": "Guardar Plantilla",
+  "templateNameCannotBeEmpty": "El nombre de la plantilla no puede estar vacío.",
+  "templateSavedSuccess": "Plantilla '{templateName}' guardada",
+  "duplicateNameDialogTitle": "Nombre Duplicado",
+  "duplicateExerciseNameContent": "Ya existe un ejercicio con el nombre '{exerciseName}'. Por favor, elige un nombre diferente.",
+  "duplicateTemplateNameContent": "Ya existe una plantilla con el nombre '{templateName}'. Por favor, elige un nombre diferente.",
+  "close": "Cerrar",
+  "searchExercise": "Buscar ejercicio",
+  "category": "Categoría",
+  "allCategories": "Todas",
+  "loadingOrNoExercises": "Cargando o no hay ejercicios definidos...",
+  "noExercisesFoundWithFilters": "No se encontraron ejercicios con los filtros actuales.",
+  "deletePermanentlyTooltip": "Borrar permanentemente",
+  "deleteExerciseDialogTitle": "¿Borrar Ejercicio?",
+  "deleteExerciseDialogContent": "'{exerciseName}' se eliminará permanentemente de la lista de ejercicios disponibles. Esta acción no se puede deshacer.",
+  "deleteButton": "Borrar",
+  "exerciseDeletedSuccess": "Ejercicio '{exerciseName}' eliminado.",
+  "createNewExerciseButton": "Crear Nuevo Ejercicio",
+  "cancelTrainingDialogTitle": "Cancelar Entrenamiento",
+  "cancelTrainingDialogContent": "Los datos del entrenamiento actual no guardados se perderán. ¿Seguro que quieres salir?",
+  "yesExit": "Sí, Salir",
+  "removeExerciseDialogTitle": "Quitar Ejercicio",
+  "removeExerciseDialogContent": "¿Quitar '{exerciseName}' del entrenamiento? Los datos ingresados para este ejercicio se perderán.",
+  "yesRemove": "Sí, Quitar",
+  "exerciseRemovedSuccess": "'{exerciseName}' quitado del entrenamiento",
+  "errorRemovingExercise": "Error al quitar el ejercicio. Índice inválido.",
+  "addExercisesToSaveTemplate": "Añade ejercicios al entrenamiento para guardarlo como plantilla.",
+  "@trainingTitleDefault": {
+    "description": "Default training title with date",
+    "placeholders": {
+      "date": {
+        "type": "Object"
+      }
+    }
+  },
+  "trainingTitleDefault": "Entrenamiento del {date}",
+  "@exerciseOverlayNewExerciseCreated": {
+    "description": "Snackbar message when a new exercise is created from overlay",
+    "placeholders": {
+      "exerciseName": {
+        "type": "Object"
+      }
+    }
+  },
+  "exerciseOverlayNewExerciseCreated": "Ejercicio '{exerciseName}' creado y disponible."
+}
