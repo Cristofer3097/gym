@@ -6,6 +6,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'extras.dart';
 
 
+
 // Define los colores principales basados en la imagen y tus preferencias
 const Color amarilloPrincipal = Color(0xFFFFC107); // Un tono de amarillo vibrante (Ámbar)
 const Color fondoOscuro = Color(0xFF121212); // Un gris muy oscuro, casi negro para el fondo
@@ -152,6 +153,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Gym Diary'), // Título de la AppBar
@@ -303,7 +305,7 @@ class _HomeScreenState extends State<HomeScreen> {
     ),
         ),
       ),
-            const SizedBox(height: 16), // Un poco más de espacio antes de la fila de botones
+            const SizedBox(height: 20), // Un poco más de espacio antes de la fila de botones
 
             // --- FILA PARA BOTONES DE CALENDARIO Y CONSEJOS ---
             Row(
@@ -335,7 +337,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ],
             ),
-    ],
+            const SizedBox(height: 20),
+            Center(
+              child: Text(
+                "Version 1.0",
+                style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey[500]),
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
     ),
     ),
     );

@@ -468,8 +468,15 @@ class _TrainingScreenState extends State<TrainingScreen> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("Entrenamiento '$currentSessionTitle' guardado con éxito")));
-          _didDataChange = true;
+              SnackBar(content: Text("Entrenamiento '$currentSessionTitle' guardado con éxito"),
+          behavior: SnackBarBehavior.floating, // <-- AÑADE ESTO
+    margin: const EdgeInsets.all(12.0), // <-- AÑADE UN MARGEN
+    shape: RoundedRectangleBorder( // <-- FORMA OPCIONAL
+    borderRadius: BorderRadius.circular(8.0),
+    ),
+    )
+    );
+    _didDataChange = true;
           Navigator.pop(context, _didDataChange);
         }
       } catch (e) {
