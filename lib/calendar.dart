@@ -13,6 +13,7 @@ class CalendarScreen extends StatefulWidget {
 }
 
 class _CalendarScreenState extends State<CalendarScreen> {
+
   CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
@@ -71,6 +72,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   // Diálogo para confirmar borrado de una SESIÓN COMPLETA
   Future<bool?> _showConfirmDeleteSessionDialog(BuildContext parentContext, Map<String, dynamic> session) async {
+
     return showDialog<bool>(
       context: parentContext,
       builder: (BuildContext dialogContext) {

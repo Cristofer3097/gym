@@ -264,11 +264,11 @@ class _RMCalculatorDialogState extends State<RMCalculatorDialog> {
                   ],
                 )
               else if (_weightController.text.isNotEmpty && _repsController.text.isNotEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 20.0),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 20.0),
                   child: Text(
-                    "Ingresa valores válidos para calcular.",
-                    style: TextStyle(fontStyle: FontStyle.italic),
+                    _formKey.currentState?.validate() == false ? "Por favor, corrige los errores." : "Ingresa valores válidos para calcular.",
+                    style: TextStyle(fontStyle: FontStyle.italic, color: _formKey.currentState?.validate() == false ? theme.colorScheme.error : Colors.grey),
                     textAlign: TextAlign.center,
                   ),
                 ),
