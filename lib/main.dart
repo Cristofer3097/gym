@@ -6,7 +6,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'extras.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart'; // Importa esto
-//import 'package:gym/l10n/app_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 
 
@@ -35,7 +35,7 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 class _MyAppState extends State<MyApp> {
-  Locale _locale = const Locale('en', ''); // Inglés como predeterminado
+  Locale? _locale;
 
   void setLocale(Locale locale) {
     setState(() {
@@ -47,6 +47,17 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      locale: _locale, // aquí se cambia el idioma
+      supportedLocales: const [
+        Locale('en'),
+        Locale('es'),
+      ],
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       title: 'Gym Diary App', // Título de la aplicación
       theme: ThemeData(
         brightness: Brightness.dark,
@@ -138,24 +149,20 @@ class _MyAppState extends State<MyApp> {
           thickness: 0.5,
         ),
       ),
-        localizationsDelegates: const [
-          //AppLocalizations.delegate, // Delegado generado para tus traducciones
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: const [
-        Locale('en', ''), // Inglés (sin código de país)
-      Locale('es', ''),
-        ],
-      locale: _locale,
-      home: const HomeScreen(),
+
+
+      // ...
+      home: HomeScreen(
+        onLocaleChange: setLocale,  // pásale la función
+      ),
     );
   }
 }
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key}); //
+  final void Function(Locale) onLocaleChange;
+  const HomeScreen({Key? key, required this.onLocaleChange}) : super(key: key);
+
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -187,8 +194,8 @@ class _HomeScreenState extends State<HomeScreen> {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Gym Diary'), // Título de la AppBar
-        //title: Text(l10n.appTitle),
+        //title: const Text('Gym Diary'), // Título de la AppBar
+        title: Text(AppLocalizations.of(context)!.appTitle),
         centerTitle: true, //
         // Puedes añadir un menú lateral (Drawer) o acciones si lo deseas:
         // leading: IconButton(icon: Icon(Icons.menu), onPressed: () { /* Lógica del menú */ }),
@@ -221,7 +228,8 @@ class _HomeScreenState extends State<HomeScreen> {
               // style: Theme.of(context).elevatedButtonTheme.style?.copyWith(
               //   minimumSize: MaterialStateProperty.all(const Size(double.infinity, 50)),
               // ),
-              child: const Text('Iniciar Entrenamiento'), //
+              //child: const Text('Iniciar Entrenamiento'), //
+              child: Text(AppLocalizations.of(context)!.startTraining),
             ),
             const SizedBox(height: 24),
       Expanded( // Para que esta sección tome el espacio disponible
@@ -370,6 +378,10 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
             const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () => widget.onLocaleChange(const Locale('es')),
+              child: Text('Cambiar a Español'),
+            ),
             Center(
               child: Text(
                 "Version 1.0",
