@@ -34,8 +34,9 @@ class MyApp extends StatefulWidget {
   @override
   State<MyApp> createState() => _MyAppState();
 }
+
 class _MyAppState extends State<MyApp> {
-  Locale? _locale;
+  Locale _locale = const Locale('en');
 
   void setLocale(Locale locale) {
     setState(() {
@@ -47,18 +48,9 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      locale: _locale, // aquí se cambia el idioma
-      supportedLocales: const [
-        Locale('en'),
-        Locale('es'),
-      ],
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      title: 'Gym Diary App', // Título de la aplicación
+        onGenerateTitle: (BuildContext context) {
+        return AppLocalizations.of(context)?.appTitle ?? 'Gym Diary';
+        },
       theme: ThemeData(
         brightness: Brightness.dark,
         scaffoldBackgroundColor: fondoOscuro,
@@ -152,9 +144,12 @@ class _MyAppState extends State<MyApp> {
 
 
       // ...
-      home: HomeScreen(
-        onLocaleChange: setLocale,  // pásale la función
-      ),
+      localizationsDelegates: AppLocalizations.localizationsDelegates, // Usar el generado
+      supportedLocales: AppLocalizations.supportedLocales,       // Usar el generado
+      locale: _locale, // El locale actual del estado
+      home: HomeScreen(onLocaleChange: setLocale),
+        // pásale la función
+
     );
   }
 }
@@ -186,16 +181,55 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     }
   }
+  void _showLanguageSelectionDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text(l10n.changeLanguageDialogTitle),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              ListTile(
+                title: Text(l10n.languageEnglish),
+                onTap: () {
+                  widget.onLocaleChange(const Locale('en'));
+                  Navigator.of(dialogContext).pop();
+                },
+              ),
+              ListTile(
+                title: Text(l10n.languageSpanish),
+                onTap: () {
+                  widget.onLocaleChange(const Locale('es'));
+                  Navigator.of(dialogContext).pop();
+                },
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text(l10n.close),
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   // _showSelectTemplateToDeleteDialog no necesita cambios lógicos aquí.
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         //title: const Text('Gym Diary'), // Título de la AppBar
-        title: Text(AppLocalizations.of(context)!.appTitle),
+        title: Text(l10n.appTitle),
         centerTitle: true, //
         // Puedes añadir un menú lateral (Drawer) o acciones si lo deseas:
         // leading: IconButton(icon: Icon(Icons.menu), onPressed: () { /* Lógica del menú */ }),
@@ -229,7 +263,7 @@ class _HomeScreenState extends State<HomeScreen> {
               //   minimumSize: MaterialStateProperty.all(const Size(double.infinity, 50)),
               // ),
               //child: const Text('Iniciar Entrenamiento'), //
-              child: Text(AppLocalizations.of(context)!.startTraining),
+              child: Text(l10n.startTraining),
             ),
             const SizedBox(height: 24),
       Expanded( // Para que esta sección tome el espacio disponible
@@ -243,7 +277,7 @@ class _HomeScreenState extends State<HomeScreen> {
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
             Text(
-              'Plantillas',
+              l10n.templates,
               style: TextStyle(
                 fontSize: 19,
                 fontWeight: FontWeight.bold,
@@ -254,9 +288,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 12),
             Expanded(
               child: templates.isEmpty
-                  ? Center(
-                  child: Text(
-                    "No hay plantillas guardadas.\n¡Crea una nueva o guarda un entrenamiento!", //
+                  ? Center(child: Text(l10n.noTemplatesSaved, //
                     textAlign: TextAlign.center,
                     style: TextStyle(color: Colors.grey[500], fontSize: 15),
                   ))
@@ -353,7 +385,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Expanded(
                   child: ElevatedButton.icon(
                     icon: const Icon(Icons.calendar_month),
-                    label: const Text('Calendario'),
+                    label: Text(l10n.calendar),
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -366,7 +398,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 Expanded(
                   child: ElevatedButton.icon(
                     icon: const Icon(Icons.lightbulb_outline_rounded), // Icono para consejos
-                    label: const Text('Consejos'), // Etiqueta más corta para mejor ajuste
+                    label:
+                    Text(l10n.tipsAndExtras), // Etiqueta más corta para mejor ajuste
+
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -378,20 +412,55 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () => widget.onLocaleChange(const Locale('es')),
-              child: Text('Cambiar a Español'),
+            SizedBox(
+              height: 40, // Ajusta la altura según tu diseño
+              child: Stack(
+                children: [
+                  // Texto de versión centrado
+                  Align(
+                    alignment: Alignment.center,
+                    child: Text(
+                      l10n.version("1.0.1"),
+                      style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey[500]),
+                    ),
+                  ),
+                  // Botón de idioma a la derecha
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: OutlinedButton(
+                      onPressed: () => _showLanguageSelectionDialog(context),
+                      style: OutlinedButton.styleFrom(
+                        shape: const CircleBorder(),
+                        padding: const EdgeInsets.all(10),
+                        side: BorderSide(color: theme.primaryColor.withOpacity(0.7)),
+                        minimumSize: const Size(40, 40),
+                      ),
+                      child: Text(
+                        AppLocalizations.of(context)!.localeName.toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: theme.primaryColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
+      // --- FIN DE NUEVA FILA ---
+
+      const SizedBox(height: 12), // Espacio antes del crédito del creador
             Center(
               child: Text(
-                "Version 1.0",
+                l10n.creatorCredit, // Usar l10n
                 style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey[500]),
               ),
             ),
             const SizedBox(height: 8),
           ],
-    ),
-    ),
+        ),
+      ),
     );
   }
 }

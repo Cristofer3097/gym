@@ -5,8 +5,21 @@
   "templates": "Plantillas",
   "noTemplatesSaved": "No hay plantillas guardadas.\n¡Crea una nueva o guarda un entrenamiento!",
   "calendar": "Calendario",
-  "tipsAndExtras": "Consejos y Extras",
+  "tipsAndExtras": "Tips y Extras",
   "creatorCredit": "Creador Cristofer3097",
+  "version": "Versión {versionNumber}",
+  "@version": {
+    "placeholders": {
+      "versionNumber": {
+        "type": "String"
+      }
+    }
+  },
+  "languageButtonLabel": "Idioma",
+  "changeLanguageDialogTitle": "Cambiar Idioma",
+  "languageEnglish": "English",
+  "languageSpanish": "Español",
+  "close": "Cerrar",
   "trainingScreenTitle": "Entrenamiento",
   "cancel": "Cancelar",
   "editTrainingTitle": "Editar Título del Entrenamiento",

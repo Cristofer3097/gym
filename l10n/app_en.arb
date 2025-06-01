@@ -1,5 +1,6 @@
 
 {
+
   "@@locale": "en",
   "appTitle": "Gym Diary",
   "startTraining": "Start Training",
@@ -8,6 +9,19 @@
   "calendar": "Calendar",
   "tipsAndExtras": "Tips & Extras",
   "creatorCredit": "Creator Cristofer3097",
+  "version": "Version {versionNumber}",
+  "@version": {
+    "placeholders": {
+      "versionNumber": {
+        "type": "String"
+      }
+    }
+  },
+  "languageButtonLabel": "Lang",
+  "changeLanguageDialogTitle": "Change Language",
+  "languageEnglish": "English",
+  "languageSpanish": "Español",
+  "close": "Close",
   "trainingScreenTitle": "Training",
   "cancel": "Cancel",
   "editTrainingTitle": "Edit Training Title",
