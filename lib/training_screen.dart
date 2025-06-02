@@ -6,7 +6,8 @@ import 'package:permission_handler/permission_handler.dart';
 import '../database/database_helper.dart'; // Asegúrate que la ruta sea correcta
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:intl/intl.dart'; // Para formateo de fechas si es necesario
-
+import '../utils/localization_utils.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 
 
@@ -137,12 +138,13 @@ class _TrainingScreenState extends State<TrainingScreen> {
           'id': ex['id'], // ID from the 'categories' table
           'name': name,
           'image': ex['image']?.toString() ?? '',
-          // 'category' for filtering in overlay, 'muscle_group' is the DB field name
           'category': ex['muscle_group']?.toString() ?? '', //
           'description': ex['description']?.toString() ?? '', //
           'isManual': !isPredefined, // THIS IS THE KEY CHANGE: 'isManual' is true if NOT predefined
           'db_category_id': ex['id'], // Using the exercise's own ID from 'categories' table
           // Ensure all fields expected by ExerciseOverlay are present
+          'is_predefined': isPredefined ? 1 : 0,
+          'original_id': ex['original_id'],
         };
       }
     }
@@ -182,6 +184,8 @@ class _TrainingScreenState extends State<TrainingScreen> {
           'isManual': exercise['isManual'] ?? false,
           'id': exercise['id'],
           'db_category_id': exercise['db_category_id'],
+          'is_predefined': exercise['is_predefined'], // <<< AÑADIR
+          'original_id': exercise['original_id'],
         });
         _didDataChange = true;
       }
@@ -630,8 +634,8 @@ class _TrainingScreenState extends State<TrainingScreen> {
                     itemCount: selectedExercises.length,
                     itemBuilder: (context, index) {
                       final exercise = selectedExercises[index];
-                      final exerciseName =
-                          exercise['name']?.toString() ?? "Ejercicio";
+                      final exerciseName = getLocalizedExerciseName(context, exercise);
+
 
                       String seriesText = exercise['series']?.toString() ?? "-";
                       String repsText = "-";
@@ -891,8 +895,7 @@ class _ExerciseOverlayState extends State<ExerciseOverlay> {
                   selectedEx['name'] == exercise['name']);
                   final String? exerciseImage =
                   exercise['image'] as String?;
-                  final String exerciseName =
-                      exercise['name']?.toString() ?? "Ejercicio sin nombre";
+                  final String exerciseName = getLocalizedExerciseName(context, exercise);
 
                   List<Widget> trailingItems = [];
 
@@ -1225,7 +1228,8 @@ class _NewExerciseDialogState extends State<NewExerciseDialog> {
                             imagePathToSave = widget.exerciseToEdit!['image']; }
 
 
-                          Map<String, dynamic> exerciseDataForDb = { 'name': trimmedName,
+                          Map<String, dynamic> exerciseDataForDb = {
+                            'name': trimmedName,
                             'muscle_group': selectedMuscleGroup,
                             'image': imagePathToSave, 'description': descriptionController.text.trim(), };
                           final db = DatabaseHelper.instance;
@@ -1236,6 +1240,8 @@ class _NewExerciseDialogState extends State<NewExerciseDialog> {
 
 
                             if (trimmedName.toLowerCase() != oldName.toLowerCase()) {
+
+
                               final actualDb = await db.database;
                               List<Map<String, dynamic>> existingExercises = await actualDb.query(
                                 'categories',
@@ -1268,8 +1274,9 @@ class _NewExerciseDialogState extends State<NewExerciseDialog> {
                             }
                             // Proceder con la actualización
                             await db.updateCategory(idToUpdate, exerciseDataForDb);
-                            if (trimmedName != oldName) {
+                            if (trimmedName.toLowerCase() != oldName.toLowerCase()) {
                               await db.updateExerciseLogsName(oldName, trimmedName);
+                              await db.updateExerciseNameInTemplateExercises(oldName, trimmedName);
                             }
                             if (mounted) {
                               Navigator.pop(context, {
@@ -1614,6 +1621,8 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
       'category': _currentExerciseDataLog['category'],
       'isManual': _currentExerciseDataLog['isManual'],
       'id': _currentExerciseDataLog['id'],
+      'is_predefined': _currentExerciseDataLog['is_predefined'], // Asegúrate que esté
+      'original_id': _currentExerciseDataLog['original_id']
     };
 
     return Dialog(
@@ -2017,9 +2026,11 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
 
   Widget _buildDescriptionTab(Map<String, dynamic> exerciseDefinition) {
     final exerciseImage = exerciseDefinition['image'] as String?;
-    final exerciseDescription = exerciseDefinition['description'] as String?;
+    // exerciseDescription = exerciseDefinition['description'] as String?;
     final exerciseName = exerciseDefinition['name']?.toString();
     final bool isManualExercise = exerciseDefinition['isManual'] == true;
+    final String localizedExerciseName = getLocalizedExerciseName(context, exerciseDefinition);
+    final String localizedExerciseDescription = getLocalizedExerciseDescription(context, exerciseDefinition);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
@@ -2030,12 +2041,20 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
             child: exerciseImage.startsWith('assets/') ? Image.asset( exerciseImage, fit: BoxFit.contain, errorBuilder: (_, __, ___) => Center(child: Icon(Icons.broken_image_outlined, size: 60, color: Colors.grey.shade400)), )
                 : Image.file( File(exerciseImage), fit: BoxFit.contain, errorBuilder: (_, __, ___) => Center(child: Icon(Icons.broken_image_outlined, size: 60, color: Colors.grey.shade400)), ), ), ), )
           else Center( child: Padding( padding: const EdgeInsets.only(bottom: 16.0), child: Container( height: 180, width: double.infinity, decoration: BoxDecoration( color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3), borderRadius: BorderRadius.circular(10.0), border: Border.all(color: Colors.grey.shade400, width: 0.5) ), child: Icon(Icons.image_search_outlined, size: 80, color: Colors.grey[500]), ), ), ),
-          Center( child: Text( exerciseName ?? "Ejercicio", style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold), textAlign: TextAlign.center, ), ),
+          Center( child: Text(
+            localizedExerciseName,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold), textAlign: TextAlign.center, ), ),
           SizedBox(height: 10), Divider(), SizedBox(height: 10),
-          Text( "Descripción:", style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600) ), SizedBox(height: 6),
-          Text( exerciseDescription != null && exerciseDescription.isNotEmpty ? exerciseDescription : "No hay descripción disponible para este ejercicio.", style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.5), ),
-          SizedBox(height: 24),
-          if (isManualExercise) Center( child: ElevatedButton.icon( icon: Icon(Icons.edit_outlined), label: Text('Editar Información del Ejercicio'), style: ElevatedButton.styleFrom( padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12) ), onPressed: () { _openEditExerciseDialog(context); }, ), ),
+          Text(
+            AppLocalizations.of(context)!.category, // Ejemplo de cómo usar l10n para "Descripción:"
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+          ),
+          SizedBox(height: 6),
+          Text(
+            localizedExerciseDescription.isNotEmpty ? localizedExerciseDescription : "No hay descripción disponible para este ejercicio.", // Usar descripción localizada
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.5),
+          ),
+          // ... (resto del widget) ...
         ],
       ),
     );

@@ -7,7 +7,7 @@ import 'extras.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart'; // Importa esto
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-
+import '../utils/localization_utils.dart';
 
 
 
@@ -450,14 +450,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
       // --- FIN DE NUEVA FILA ---
 
-      const SizedBox(height: 12), // Espacio antes del crédito del creador
-            Center(
-              child: Text(
-                l10n.creatorCredit, // Usar l10n
-                style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey[500]),
-              ),
-            ),
-            const SizedBox(height: 8),
+      const SizedBox(height: 10), // Espacio antes del crédito del creador
           ],
         ),
       ),
@@ -494,7 +487,7 @@ class TemplatePreviewDialog extends StatelessWidget {
           itemCount: exercises.length, //
           itemBuilder: (context, index) {
             final exercise = exercises[index]; //
-            final exerciseName = exercise['name']?.toString() ?? 'Ejercicio'; //
+            final exerciseName = getLocalizedExerciseName(context, exercise);
             return ListTile( // Se aplica ListTileTheme
               title: Text('${index + 1}. $exerciseName'), //
               contentPadding: EdgeInsets.symmetric(vertical: 2, horizontal: 8),

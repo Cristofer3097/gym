@@ -7,10 +7,10 @@ const List<Map<String, dynamic>> predefinedExerciseList = [
   // Pecho
   {
     'id': 0, // <--- Nuevo ID
-    'name': 'Press de Banca con Barra',
+    'name': 'Barbell Bench Press',
     'muscle_group': 'Pecho',
     'image': 'assets/exercises/chest_bench_press.png',
-    'description': 'Ejercicio fundamental para el pectoral mayor, deltoides anterior y tríceps.',
+    'description': 'Fundamental exercise for the pectoralis major, anterior deltoids, and triceps.', // <-- EN INGLÉS
   },
   {
     'id': 1, // <--- Nuevo ID

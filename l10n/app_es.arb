@@ -86,5 +86,8 @@
       }
     }
   },
-  "exerciseOverlayNewExerciseCreated": "Ejercicio '{exerciseName}' creado y disponible."
+  "exerciseOverlayNewExerciseCreated": "Ejercicio '{exerciseName}' creado y disponible.",
+
+  "exercise_0_name": "Press de Banca con Barra",
+  "exercise_0_description": "Ejercicio fundamental para el pectoral mayor, deltoides anterior y tríceps."
 }

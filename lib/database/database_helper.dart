@@ -23,7 +23,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 7, // Actualizamos la versión a 4
+      version: 8, // Actualizamos la versión a 4
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -34,7 +34,7 @@ class DatabaseHelper {
     final path = join(documentsDirectory.path, filePath);
     return await openDatabase(
       path,
-      version: 7, // <--- ASEGÚRATE QUE ESTA VERSIÓN SEA LA CORRECTA (EJ. 6)
+      version: 8, // <--- ASEGÚRATE QUE ESTA VERSIÓN SEA LA CORRECTA (EJ. 6)
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -62,6 +62,7 @@ class DatabaseHelper {
       CREATE TABLE IF NOT EXISTS categories (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL UNIQUE,
+        original_id INTEGER,
         date TEXT,
         muscle_group TEXT,
         workout_id INTEGER,
@@ -131,6 +132,7 @@ class DatabaseHelper {
             'image': exerciseData['image'] ?? 'assets/exercises/placeholder.png',
             'description': exerciseData['description'] ?? 'Descripción no disponible.',
             'is_predefined': 1, // Marcar como predefinido
+            'original_id': exerciseData['id'],
             // Asegúrate que otros campos NOT NULL tengan un valor por defecto o sean nullable
           },
           conflictAlgorithm: ConflictAlgorithm.ignore, // Ignorar si ya existe (por el UNIQUE name)
@@ -242,16 +244,22 @@ class DatabaseHelper {
     return null;
   }
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
-    print("Actualizando base de datos de versión $oldVersion a $newVersion");
-    if (oldVersion < 7) { // Check against the new version number
+    if (oldVersion < 8) { // Se ejecutará al pasar de versión 7 a 8
       try {
-        // Add is_predefined if it wasn't there (idempotent for _createDB)
-        await db.execute(
-            'ALTER TABLE categories ADD COLUMN is_predefined INTEGER DEFAULT 0'); //
-        print("Columna is_predefined añadida a categories."); //
+        await db.execute('ALTER TABLE categories ADD COLUMN original_id INTEGER');
+        print("Columna original_id añadida a categories.");
+        // Opcional: Poblar original_id para datos predefinidos existentes
+        for (final exerciseDataInList in predefinedExerciseList) {
+          await db.update(
+            'categories',
+            {'original_id': exerciseDataInList['id']},
+            where: 'name = ? AND is_predefined = 1 AND original_id IS NULL',
+            whereArgs: [exerciseDataInList['name']],
+          );
+        }
+        print("original_id poblado para ejercicios predefinidos existentes si aplica.");
       } catch (e) {
-        print(
-            "Error añadiendo columna is_predefined (puede que ya exista): $e"); //
+        print("Error añadiendo/poblando columna original_id (puede que ya exista): $e");
       }
       // Logic to make templates.name UNIQUE
       try {
@@ -341,6 +349,7 @@ class DatabaseHelper {
               description TEXT,
               dateTime TEXT,
               is_predefined INTEGER DEFAULT 0,
+              original_id INTEGER,
               FOREIGN KEY (workout_id) REFERENCES workouts (id) ON DELETE CASCADE,
               FOREIGN KEY (category_id) REFERENCES categories (id)
             );
@@ -479,7 +488,16 @@ class DatabaseHelper {
       );
     }
   }
-
+  Future<void> updateExerciseNameInTemplateExercises(String oldName, String newName) async {
+    final db = await database;
+    int count = await db.update(
+      'template_exercises', // Nombre de la tabla
+      {'name': newName},    // Columna a actualizar y nuevo valor
+      where: 'name = ?',    // Condición para encontrar los registros
+      whereArgs: [oldName], // Argumento para la condición
+    );
+    print('Nombres de ejercicio actualizados en template_exercises: $count registros de "$oldName" a "$newName"');
+  }
 // Agrega este método para obtener todas las plantillas
   Future<List<Map<String, dynamic>>> getAllTemplates() async {
     final db = await database;
@@ -497,7 +515,9 @@ class DatabaseHelper {
       te.image,
       te.description,
       te.category_id,
-      c.muscle_group  -- Obtener el nombre del grupo muscular de la tabla categories
+      c.muscle_group,  -- Obtener el nombre del grupo muscular de la tabla categories
+      c.original_id,    
+      c.is_predefined 
     FROM template_exercises te
     LEFT JOIN categories c ON te.category_id = c.id
     WHERE te.template_id = ?

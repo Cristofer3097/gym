@@ -72,5 +72,8 @@
   "errorRemovingExercise": "Error removing exercise. Invalid index.",
   "addExercisesToSaveTemplate": "Add exercises to the training to save it as a template.",
   "trainingTitleDefault": "Training of {date}",
-  "exerciseOverlayNewExerciseCreated": "Exercise '{exerciseName}' created and available."
+  "exerciseOverlayNewExerciseCreated": "Exercise '{exerciseName}' created and available.",
+
+  "exercise_0_name": "Barbell Bench Press",
+  "exercise_0_description": "Fundamental exercise for the pectoralis major, anterior deltoids, and triceps."
 }
