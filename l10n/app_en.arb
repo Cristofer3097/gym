@@ -27,6 +27,8 @@
   "editTrainingTitle": "Edit Training Title",
   "title": "Title",
   "save": "Save",
+  "weight": "Weight",
+  "repetitions": "Repetitions",
   "addExerciseButton": "Add Exer.",
   "createTemplateButton": "Create Template",
   "addExercisesToTraining": "Add exercises to your training.",
@@ -74,7 +76,12 @@
   "trainingTitleDefault": "Training of {date}",
   "exerciseOverlayNewExerciseCreated": "Exercise '{exerciseName}' created and available.",
 
-
+  "calculator_RM": "RM Calculator",
+  "calculator_warning": "This is not precise and may lead to errors.",
+  "calculator_required": "Required",
+  "calculator_invalid": "Invalid (>0)",
+  "calculator_error": "Please correct the errors.",
+  "calculator_valid": "Enter valid values to calculate.",
 
   "category_all": "All Categories",
   "category_chest": "Chest",
@@ -89,8 +96,6 @@
 
   "exercise_0_name": "Barbell Bench Press",
   "exercise_0_description": "Fundamental exercise for the pectoralis major, anterior deltoids, and triceps.",
-
-
 
   "predefined_template_chest_routine_full_name": "Complete Chest Routine",
   "predefined_template_back_strong_name": "Strong Back",

@@ -25,6 +25,8 @@
   "editTrainingTitle": "Editar Título del Entrenamiento",
   "title": "Título",
   "save": "Guardar",
+  "weight": "Peso",
+  "repetitions": "Repeticiones",
   "addExerciseButton": "Añadir Ejer.",
   "createTemplateButton": "Crear Plantilla",
   "addExercisesToTraining": "Añade ejercicios a tu entrenamiento.",
@@ -77,6 +79,7 @@
       }
     }
   },
+
   "trainingTitleDefault": "Entrenamiento del {date}",
   "@exerciseOverlayNewExerciseCreated": {
     "description": "Snackbar message when a new exercise is created from overlay",
@@ -86,6 +89,13 @@
       }
     }
   },
+
+  "calculator_RM": "Calculadora de RM",
+  "calculator_warning": "Esto no es preciso y puede generarte ciertos errores.",
+  "calculator_required": "Requerido",
+  "calculator_invalid": "Inválido (>0)",
+  "calculator_error": "Por favor, corrige los errores.",
+  "calculator_valid": "Ingresa valores válidos para calcular.",
 
   "category_all": "Todas las Categorías",
   "category_chest": "Pecho",

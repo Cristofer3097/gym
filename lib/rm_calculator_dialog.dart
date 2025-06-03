@@ -1,6 +1,8 @@
 // lib/rm_calculator_dialog.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // Para input formatters
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../utils/localization_utils.dart';
 
 class RMCalculatorDialog extends StatefulWidget {
   const RMCalculatorDialog({Key? key}) : super(key: key);
@@ -147,9 +149,11 @@ class _RMCalculatorDialogState extends State<RMCalculatorDialog> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final Color amarilloPrincipal = theme.primaryColor; // Usar el color primario del tema
+    final l10n = AppLocalizations.of(context)!;
 
     return AlertDialog(
-      title: const Text('Calculadora de RM', textAlign: TextAlign.center),
+      title: Text(l10n.calculator_RM,
+          textAlign: TextAlign.center),
       contentPadding: const EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 0.0),
       content: Form(
         key: _formKey,
@@ -159,8 +163,7 @@ class _RMCalculatorDialogState extends State<RMCalculatorDialog> {
             children: <Widget>[
               Padding(
                 padding: const EdgeInsets.only(bottom: 16.0, top: 0), // Ajusta el padding si es necesario
-                child: Text(
-                  "Esto no es preciso y puede generarte ciertos errores.",
+                child: Text(l10n.calculator_warning,
                   style: TextStyle(
                     fontSize: 13,
                     fontStyle: FontStyle.italic,
@@ -176,7 +179,7 @@ class _RMCalculatorDialogState extends State<RMCalculatorDialog> {
                     child: TextFormField(
                       controller: _weightController,
                       decoration: InputDecoration(
-                        labelText: 'Peso',
+                        labelText: l10n.weight,
                         hintText: 'Ej: 100',
                         suffixText: _selectedUnit,
                       ),
@@ -186,11 +189,11 @@ class _RMCalculatorDialogState extends State<RMCalculatorDialog> {
                       ],
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
-                          return 'Requerido';
+                          return l10n.calculator_required;
                         }
                         if (double.tryParse(value.trim().replaceAll(',', '.')) == null ||
                             double.parse(value.trim().replaceAll(',', '.')) <= 0) {
-                          return 'Inválido (>0)';
+                          return l10n.calculator_invalid;
                         }
                         return null;
                       },
@@ -203,19 +206,19 @@ class _RMCalculatorDialogState extends State<RMCalculatorDialog> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _repsController,
-                decoration: const InputDecoration(
-                  labelText: 'Repeticiones',
+                decoration: InputDecoration(
+                  labelText: l10n.repetitions,
                   hintText: 'Ej: 5',
                 ),
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Requerido';
+                    return l10n.calculator_required;
                   }
                   final int? reps = int.tryParse(value.trim());
                   if (reps == null || reps <= 0) {
-                    return 'Inválido (>0)';
+                    return l10n.calculator_invalid;
                   }
                   if (reps > 24) { // Límite práctico para la fórmula
                     return 'Máx 24';
@@ -267,7 +270,9 @@ class _RMCalculatorDialogState extends State<RMCalculatorDialog> {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 20.0),
                   child: Text(
-                    _formKey.currentState?.validate() == false ? "Por favor, corrige los errores." : "Ingresa valores válidos para calcular.",
+                    _formKey.currentState?.validate() == false ?
+                    l10n.calculator_error :
+                    l10n.calculator_valid,
                     style: TextStyle(fontStyle: FontStyle.italic, color: _formKey.currentState?.validate() == false ? theme.colorScheme.error : Colors.grey),
                     textAlign: TextAlign.center,
                   ),
@@ -278,7 +283,7 @@ class _RMCalculatorDialogState extends State<RMCalculatorDialog> {
       ),
       actions: <Widget>[
         TextButton(
-          child: const Text('Cerrar'),
+          child: Text(l10n.close),
           onPressed: () {
             Navigator.of(context).pop();
           },
