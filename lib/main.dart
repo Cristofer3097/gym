@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart'; // Importa esto
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../utils/localization_utils.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 
@@ -27,6 +28,7 @@ Future<void> main() async { // Hacerla async y retornar Future<void>
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
   static void setLocale(BuildContext context, Locale newLocale) {
     _MyAppState? state = context.findAncestorStateOfType<_MyAppState>();
     state?.setLocale(newLocale);
@@ -37,13 +39,42 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   Locale _locale = const Locale('en');
+  static const String _kLanguagePreferenceKey = 'user_preferred_language';
 
+  @override
+  void initState() {
+    super.initState();
+    _loadLocale(); // Cargar el idioma guardado al iniciar el estado
+  }
+
+// Método para cargar el idioma guardado
+  Future<void> _loadLocale() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? languageCode = prefs.getString(_kLanguagePreferenceKey);
+
+    if (languageCode != null && languageCode.isNotEmpty) {
+      if (mounted) {
+        setState(() {
+          _locale = Locale(languageCode);
+        });
+      }
+    }
+  }
+
+  // Método para guardar el idioma seleccionado
+  Future<void> _saveLocale(String languageCode) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kLanguagePreferenceKey, languageCode);
+  }
+
+  // Este setLocale es el que se llama desde HomeScreen a través de MyApp.setLocale
   void setLocale(Locale locale) {
+    if (!mounted) return;
     setState(() {
       _locale = locale;
     });
+    _saveLocale(locale.languageCode); // Guardar la nueva preferencia
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -148,7 +179,6 @@ class _MyAppState extends State<MyApp> {
       supportedLocales: AppLocalizations.supportedLocales,       // Usar el generado
       locale: _locale, // El locale actual del estado
       home: HomeScreen(onLocaleChange: setLocale),
-        // pásale la función
 
     );
   }
@@ -171,6 +201,8 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _loadTemplates(); //
   }
+
+
 
   void _loadTemplates() async {
     final db = DatabaseHelper.instance; //
