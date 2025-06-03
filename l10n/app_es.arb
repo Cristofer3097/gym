@@ -22,6 +22,8 @@
   "close": "Cerrar",
   "trainingScreenTitle": "Entrenamiento",
   "cancel": "Cancelar",
+  "returnbutton": "Regresar",
+  "deleteButton": "Borrar",
   "editTrainingTitle": "Editar Título del Entrenamiento",
   "title": "Título",
   "save": "Guardar",
@@ -33,7 +35,7 @@
   "finishAndSaveTraining": "Terminar y Guardar Entrenamiento",
   "confirmFinishTrainingTitle": "Terminar Entrenamiento",
   "confirmFinishTrainingContent": "¿Guardar y terminar el entrenamiento actual?",
-  "no": "No",
+  "go": "Iniciar",
   "yesSaveChanges": "Sí, Guardar",
   "trainingSavedSuccess": "Entrenamiento '{trainingTitle}' guardado con éxito",
   "errorSavingTraining": "Error al guardar entrenamiento: {error}",
@@ -47,6 +49,41 @@
   "saveTemplateButton": "Guardar Plantilla",
   "templateNameCannotBeEmpty": "El nombre de la plantilla no puede estar vacío.",
   "templateSavedSuccess": "Plantilla '{templateName}' guardada",
+  "template_delete": "Selecciona Plantilla a Borrar",
+  "template_donthave": "No hay plantillas para borrar.",
+  "template_id": "Error: Plantilla sin ID",
+  "template_question": "¿Borrar plantilla?",
+  "template_question1": "¿Quieres eliminar la plantilla '{displayTemplateName}'? Esta acción no se puede deshacer.",
+  "@template_question1": {
+    "description": "Mensaje de confirmación para borrar una plantilla.",
+    "placeholders": {
+      "displayTemplateName": {
+        "type": "String",
+        "example": "Mi Rutina Genial"
+      }
+    }
+  },
+  "template_question2": "¿Quieres eliminar la plantilla '{templateName}'? Esta acción no se puede deshacer.",
+  "@template_question2": {
+    "description": "Mensaje de confirmación para borrar una plantilla.",
+    "placeholders": {
+      "templateName": {
+        "type": "String",
+        "example": "Mi Rutina Genial"
+      }
+    }
+  },
+  "template_exercise": "Esta plantilla no tiene ejercicios.",
+  "templateDeletedSuccessMessage": "Plantilla '{displayTemplateName}' eliminada.",
+  "@templateDeletedSuccessMessage": {
+    "description": "Mensaje del Snackbar que se muestra después de eliminar una plantilla exitosamente.",
+    "placeholders": {
+      "displayTemplateName": {
+        "type": "String",
+        "example": "Mi Rutina Genial"
+      }
+    }
+  },
   "duplicateNameDialogTitle": "Nombre Duplicado",
   "duplicateExerciseNameContent": "Ya existe un ejercicio con el nombre '{exerciseName}'. Por favor, elige un nombre diferente.",
   "duplicateTemplateNameContent": "Ya existe una plantilla con el nombre '{templateName}'. Por favor, elige un nombre diferente.",
@@ -59,7 +96,7 @@
   "deletePermanentlyTooltip": "Borrar permanentemente",
   "deleteExerciseDialogTitle": "¿Borrar Ejercicio?",
   "deleteExerciseDialogContent": "'{exerciseName}' se eliminará permanentemente de la lista de ejercicios disponibles. Esta acción no se puede deshacer.",
-  "deleteButton": "Borrar",
+
   "exerciseDeletedSuccess": "Ejercicio '{exerciseName}' eliminado.",
   "createNewExerciseButton": "Crear Nuevo Ejercicio",
   "cancelTrainingDialogTitle": "Cancelar Entrenamiento",
@@ -90,6 +127,28 @@
     }
   },
 
+  "tips_title": "\uD83D\uDCA1 Consejos Rápidos",
+  "tips_rm": "Conoce tu RM  ",
+  "tips_rm_text": "PR (Personal Record) y RM (Repetición Máxima) son conceptos clave para medir el progreso y la fuerza. PR es el máximo peso que has levantado en un ejercicio en particular, mientras que RM es el peso máximo que puedes levantar en una sola repetición, independientemente de tu récord personal.",
+  "tips_book": "Libro Recomendado",
+  "tips_book_text": "Un libro que me ayudó a entender la importancia del entrenamiento efectivo y de alta intensidad.",
+  "tips_book_link": "Link del libro",
+  "tips_proof": "Constancia",
+  "tips_proof_text": "La clave del progreso es ser constante con tus entrenamientos y nutrición. Recuerda que la constancia lleva a la superacion",
+  "tips_Heating": "Calentamiento",
+  "tips_Heating_text": "No olvides calentar antes de cada sesión para prevenir lesiones y preparar tus músculos.",
+  "tips_aprox": "Aproximidad",
+  "tips_aprox_text": "Antes de llegar a tu serie efectiva, entrena 2 series con un peso del 50% - 80% de tu peso máximo y de 2-4 repeticiones por debajo del fallo moscular.",
+  "tips_tec": "Técnica > Peso",
+  "tips_tec_text": "Prioriza una buena técnica sobre levantar más peso, especialmente al iniciar. Esto maximiza la efectividad y previene lesiones.",
+  "tips_avoid": "Evita la sobrecarga de entrenamiento",
+  "tips_avoid_text": "Realizar entre 6 y 7 ejercicios en una sesión de gimnasio. es importante elegir ejercicios que sean efectivos para los objetivos de entrenamiento y evitar la sobrecarga para evitar el escancamiento y lesiones.",
+  "tips_progression": "Progresión Gradual",
+  "tips_progression_text": "Aumenta la intensidad pero se paciente, con aumentar 5 Lb en tu peso maximo es suficiente para una buena progresion. Si haces mas de 10 repeticiones es hora de subir de peso.",
+  "tips_rest": "Descanso",
+  "tips_rest_text": "El descanso es tan importante como el ejercicio. Duerme bien (7-9 horas) eso permite que tus músculos se recuperen entre sesiones. Te recomiendo un descanso de 48 a 72 horas entre sesiones para el mismo grupo muscular.",
+  "tips_series": "Descanso entre series",
+  "tips_series_text": "3 minutos entre series son ideales para entrenamientos que buscan aumentar la fuerza máxima y la potencia. Permiten una recuperación más completa del sistema neuromuscular y energético, lo que facilita una mayor intensidad y volumen en las series subsecuentes.",
   "calculator_RM": "Calculadora de RM",
   "calculator_warning": "Esto no es preciso y puede generarte ciertos errores.",
   "calculator_required": "Requerido",

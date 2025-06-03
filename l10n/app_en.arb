@@ -24,6 +24,8 @@
   "close": "Close",
   "trainingScreenTitle": "Training",
   "cancel": "Cancel",
+  "returnbutton": "Return",
+  "deleteButton": "Delete",
   "editTrainingTitle": "Edit Training Title",
   "title": "Title",
   "save": "Save",
@@ -35,7 +37,7 @@
   "finishAndSaveTraining": "Finish and Save Training",
   "confirmFinishTrainingTitle": "Finish Training",
   "confirmFinishTrainingContent": "Save and finish current training?",
-  "no": "No",
+  "go": "Go",
   "yesSaveChanges": "Yes, Save",
   "trainingSavedSuccess": "Training '{trainingTitle}' saved successfully",
   "errorSavingTraining": "Error saving training: {error}",
@@ -49,6 +51,41 @@
   "saveTemplateButton": "Save Template",
   "templateNameCannotBeEmpty": "Template name cannot be empty.",
   "templateSavedSuccess": "Template '{templateName}' saved",
+  "template_delete": "Select Template to Delete",
+  "template_donthave": "No templates to delete.",
+  "template_id": "Error: Template without ID",
+  "template_question": "Delete template?",
+  "template_question1": "Do you want to delete the template '{displayTemplateName}'? This action cannot be undone.",
+  "@template_question1": {
+    "description": "Confirmation message for deleting a template.",
+    "placeholders": {
+      "displayTemplateName": {
+        "type": "String",
+        "example": "My Awesome Routine"
+      }
+    }
+  },
+  "template_question2": "Do you want to delete the template '{templateName}'? This action cannot be undone.",
+  "@template_question2": {
+    "description": "Confirmation message for deleting a template.",
+    "placeholders": {
+      "templateName": {
+        "type": "String",
+        "example": "My Awesome Routine"
+      }
+    }
+  },
+  "templateDeletedSuccessMessage": "Template '{displayTemplateName}' deleted.",
+  "@templateDeletedSuccessMessage": {
+    "description": "Snackbar message shown after a template is successfully deleted.",
+    "placeholders": {
+      "displayTemplateName": {
+        "type": "String",
+        "example": "My Awesome Routine"
+      }
+    }
+  },
+  "template_exercise": "This template doesn't have exercises.",
   "duplicateNameDialogTitle": "Duplicate Name",
   "duplicateExerciseNameContent": "An exercise with the name '{exerciseName}' already exists. Please choose a different name.",
   "duplicateTemplateNameContent": "A template with the name '{templateName}' already exists. Please choose a different name.",
@@ -61,7 +98,7 @@
   "deletePermanentlyTooltip": "Delete permanently",
   "deleteExerciseDialogTitle": "Delete Exercise?",
   "deleteExerciseDialogContent": "'{exerciseName}' will be permanently deleted from the list of available exercises. This action cannot be undone.",
-  "deleteButton": "Delete",
+
   "exerciseDeletedSuccess": "Exercise '{exerciseName}' deleted.",
   "createNewExerciseButton": "Create New Exercise",
   "cancelTrainingDialogTitle": "Cancel Training",
@@ -76,6 +113,28 @@
   "trainingTitleDefault": "Training of {date}",
   "exerciseOverlayNewExerciseCreated": "Exercise '{exerciseName}' created and available.",
 
+  "tips_title": "\uD83D\uDCA1 Tips & Tricks",
+  "tips_rm": "Know your RM  ",
+  "tips_rm_text": "PR (Personal Record) and RM (Maximum Repetition) are key concepts to measure progress and strength. PR is the maximum weight you've lifted in a particular exercise, while RM is the maximum weight you can lift in a single repetition, regardless of your personal record.",
+  "tips_book": "Recommended Book",
+  "tips_book_text": "A book that helped me understand the importance of effective and high-intensity training.",
+  "tips_book_link": "Link to the book",
+  "tips_proof": "Constancy",
+  "tips_proof_text": "The key to progress is being constant with your workouts and nutrition. Remember that the proof leads to success.",
+  "tips_Heating": "Heating",
+  "tips_Heating_text": "Don't forget to heat up before each session to prevent injuries and prepare your muscles.",
+  "tips_aprox": "Approximation",
+  "tips_aprox_text": "Before reaching your effective series, train 2 series with a 50-80% of your maximum weight and 2-4 repetitions below muscle strain.",
+  "tips_tec": "Technique > Weight",
+  "tips_tec_text": "Prioritize a good technique over lifting more weight, especially at the beginning. This maximizes effectiveness and prevents injuries.",
+  "tips_avoid": "Avoid overloading training",
+  "tips_avoid_text": "Perform between 6 and 7 exercises in a gym session. It's important to choose exercises that are effective for training goals and avoid overloading to avoid shoulder strain and injuries.",
+  "tips_progression": "Progressive Growth",
+  "tips_progression_text": "Increase the intensity but be patient, with 5 Lb increase in your maximum weight is enough for a good progression. If you do more than 10 reps it's time to move up in weight.",
+  "tips_rest": "Rest",
+  "tips_rest_text": "Rest is as important as exercise. Sleep well (7-9 hours) this allows your muscles to recover between sessions. I recommend a 48-72 hour rest between sessions for the same muscle group.",
+  "tips_series": "Rest between series",
+  "tips_series_text": "3 minutes between sets are ideal for workouts that seek to increase maximum strength and power. They allow for a more complete recovery of the neuromuscular and energy system, which facilitates greater intensity and volume in subsequent sets.",
   "calculator_RM": "RM Calculator",
   "calculator_warning": "This is not precise and may lead to errors.",
   "calculator_required": "Required",

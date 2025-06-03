@@ -340,7 +340,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     if (templateId == null) {
                       return Card(
                           child: Center(
-                              child: Text("Error: Plantilla sin ID", //
+                              child: Text(l10n.template_id, //
                                   style: TextStyle(color: Theme.of(context).colorScheme.error))));
                     }
 
@@ -349,17 +349,17 @@ class _HomeScreenState extends State<HomeScreen> {
                         final confirm = await showDialog<bool>(
                           context: context,
                           builder: (ctx) => AlertDialog(
-                            title: const Text('¿Borrar plantilla?'), //
+                            title: Text(l10n.template_question), //
                             content: Text(
-                                '¿Quieres eliminar la plantilla "$displayTemplateName"? Esta acción no se puede deshacer.'), //
+                                l10n.template_question1(displayTemplateName)), //
                             actions: [
                               TextButton( //
                                 onPressed: () => Navigator.pop(ctx, false), //
-                                child: const Text('Cancelar'), //
+                                child: Text(l10n.cancel), //
                               ),
                               TextButton( //
                                 onPressed: () => Navigator.pop(ctx, true), //
-                                child: Text('Borrar', //
+                                child: Text(l10n.deleteButton, //
                                     style: TextStyle(color: Theme.of(context).colorScheme.error)),
                               ),
                             ],
@@ -372,7 +372,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           if (mounted) { //
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('Plantilla "$displayTemplateName" eliminada.'), //
+                                content: Text(l10n.templateDeletedSuccessMessage(displayTemplateName)
+                                ), //
                                 backgroundColor: Theme.of(context).cardTheme.color,
                                 behavior: SnackBarBehavior.floating,
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -504,6 +505,7 @@ class TemplatePreviewDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AlertDialog( // Se aplica DialogTheme
       title: Text(templateName, textAlign: TextAlign.center), // Se aplica DialogTheme.titleTextStyle
       content: Container( // Se aplica DialogTheme.contentTextStyle para el texto dentro
@@ -512,7 +514,7 @@ class TemplatePreviewDialog extends StatelessWidget {
             ? Center( //
             child: Padding( //
               padding: EdgeInsets.symmetric(vertical: 20.0), //
-              child: Text("Esta plantilla no tiene ejercicios."), //
+              child: Text(l10n.template_exercise), //
             ))
             : ListView.builder( //
           shrinkWrap: true, //
@@ -531,7 +533,7 @@ class TemplatePreviewDialog extends StatelessWidget {
       actionsPadding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0), //
       actions: <Widget>[
         ElevatedButton( // Usa TextButtonTheme
-          child: const Text('Regresar'), //
+          child: Text(l10n.returnbutton), //
           onPressed: () { //
             Navigator.of(context).pop(); //
           },
@@ -542,7 +544,7 @@ class TemplatePreviewDialog extends StatelessWidget {
             foregroundColor: MaterialStateProperty.all(Colors.white),
             side: MaterialStateProperty.all(BorderSide(color: amarilloPrincipal, width: 1.5)), // Mantiene borde amarillo
           ),
-          child: const Text('Borrar'), //
+          child: Text(l10n.deleteButton), //
           onPressed: () async { //
             final bool? confirmedDelete = await showDialog<bool>(
               context: context,
@@ -561,7 +563,7 @@ class TemplatePreviewDialog extends StatelessWidget {
           },
         ),
         ElevatedButton( // Botón Iniciar, usa ElevatedButtonTheme global
-          child: const Text('Iniciar'), //
+          child: Text(l10n.go), //
           onPressed: () async { //
             final dynamic trainingScreenResult = await Navigator.push(
               context,
@@ -592,15 +594,17 @@ class SelectTemplateToDeleteDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AlertDialog( // Aplicará DialogTheme
-      title: const Text("Selecciona Plantilla a Borrar"), //
+      title: Text(l10n.template_delete
+      ), //
       content: Container( //
         width: double.maxFinite, //
         child: templates.isEmpty
             ? Center( //
             child: Padding( //
               padding: EdgeInsets.all(8.0), //
-              child: Text("No hay plantillas para borrar."), //
+              child: Text(l10n.template_donthave), //
             ))
             : ListView.builder( //
           shrinkWrap: true, //
@@ -632,7 +636,7 @@ class SelectTemplateToDeleteDialog extends StatelessWidget {
       ),
       actions: <Widget>[
         TextButton( // Aplicará TextButtonTheme
-          child: const Text('Cancelar'), //
+          child: Text(l10n.cancel), //
           onPressed: () { //
             Navigator.of(context).pop(false); //
           },
@@ -654,13 +658,14 @@ class ConfirmDeleteDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AlertDialog( // Aplicará DialogTheme
-      title: const Text("Confirmar Borrado"), //
-      content: Text("¿Seguro que quieres borrar la plantilla \"$templateName\" permanentemente? Esta acción no se puede deshacer."), //
+      title:  Text(l10n.template_question), //
+      content: Text(l10n.template_question2(templateName)), //
       actionsAlignment: MainAxisAlignment.spaceAround, //
       actions: <Widget>[
         TextButton( // Aplicará TextButtonTheme
-          child: const Text("Cancelar"), //
+          child: Text(l10n.cancel), //
           onPressed: () { //
             Navigator.of(context).pop(false); //
           },
@@ -671,7 +676,7 @@ class ConfirmDeleteDialog extends StatelessWidget {
             foregroundColor: MaterialStateProperty.all(Theme.of(context).colorScheme.onError),
             side: MaterialStateProperty.all(BorderSide(color: amarilloPrincipal, width: 1.5)), // Mantiene borde amarillo
           ),
-          child: const Text("Sí, Borrar"), //
+          child: Text(l10n.deleteButton), //
           onPressed: () async { //
             final db = DatabaseHelper.instance; //
             await db.deleteTemplate(templateId); //
