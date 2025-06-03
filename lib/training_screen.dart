@@ -781,6 +781,10 @@ class _ExerciseOverlayState extends State<ExerciseOverlay> {
   String searchQuery = '';
   String filterCategory = '';
   static const double iconButtonWidth = 48.0;
+  final List<String> _canonicalMuscleGroupKeys = [
+    '', // Representa "Todas las Categorías"
+    'Chest', 'Legs', 'Back', 'Arms', 'Shoulders', 'Abs', 'Other'
+  ];
 
   @override
   void initState() {
@@ -855,21 +859,21 @@ class _ExerciseOverlayState extends State<ExerciseOverlay> {
           Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: Row(children: [
-                Text("Categoría: ", style: Theme.of(context).textTheme.titleSmall),
+              Text("${AppLocalizations.of(context)!.category}: ",style: Theme.of(context).textTheme.titleSmall),
                 SizedBox(width: 10),
                 Expanded(
                     child: DropdownButton<String>(
                       isExpanded: true,
                       value: filterCategory.isEmpty ? null : filterCategory,
-                      hint: Text("Todas"),
+                      hint: Text(getLocalizedCategoryName(context, '')),
                       style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
                       dropdownColor: Theme.of(context).cardColor,
-                      items: <String>[
-                        '', 'Pecho', 'Pierna', 'Espalda', 'Brazos', 'Hombros', 'Abdomen', 'Otro'
-                      ]
-                          .map((cat) => DropdownMenuItem(
-                          value: cat, child: Text(cat.isEmpty ? "Todas" : cat)))
-                          .toList(),
+                        items: _canonicalMuscleGroupKeys.map((key) {
+                          return DropdownMenuItem<String>(
+                            value: key, // El valor del item es la clave canónica
+                            child: Text(getLocalizedCategoryName(context, key)), // El texto mostrado es traducido
+                          );
+                        }).toList(),
                       onChanged: (value) =>
                           setState(() => filterCategory = value ?? ''),
                     )),
@@ -1067,8 +1071,8 @@ class _NewExerciseDialogState extends State<NewExerciseDialog> {
   bool _imageWasRemovedOrReplaced = false;
   String? _initialImagePathPreview;
 
-  final List<String> muscleGroups = [
-    'Pecho', 'Pierna', 'Espalda', 'Brazos', 'Hombros', 'Abdomen', 'Otro'
+  final List<String> _canonicalMuscleGroupKeysForDialog = [
+    'Chest', 'Legs', 'Back', 'Arms', 'Shoulders', 'Abs', 'Other'
   ];
 
   bool get isEditMode => widget.exerciseToEdit != null;
@@ -1084,20 +1088,19 @@ class _NewExerciseDialogState extends State<NewExerciseDialog> {
       // --- MODIFICACIÓN IMPORTANTE AQUÍ ---
       // Obtiene el valor del grupo muscular que viene del ejercicio a editar.
       // Recuerda que en _openEditExerciseDialog, 'muscle_group' se pobló con widget.exercise['category'].
-      String? initialMuscleGroupValue = exerciseData['muscle_group']?.toString();
+      String? initialCanonicalMuscleGroup = exerciseData['muscle_group']?.toString();
 
-      if (initialMuscleGroupValue != null && initialMuscleGroupValue.isEmpty) {
-        // Si el valor es una cadena vacía, trátalo como nulo para el Dropdown.
-        selectedMuscleGroup = null;
-      } else if (initialMuscleGroupValue != null && !muscleGroups.contains(initialMuscleGroupValue)) {
-        // Si el valor no es nulo, no está vacío, PERO NO ESTÁ EN LA LISTA de opciones válidas,
-        // también trátalo como nulo. Esto puede pasar con datos antiguos o inconsistentes.
-        print(
-            "Advertencia: El ejercicio a editar tiene un grupo muscular desconocido ('$initialMuscleGroupValue'). Se restablecerá para que selecciones uno nuevo.");
-        selectedMuscleGroup = null;
+      if (initialCanonicalMuscleGroup != null &&
+          _canonicalMuscleGroupKeysForDialog.contains(initialCanonicalMuscleGroup)) {
+        selectedMuscleGroup = initialCanonicalMuscleGroup;
       } else {
-        // Si el valor es nulo o es una cadena válida de la lista, úsalo.
-        selectedMuscleGroup = initialMuscleGroupValue;
+        // Si no es válida o es nula, puedes dejarlo como nulo para que el hint se muestre,
+        // o asignar un valor por defecto si lo prefieres y el campo es requerido.
+        selectedMuscleGroup = null;
+        if (initialCanonicalMuscleGroup != null && initialCanonicalMuscleGroup.isNotEmpty) {
+          debugPrint(
+              "Advertencia en NewExerciseDialog: El ejercicio a editar tiene un grupo muscular canónico desconocido ('$initialCanonicalMuscleGroup'). Se restablecerá.");
+        }
       }
 
       final String? imagePath = exerciseData['image'];
@@ -1205,7 +1208,21 @@ class _NewExerciseDialogState extends State<NewExerciseDialog> {
                     SizedBox(height: 16),
                     DropdownButtonFormField<String>(
                       value: selectedMuscleGroup,
-                      decoration: InputDecoration( labelText: "Grupo Muscular *", border: OutlineInputBorder()), hint: Text("Selecciona un grupo"), items: muscleGroups .map((group) => DropdownMenuItem(value: group, child: Text(group))) .toList(), onChanged: (value) => setState(() => selectedMuscleGroup = value), validator: (value) => value == null ? 'Selecciona un grupo muscular' : null, ),
+                      decoration: InputDecoration(
+                          labelText: "${AppLocalizations.of(context)!.category} *", // Traduce "Grupo Muscular"
+                          border: OutlineInputBorder()),
+                      hint: Text(AppLocalizations.of(context)!.selectCategoryHint ?? "Selecciona un grupo"), // Añade una clave para el hint
+                      items: _canonicalMuscleGroupKeysForDialog
+                          .map((canonicalKey) => DropdownMenuItem(
+                        value: canonicalKey, // El valor es la clave canónica
+                        child: Text(getLocalizedCategoryName(context, canonicalKey)), // Muestra el nombre traducido
+                      ))
+                          .toList(),
+                      onChanged: (value) => setState(() => selectedMuscleGroup = value),
+                      validator: (value) => value == null
+                          ? (AppLocalizations.of(context)!.selectCategoryValidator ?? 'Selecciona un grupo muscular') // Añade clave para el validador
+                          : null,
+                    ),
                     SizedBox(height: 16),
                     TextFormField( controller: descriptionController, textCapitalization: TextCapitalization.sentences, decoration: InputDecoration( labelText: "Descripción (opcional)", border: OutlineInputBorder(), alignLabelWithHint: true, hintText: "Ej: Movimiento principal para pectorales..."), maxLines: 3, minLines: 1, ),
                     SizedBox(height: 16),
@@ -2031,6 +2048,8 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
     final bool isManualExercise = exerciseDefinition['isManual'] == true;
     final String localizedExerciseName = getLocalizedExerciseName(context, exerciseDefinition);
     final String localizedExerciseDescription = getLocalizedExerciseDescription(context, exerciseDefinition);
+    final String canonicalCategoryKey = exerciseDefinition['category']?.toString() ?? ''; // Suponiendo que 'category' tiene la clave canónica
+    final String localizedCategory = getLocalizedCategoryName(context, canonicalCategoryKey);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),

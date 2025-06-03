@@ -86,8 +86,27 @@
       }
     }
   },
+
+  "category_all": "Todas las Categorías",
+  "category_chest": "Pecho",
+  "category_back": "Espalda",
+  "category_legs": "Piernas",
+  "category_arms": "Brazos",
+  "category_shoulders": "Hombros",
+  "category_abs": "Abdomen",
+  "category_other": "Otro",
+  "selectCategoryHint": "Selecciona un grupo",
+  "selectCategoryValidator": "Selecciona un grupo muscular",
+
   "exerciseOverlayNewExerciseCreated": "Ejercicio '{exerciseName}' creado y disponible.",
 
   "exercise_0_name": "Press de Banca con Barra",
-  "exercise_0_description": "Ejercicio fundamental para el pectoral mayor, deltoides anterior y tríceps."
+  "exercise_0_description": "Ejercicio fundamental para el pectoral mayor, deltoides anterior y tríceps.",
+
+  "predefined_template_chest_routine_full_name": "Rutina de Pecho Completa",
+  "predefined_template_back_strong_name": "Espalda Fuerte",
+  "predefined_template_leg_day_basic_name": "Día de Pierna Básico",
+  "predefined_template_shoulders_steel_name": "Hombros de Acero",
+  "predefined_template_arms_toned_name": "Brazos Tonificados"
+
 }

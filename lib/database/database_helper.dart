@@ -23,7 +23,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 8, // Actualizamos la versión a 4
+      version: 9, // Actualizamos la versión a 4
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -34,7 +34,7 @@ class DatabaseHelper {
     final path = join(documentsDirectory.path, filePath);
     return await openDatabase(
       path,
-      version: 8, // <--- ASEGÚRATE QUE ESTA VERSIÓN SEA LA CORRECTA (EJ. 6)
+      version: 9, // <--- ASEGÚRATE QUE ESTA VERSIÓN SEA LA CORRECTA (EJ. 6)
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -53,7 +53,8 @@ class DatabaseHelper {
     await db.execute('''
       CREATE TABLE IF NOT EXISTS templates (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL UNIQUE 
+        name TEXT NOT NULL UNIQUE,
+        template_key TEXT
       );
     ''');
 
@@ -156,11 +157,14 @@ class DatabaseHelper {
 
     for (var templateData in predefinedTemplatesData) {
       try {
+        String templateKeyStr = templateData['templateKey'] as String;
         String templateNameStr = templateData['templateName'] as String;
         List<int> exerciseSourceIds = templateData['exerciseSourceIds'] as List<int>;
         int templateId = await db.insert(
           'templates',
-          {'name': templateNameStr},
+          {'name': templateNameStr,
+          'template_key': templateKeyStr
+          },
           conflictAlgorithm: ConflictAlgorithm.ignore, // Ignorar si ya existe una plantilla con ese nombre
         );
 
@@ -244,23 +248,25 @@ class DatabaseHelper {
     return null;
   }
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < 8) { // Se ejecutará al pasar de versión 7 a 8
+    if (oldVersion < 9) { // Asumiendo que la versión anterior con las correcciones de original_id era 8
       try {
-        await db.execute('ALTER TABLE categories ADD COLUMN original_id INTEGER');
-        print("Columna original_id añadida a categories.");
-        // Opcional: Poblar original_id para datos predefinidos existentes
-        for (final exerciseDataInList in predefinedExerciseList) {
+        await db.execute('ALTER TABLE templates ADD COLUMN template_key TEXT');
+        print("Columna template_key añadida a templates.");
+        // Poblar template_key para plantillas predefinidas existentes
+        for (final predefTemplate in predefinedTemplatesData) {
           await db.update(
-            'categories',
-            {'original_id': exerciseDataInList['id']},
-            where: 'name = ? AND is_predefined = 1 AND original_id IS NULL',
-            whereArgs: [exerciseDataInList['name']],
+            'templates',
+            {'template_key': predefTemplate['templateKey']},
+            where: 'name = ? AND template_key IS NULL', // Solo si el nombre coincide y no tiene ya una clave
+            whereArgs: [predefTemplate['templateName']], // Usar el nombre canónico en inglés
           );
         }
-        print("original_id poblado para ejercicios predefinidos existentes si aplica.");
+        print("template_key poblado para plantillas predefinidas existentes si aplica.");
       } catch (e) {
-        print("Error añadiendo/poblando columna original_id (puede que ya exista): $e");
+        print("Error añadiendo/poblando columna template_key: $e");
       }
+
+
       // Logic to make templates.name UNIQUE
       try {
         await db.execute('DROP TABLE IF EXISTS templates_old_for_unique_constraint'); // Temporary name
@@ -501,7 +507,7 @@ class DatabaseHelper {
 // Agrega este método para obtener todas las plantillas
   Future<List<Map<String, dynamic>>> getAllTemplates() async {
     final db = await database;
-    return await db.query('templates', orderBy: 'id DESC');
+    return await db.query('templates', columns: ['id', 'name', 'template_key'], orderBy: 'id DESC'); // Añadir template_key
   }
 
 // Agrega este método para obtener los ejercicios de una plantilla

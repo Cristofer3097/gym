@@ -302,7 +302,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   itemCount: templates.length, //
                   itemBuilder: (context, index) {
                     final template = templates[index]; //
-                    final templateName = template['name']?.toString() ?? 'Plantilla'; //
+                    final String displayTemplateName = getLocalizedTemplateName(context, template); // NUEVO
                     final templateId = template['id']; //
 
                     if (templateId == null) {
@@ -319,7 +319,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           builder: (ctx) => AlertDialog(
                             title: const Text('¿Borrar plantilla?'), //
                             content: Text(
-                                '¿Quieres eliminar la plantilla "$templateName"? Esta acción no se puede deshacer.'), //
+                                '¿Quieres eliminar la plantilla "$displayTemplateName"? Esta acción no se puede deshacer.'), //
                             actions: [
                               TextButton( //
                                 onPressed: () => Navigator.pop(ctx, false), //
@@ -340,7 +340,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           if (mounted) { //
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('Plantilla "$templateName" eliminada.'), //
+                                content: Text('Plantilla "$displayTemplateName" eliminada.'), //
                                 backgroundColor: Theme.of(context).cardTheme.color,
                                 behavior: SnackBarBehavior.floating,
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -359,7 +359,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             builder: (BuildContext dialogContext) {
                               return TemplatePreviewDialog( //
                                 templateId: templateId, //
-                                templateName: templateName, //
+                                templateName: displayTemplateName, //
                                 exercises: exercises, //
                               );
                             },
@@ -368,7 +368,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             _loadTemplates(); //
                           }
                         },
-                        child: Text(templateName, textAlign: TextAlign.center),
+                        child: Text(displayTemplateName, textAlign: TextAlign.center),
                       ),
                     );
                   }),

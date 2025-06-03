@@ -19,6 +19,10 @@ String getLocalizedExerciseName(BuildContext context, Map<String, dynamic> exerc
         return exercise['name']?.toString() ?? "Unknown Exercise";
     }
   }
+
+
+
+
   // Para ejercicios manuales o si falta información para localizar
   return exercise['name']?.toString() ?? "Exercise";
 }
@@ -40,3 +44,48 @@ String getLocalizedExerciseDescription(BuildContext context, Map<String, dynamic
   }
   return exercise['description']?.toString() ?? "";
 }
+
+String getLocalizedCategoryName(BuildContext context, String categoryKey) {
+  final l10n = AppLocalizations.of(context)!;
+  if (categoryKey.isEmpty) { // Para el caso de "Todas las Categorías"
+    return l10n.category_all;
+  }
+  switch (categoryKey) {
+    case 'Chest': return l10n.category_chest;
+    case 'Back': return l10n.category_back;
+    case 'Legs': return l10n.category_legs;
+    case 'Arms': return l10n.category_arms;
+    case 'Shoulders': return l10n.category_shoulders;
+    case 'Abs': return l10n.category_abs;
+    case 'Other': return l10n.category_other;
+    default:
+    // Fallback si la clave no se reconoce (no debería pasar con claves canónicas)
+      debugPrint("Advertencia: Clave de categoría desconocida '$categoryKey' en getLocalizedCategoryName.");
+      return categoryKey;
+  }
+}
+
+String getLocalizedTemplateName(BuildContext context, Map<String, dynamic> templateData) {
+  final l10n = AppLocalizations.of(context)!;
+  final String? templateKey = templateData['template_key'] as String?;
+  final String templateNameFromDb = templateData['name'] as String? ?? "Plantilla Desconocida";
+
+  if (templateKey != null && templateKey.isNotEmpty) {
+    switch (templateKey) {
+      case 'chest_routine_full': return l10n.predefined_template_chest_routine_full_name;
+      case 'back_strong': return l10n.predefined_template_back_strong_name;
+      case 'leg_day_basic': return l10n.predefined_template_leg_day_basic_name;
+      case 'shoulders_steel': return l10n.predefined_template_shoulders_steel_name;
+      case 'arms_toned': return l10n.predefined_template_arms_toned_name;
+      default:
+      // Si hay una templateKey pero no coincide con ninguna clave ARB (debería ser raro)
+        debugPrint("Advertencia: Clave de plantilla predefinida '$templateKey' no encontrada. Mostrando nombre de BD.");
+        return templateNameFromDb; // Muestra el nombre de la BD como fallback
+    }
+  }
+  // Para plantillas creadas por el usuario (templateKey es null)
+  return templateNameFromDb;
+}
+
+
+

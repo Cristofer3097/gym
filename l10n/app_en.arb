@@ -74,6 +74,30 @@
   "trainingTitleDefault": "Training of {date}",
   "exerciseOverlayNewExerciseCreated": "Exercise '{exerciseName}' created and available.",
 
+
+
+  "category_all": "All Categories",
+  "category_chest": "Chest",
+  "category_back": "Back",
+  "category_legs": "Legs",
+  "category_arms": "Arms",
+  "category_shoulders": "Shoulders",
+  "category_abs": "Abs",
+  "category_other": "Other",
+  "selectCategoryHint": "Select a group",
+  "selectCategoryValidator": "Select a muscle group",
+
   "exercise_0_name": "Barbell Bench Press",
-  "exercise_0_description": "Fundamental exercise for the pectoralis major, anterior deltoids, and triceps."
+  "exercise_0_description": "Fundamental exercise for the pectoralis major, anterior deltoids, and triceps.",
+
+
+
+  "predefined_template_chest_routine_full_name": "Complete Chest Routine",
+  "predefined_template_back_strong_name": "Strong Back",
+  "predefined_template_leg_day_basic_name": "Basic Leg Day",
+  "predefined_template_shoulders_steel_name": "Steel Shoulders",
+  "predefined_template_arms_toned_name": "Toned Arms"
+
+
+
 }
