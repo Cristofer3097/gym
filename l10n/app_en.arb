@@ -1,6 +1,4 @@
-
 {
-
   "@@locale": "en",
   "appTitle": "Gym Diary",
   "startTraining": "Start Training",
@@ -8,15 +6,6 @@
   "noTemplatesSaved": "No saved templates.\nCreate a new one or save a workout!",
   "calendar": "Calendar",
   "tipsAndExtras": "Tips & Extras",
-  "creatorCredit": "Creator Cristofer3097",
-  "version": "Version {versionNumber}",
-  "@version": {
-    "placeholders": {
-      "versionNumber": {
-        "type": "String"
-      }
-    }
-  },
   "languageButtonLabel": "Lang",
   "changeLanguageDialogTitle": "Change Language",
   "languageEnglish": "English",
@@ -30,6 +19,8 @@
   "title": "Title",
   "save": "Save",
   "weight": "Weight",
+  "serie": "Set",
+  "reps": "Reps",
   "repetitions": "Repetitions",
   "addExerciseButton": "Add Exer.",
   "createTemplateButton": "Create Template",
@@ -98,7 +89,6 @@
   "deletePermanentlyTooltip": "Delete permanently",
   "deleteExerciseDialogTitle": "Delete Exercise?",
   "deleteExerciseDialogContent": "'{exerciseName}' will be permanently deleted from the list of available exercises. This action cannot be undone.",
-
   "exerciseDeletedSuccess": "Exercise '{exerciseName}' deleted.",
   "createNewExerciseButton": "Create New Exercise",
   "cancelTrainingDialogTitle": "Cancel Training",
@@ -112,7 +102,6 @@
   "addExercisesToSaveTemplate": "Add exercises to the training to save it as a template.",
   "trainingTitleDefault": "Training of {date}",
   "exerciseOverlayNewExerciseCreated": "Exercise '{exerciseName}' created and available.",
-
   "tips_title": "\uD83D\uDCA1 Tips & Tricks",
   "tips_rm": "Know your RM  ",
   "tips_rm_text": "PR (Personal Record) and RM (Maximum Repetition) are key concepts to measure progress and strength. PR is the maximum weight you've lifted in a particular exercise, while RM is the maximum weight you can lift in a single repetition, regardless of your personal record.",
@@ -135,12 +124,71 @@
   "tips_rest_text": "Rest is as important as exercise. Sleep well (7-9 hours) this allows your muscles to recover between sessions. I recommend a 48-72 hour rest between sessions for the same muscle group.",
   "tips_series": "Rest between series",
   "tips_series_text": "3 minutes between sets are ideal for workouts that seek to increase maximum strength and power. They allow for a more complete recovery of the neuromuscular and energy system, which facilitates greater intensity and volume in subsequent sets.",
+  "tips_nutrition": "Nutrition",
+  "tips_nutrition_text": "A balanced diet is essential. It is important to reach your maintenance calories or with a little caloric surplus (100 - 200) is sufficient for muscle gains. (There are many websites to calculate your calorie needs). \n -Make sure you consume enough protein (1.8 grams of protein multiplied by your weight) for muscle repair. \n-Carbohydrates are also essential, pre-workout is crucial to optimize performance, especially in long duration or high intensity exercise. \n-Slow-absorbing carbohydrates, such as whole-grain bread or fruit, can help keep energy levels stable throughout your workout.",
+  "tips_repositories": "\uD83D\uDD17 Project Repository",
+  "tips_repositories_text": "The source code for this application is available on GitHub. This project is open source, which means you can explore how it is built, propose improvements, or even use parts of the code for your own projects. \n \nYour contribution or feedback is always welcome.",
+  "tips_repositories_link": "Visit Repository",
+  "tips_project": "\uD83D\uDE80 Why the Project",
+  "tips_project_text": "This application, 'Gym Diary', was born from my personal need for a simple, direct and effective tool to keep a detailed record of my workouts at the gym. I was looking for something that would allow me to customize my routines, track my progress in sets, reps and weights, and have an accessible history but I was always finding service applications or with a very excessive cost to simply store numerical data, unnecessary and/or complex functions. \n \n \n The main goal is to provide a clear user experience, focused on the essential functionality for tracking strength training, allowing the user to concentrate on what's important: their progress and consistency. \n \n \n I sincerely hope you find this app useful in reaching your fitness goals - any feedback or suggestions for improvement would be greatly appreciated!",
+  "creatorCredit": "Creator Cristofer3097",
   "calculator_RM": "RM Calculator",
   "calculator_warning": "This is not precise and may lead to errors.",
   "calculator_required": "Required",
   "calculator_invalid": "Invalid (>0)",
   "calculator_error": "Please correct the errors.",
   "calculator_valid": "Enter valid values to calculate.",
+
+  "calendarFormatMonth": "Month",
+  "calendarFormatTwoWeeks": "2 Weeks",
+  "calendarFormatWeek": "Week",
+  "calendar_title": "Gym Training Calendar",
+  "calendar_confirm": "Confirm Deletion of Session",
+  "confirmDeleteSessionDialogContent": "Are you sure you want to delete the session '{sessionTitle}' and all its exercises? This action cannot be undone.",
+  "@confirmDeleteSessionDialogContent": {
+    "placeholders": {
+      "sessionTitle": {
+        "type": "String"
+      }
+    }
+  },
+  "calendar_selection": "Select an action for this training session.",
+  "calendar_action": "Actions for: '{sessionTitle}",
+  "@calendar_action": {
+    "placeholders": {
+      "sessionTitle": {
+        "type": "String"
+      }
+    }
+  },
+  "calendar_session_delete": "Session '{sessionTitle}' deleted.",
+  "@calendar_session_delete": {
+    "placeholders": {
+      "sessionTitle": {
+        "type": "String"
+      }
+    }
+  },
+  "calendar_notes": "Notes: '{notes}'",
+  "@calendar_notes": {
+    "placeholders": {
+      "notes": {
+        "type": "String"
+      }
+    }
+  },
+  "calendar_date": "Trainings of {date}:",
+  "@calendar_date": {
+    "placeholders": {
+      "date": {
+        "type": "Object"
+      }
+    }
+  },
+  "calendar_no_sessions":"No training sessions recorded for this day.",
+  "calendar_select": "Select a day to view sessions.",
+  "calendar_loading": "Loading sessions...",
+  "calendar_error": "No exercises in this session.",
 
   "category_all": "All Categories",
   "category_chest": "Chest",

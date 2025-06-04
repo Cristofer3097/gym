@@ -452,8 +452,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   // Texto de versión centrado
                   Align(
                     alignment: Alignment.center,
-                    child: Text(
-                      l10n.version("1.0.1"),
+                    child: Text ("Version 1.0.1",
                       style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey[500]),
                     ),
                   ),

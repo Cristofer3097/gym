@@ -6,15 +6,7 @@
   "noTemplatesSaved": "No hay plantillas guardadas.\n¡Crea una nueva o guarda un entrenamiento!",
   "calendar": "Calendario",
   "tipsAndExtras": "Tips y Extras",
-  "creatorCredit": "Creador Cristofer3097",
-  "version": "Versión {versionNumber}",
-  "@version": {
-    "placeholders": {
-      "versionNumber": {
-        "type": "String"
-      }
-    }
-  },
+
   "languageButtonLabel": "Idioma",
   "changeLanguageDialogTitle": "Cambiar Idioma",
   "languageEnglish": "English",
@@ -28,6 +20,8 @@
   "title": "Título",
   "save": "Guardar",
   "weight": "Peso",
+  "serie": "Serie",
+  "reps": "Repeticiones",
   "repetitions": "Repeticiones",
   "addExerciseButton": "Añadir Ejer.",
   "createTemplateButton": "Crear Plantilla",
@@ -149,6 +143,15 @@
   "tips_rest_text": "El descanso es tan importante como el ejercicio. Duerme bien (7-9 horas) eso permite que tus músculos se recuperen entre sesiones. Te recomiendo un descanso de 48 a 72 horas entre sesiones para el mismo grupo muscular.",
   "tips_series": "Descanso entre series",
   "tips_series_text": "3 minutos entre series son ideales para entrenamientos que buscan aumentar la fuerza máxima y la potencia. Permiten una recuperación más completa del sistema neuromuscular y energético, lo que facilita una mayor intensidad y volumen en las series subsecuentes.",
+  "tips_nutrition":"Nutrición",
+  "tips_nutrition_text": "Una alimentación balanceada es fundamental.\n -Es importante llegar a tus calorias de mantenimiento o con un poco de superávit calórico (100 - 200) es suficiente para ganancias mosculares. (Hay muchas paginas web para calcular tus calorias necesarias)  \n -Asegúrate de consumir suficientes proteínas (1.8 gr de proteina multiplicado por tu peso) para la reparación muscular. \n -Los Carbohidratos son tambien fundamentales, antes del entrenamiento es crucial para optimizar el rendimiento, especialmente en ejercicios de larga duración o alta intensidad. \n -Unos Carbohidratos de absorción lenta, como pan integral o frutas, puede ayudar a mantener los niveles de energía estables a lo largo del entrenamiento.",
+  "tips_repositories": "\uD83D\uDD17 Repositorio del Proyecto",
+  "tips_repositories_text": "El código fuente de esta aplicación está disponible en GitHub. Este proyecto es de código abierto, lo que significa que puedes explorar cómo está construido, proponer mejoras, o incluso utilizar partes del código para tus propios proyectos. \n \nTu contribución o feedback es siempre bienvenido.",
+  "tips_repositories_link": "Visitar Repositorio",
+  "tips_project": "\uD83D\uDE80 El Porqué del Proyecto",
+  "tips_project_text": "Esta aplicación, 'Gym Diary', nació de mi necesidad personal de contar con una herramienta simple, directa y efectiva para llevar un registro detallado de mis entrenamientos en el gimnasio. Buscaba algo que me permitiera personalizar mis rutinas, seguir mi progreso en series, repeticiones y pesos, y tener un historial accesible pero siempre me encontraba aplicaciones de servicio o con un costo muy escesivo para simplemente guardar datos numericos, funciones innecesarias y/o complejas. \n \n \nEl objetivo principal es ofrecer una experiencia de usuario clara, enfocada en la funcionalidad esencial para el seguimiento del entrenamiento de fuerza, permitiendo al usuario concentrarse en lo importante: su progreso y constancia. \n \n \nEspero sinceramente que encuentres esta aplicación útil para alcanzar tus metas de fitness. ¡Cualquier comentario o sugerencia para mejorarla será muy apreciado!",
+  "creatorCredit": "Creador Cristofer3097",
+
   "calculator_RM": "Calculadora de RM",
   "calculator_warning": "Esto no es preciso y puede generarte ciertos errores.",
   "calculator_required": "Requerido",
@@ -156,6 +159,56 @@
   "calculator_error": "Por favor, corrige los errores.",
   "calculator_valid": "Ingresa valores válidos para calcular.",
 
+  "calendarFormatMonth": "Mes",
+  "calendarFormatTwoWeeks": "2 Semanas",
+  "calendarFormatWeek": "Semana",
+  "calendar_title": "Calendario de Entrenamientos",
+  "calendar_confirm": "Confirmar Borrado de Sesión",
+  "confirmDeleteSessionDialogContent": "¿Seguro que quieres borrar la sesión '{sessionTitle}' y todos sus ejercicios? Esta acción no se puede deshacer.",
+  "@confirmDeleteSessionDialogContent": {
+    "placeholders": {
+      "sessionTitle": {
+        "type": "String"
+      }
+    }
+  },
+  "calendar_selection": "Selecciona una acción para esta sesión de entrenamiento.",
+  "calendar_action": "Acciones para: '{sessionTitle}",
+  "@calendar_action": {
+    "placeholders": {
+      "sessionTitle": {
+        "type": "String"
+      }
+    }
+  },
+  "calendar_session_delete": "Sesión '{sessionTitle}' eliminada.",
+  "@calendar_session_delete": {
+    "placeholders": {
+      "sessionTitle": {
+        "type": "String"
+      }
+    }
+  },
+  "calendar_notes": "Notas: '{notes}'",
+  "@calendar_notes": {
+    "placeholders": {
+      "notes": {
+        "type": "String"
+      }
+    }
+  },
+  "calendar_date": "Entrenamientos del {date}:",
+  "@calendar_date": {
+    "placeholders": {
+      "date": {
+        "type": "Object"
+      }
+    }
+  },
+  "calendar_no_sessions": "No hay sesiones de entrenamiento registradas para este día.",
+  "calendar_select": "Selecciona un día para ver las sesiones.",
+  "calendar_loading": "Cargando ejercicios...",
+  "calendar_error": "No hay ejercicios en esta sesión.",
   "category_all": "Todas las Categorías",
   "category_chest": "Pecho",
   "category_back": "Espalda",

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 import '../database/database_helper.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({Key? key}) : super(key: key);
@@ -72,24 +73,23 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   // Diálogo para confirmar borrado de una SESIÓN COMPLETA
   Future<bool?> _showConfirmDeleteSessionDialog(BuildContext parentContext, Map<String, dynamic> session) async {
-
+    final l10n = AppLocalizations.of(context)!;
     return showDialog<bool>(
       context: parentContext,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          title: Text("Confirmar Borrado de Sesión"),
-          content: Text(
-              "¿Seguro que quieres borrar la sesión '${session['session_title']}' y todos sus ejercicios? Esta acción no se puede deshacer."),
+          title: Text(l10n.calendar_confirm),
+          content: Text(l10n.confirmDeleteSessionDialogContent(session['session_title']?.toString() ?? 'Entrenamiento')),
           actionsAlignment: MainAxisAlignment.spaceAround,
           actions: <Widget>[
             TextButton(
-              child: Text("Cancelar"),
+              child: Text(l10n.cancel),
               onPressed: () => Navigator.of(dialogContext).pop(false),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red, foregroundColor: Colors.white),
-              child: Text("Sí, Borrar Sesión"),
+              child: Text(l10n.deleteButton),
               onPressed: () async {
                 final db = DatabaseHelper.instance;
                 await db.deleteTrainingSessionAndLogs(session['id'] as int); // Borra la sesión y sus logs
@@ -110,22 +110,23 @@ class _CalendarScreenState extends State<CalendarScreen> {
     showDialog(
       context: screenContext,
       builder: (BuildContext dialogContext) {
+        final l10n = AppLocalizations.of(context)!;
         return AlertDialog(
-          title: Text("Acciones para: '$sessionTitle'",
+          title: Text(l10n.calendar_action(sessionTitle),
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
           // El contenido podría mostrar un resumen rápido o simplemente las acciones
-          content: Text("Selecciona una acción para esta sesión de entrenamiento."),
+          content: Text(l10n.calendar_selection),
           actionsAlignment: MainAxisAlignment.spaceAround,
           actions: <Widget>[
             TextButton(
-              child: const Text('Cerrar'),
+              child: Text(l10n.close),
               onPressed: () {
                 Navigator.of(dialogContext).pop();
               },
             ),
             ElevatedButton.icon(
               icon: Icon(Icons.delete_forever_outlined),
-              label: Text('Borrar Sesión'),
+              label: Text(l10n.deleteButton),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red.shade600,
                 foregroundColor: Colors.white,
@@ -139,7 +140,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     await _loadSessionsForSelectedDay(_selectedDay!);
                     await _loadDatesWithTrainingSessions(); // Actualiza marcadores del calendario
                     ScaffoldMessenger.of(screenContext).showSnackBar(
-                      SnackBar(content: Text("Sesión '$sessionTitle' eliminada.")),
+                      SnackBar(content: Text(l10n.calendar_session_delete(sessionTitle))),
                     );
                   }
                 }
@@ -159,14 +160,16 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final List<String> units = (log['weightUnit']?.toString() ?? '').split(',');
     final String logUnit = (log['weightUnit']?.toString() ?? 'lb').split(',')[0].trim(); // Tomar la primera unidad o la unidad única
     final String notes = log['notes']?.toString() ?? '';
+    final l10n = AppLocalizations.of(context)!;
+
 
     List<TableRow> rows = [
       TableRow(
         decoration: BoxDecoration(color: theme.colorScheme.onSurface.withOpacity(0.08)),
         children: [
-          Padding(padding: const EdgeInsets.symmetric(vertical: 7.0, horizontal: 5.0), child: Text('Serie', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5), textAlign: TextAlign.center)),
-          Padding(padding: const EdgeInsets.symmetric(vertical: 7.0, horizontal: 5.0), child: Text('Reps', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5), textAlign: TextAlign.center)),
-          Padding(padding: const EdgeInsets.symmetric(vertical: 7.0, horizontal: 5.0), child: Text('Peso', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5), textAlign: TextAlign.center)),
+          Padding(padding: const EdgeInsets.symmetric(vertical: 7.0, horizontal: 5.0), child: Text(l10n.serie, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5), textAlign: TextAlign.center)),
+          Padding(padding: const EdgeInsets.symmetric(vertical: 7.0, horizontal: 5.0), child: Text(l10n.reps, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5), textAlign: TextAlign.center)),
+          Padding(padding: const EdgeInsets.symmetric(vertical: 7.0, horizontal: 5.0), child: Text(l10n.weight, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5), textAlign: TextAlign.center)),
         ],
       ),
     ];
@@ -210,7 +213,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           Padding(
             padding: const EdgeInsets.only(left: 4.0, right: 4.0),
             child: Text(
-              "Notas: $notes",
+              "${l10n.calendar_notes}$notes",
               style: TextStyle(fontSize: 11.5, fontStyle: FontStyle.italic, color: Colors.grey.shade400),
             ),
           )
@@ -220,14 +223,16 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
   @override
   Widget build(BuildContext context) {
+
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Calendario de Entrenamientos'),
+        title: Text(l10n.calendar_title),
       ),
       body: Column(
         children: [
           TableCalendar(
-            locale: 'es_ES',
+            locale: l10n.localeName,
             firstDay: DateTime.utc(2020, 1, 1),
             lastDay: DateTime.utc(2030, 12, 31),
             focusedDay: _focusedDay,
@@ -235,6 +240,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
             selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
             onDaySelected: _onDaySelected,
             eventLoader: _getEventsForDay,
+            availableCalendarFormats: {
+              CalendarFormat.month: l10n.calendarFormatMonth,
+              CalendarFormat.twoWeeks: l10n.calendarFormatTwoWeeks,
+              CalendarFormat.week: l10n.calendarFormatWeek,
+            },
             calendarBuilders: CalendarBuilders(
               markerBuilder: (context, date, events) {
                 if (events.isNotEmpty) {
@@ -269,9 +279,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Text(
-                "Entrenamientos del ${DateFormat.yMMMMd('es_ES').format(_selectedDay!)}:",
+                l10n.calendar_date(DateFormat.yMMMMd(l10n.localeName).format(_selectedDay!)), // <<< CAMBIO y usa localeName para DateFormat                style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontSize: 18,
+                fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -284,8 +294,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 padding: const EdgeInsets.all(16.0),
                 child: Text(
                     _selectedDay != null
-                        ? "No hay sesiones de entrenamiento registradas para este día."
-                        : "Selecciona un día para ver las sesiones.",
+                        ? l10n.calendar_no_sessions
+                        : l10n.calendar_select,
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 16, color: Colors.grey.shade600)),
               ),
@@ -297,7 +307,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 final session = _selectedDaySessions[sessionIndex];
                 final String sessionTitle = session['session_title']?.toString() ?? 'Entrenamiento Sin Título';
                 String sessionTime = "Hora desconocida";
-                try { DateTime dt = DateTime.parse(session['session_dateTime']); sessionTime = DateFormat.Hm('es_ES').format(dt); } catch (_) {}
+                try { DateTime dt = DateTime.parse(session['session_dateTime']); sessionTime = DateFormat.Hm(l10n.localeName).format(dt); } catch (_) {} // Usa localeName para DateFormat
 
                 return Card(
                   // ... card properties ...
@@ -338,13 +348,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
                               if (exerciseSnapshot.connectionState == ConnectionState.waiting) {
                                 return Padding(
                                   padding: const EdgeInsets.only(top: 8.0, left: 16.0),
-                                  child: Text("Cargando ejercicios...", style: TextStyle(fontStyle: FontStyle.italic)),
+                                  child: Text(l10n.calendar_loading, style: TextStyle(fontStyle: FontStyle.italic)),
                                 );
                               }
                               if (exerciseSnapshot.hasError || !exerciseSnapshot.hasData || exerciseSnapshot.data!.isEmpty) {
                                 return Padding(
                                   padding: const EdgeInsets.only(top: 8.0, left: 16.0),
-                                  child: Text("No hay ejercicios en esta sesión.", style: TextStyle(fontStyle: FontStyle.italic)),
+                                  child: Text(l10n.calendar_error, style: TextStyle(fontStyle: FontStyle.italic)),
                                 );
                               }
                               final exercisesInSession = exerciseSnapshot.data!;

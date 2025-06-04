@@ -107,21 +107,18 @@ class TipsExtrasScreen extends StatelessWidget {
             _buildTip(context, l10n.tips_progression, l10n.tips_progression_text),
             _buildTip(context, l10n.tips_rest, l10n.tips_rest_text),
             _buildTip(context, l10n.tips_series, l10n.tips_series_text),
-            _buildTip(context, 'Nutrición:', 'Una alimentación balanceada es fundamental.\n -Es importante llegar a tus calorias de mantenimiento o con un poco de superávit calórico (100 - 200) es suficiente para ganancias mosculares. (Hay muchas paginas web para calcular tus calorias necesarias)  \n -Asegúrate de consumir suficientes proteínas (1.8 gr de proteina multiplicado por tu peso) para la reparación muscular. \n -Los Carbohidratos son tambien fundamentales, antes del entrenamiento es crucial para optimizar el rendimiento, especialmente en ejercicios de larga duración o alta intensidad. \n -Unos Carbohidratos de absorción lenta, como pan integral o frutas, puede ayudar a mantener los niveles de energía estables a lo largo del entrenamiento.'),
-
-
+            _buildTip(context, l10n.tips_nutrition, l10n.tips_nutrition_text),
 
             const SizedBox(height: 24),
-            _buildSectionTitle(context, '🔗 Repositorio del Proyecto', theme.primaryColor),
-            Text(
-              "El código fuente de esta aplicación está disponible en GitHub. Este proyecto es de código abierto, lo que significa que puedes explorar cómo está construido, proponer mejoras, o incluso utilizar partes del código para tus propios proyectos.\n\nTu contribución o feedback es siempre bienvenido.",
+            _buildSectionTitle(context, l10n.tips_repositories, theme.primaryColor),
+            Text(l10n.tips_repositories_text,
               style: theme.textTheme.bodyLarge?.copyWith(height: 1.5),
             ),
             const SizedBox(height: 12),
             Center(
               child: ElevatedButton.icon(
                 icon: const Icon(Icons.code_rounded), // Icono para repositorio
-                label: const Text('Visitar Repositorio'),
+                label: Text(l10n.tips_repositories_link),
                 onPressed: () {
                    _launchGenericUrl(context, _repositoryUrl); // Descomenta cuando tengas la URL y url_launcher
                 },
@@ -129,17 +126,13 @@ class TipsExtrasScreen extends StatelessWidget {
             ),
 
             const SizedBox(height: 24),
-            _buildSectionTitle(context, '🚀 El Porqué del Proyecto', theme.primaryColor),
-            Text(
-              "Esta aplicación, 'Gym Diary', nació de mi necesidad personal de contar con una herramienta simple, directa y efectiva para llevar un registro detallado de mis entrenamientos en el gimnasio. Buscaba algo que me permitiera personalizar mis rutinas, seguir mi progreso en series, repeticiones y pesos, y tener un historial accesible pero siempre me encontraba aplicaciones de servicio o con un costo muy escesivo para simplemente guardar datos numericos, funciones innecesarias y/o complejas.\n\n"
-                  "El objetivo principal es ofrecer una experiencia de usuario clara, enfocada en la funcionalidad esencial para el seguimiento del entrenamiento de fuerza, permitiendo al usuario concentrarse en lo importante: su progreso y constancia.\n\n"
-                  "Espero sinceramente que encuentres esta aplicación útil para alcanzar tus metas de fitness. ¡Cualquier comentario o sugerencia para mejorarla será muy apreciado!",
+            _buildSectionTitle(context, l10n.tips_project, theme.primaryColor),
+            Text(l10n.tips_project_text,
               style: theme.textTheme.bodyLarge?.copyWith(height: 1.5),
             ),
             const SizedBox(height: 32),
             Center(
-              child: Text(
-                "Creador Cristofer3097",
+              child: Text(l10n.creatorCredit,
                 style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey[500]),
               ),
             ),
