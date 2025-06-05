@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // Para input formatters
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import '../utils/localization_utils.dart';
 
 class RMCalculatorDialog extends StatefulWidget {
   const RMCalculatorDialog({Key? key}) : super(key: key);

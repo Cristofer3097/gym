@@ -31,6 +31,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
   List<Map<String, dynamic>> selectedExercises = [];
   List<Map<String, dynamic>> availableExercises = [];
   bool _didDataChange = false;
+  bool _isTitleInitialized = false;
 
   void _removeExerciseFromTraining(int index) {
     if (mounted) {
@@ -60,24 +61,42 @@ class _TrainingScreenState extends State<TrainingScreen> {
     }
   }
 
-  String _getFormattedCurrentDate() {
+  String _getFormattedCurrentDate(BuildContext context) {
     final now = DateTime.now();
     // Cambiamos el formato a 'dd/MM/yyyy'
     // El locale 'es_ES' no es estrictamente necesario para este formato numérico,
     // pero es bueno mantenerlo por si decides cambiar a otros formatos que sí dependan del idioma.
-    final formatter = DateFormat('dd/MM/yyyy', 'es_ES');
+    final String localeName = AppLocalizations.of(context)!.localeName;
+
+    final formatter = DateFormat('dd/MM/yyyy', localeName);
     return formatter.format(now); // Esto producirá algo como "25/05/2025"
   }
   @override
   void initState() {
     super.initState();
-    if (widget.templateName != null && widget.templateName!.isNotEmpty) {
-      trainingTitle = widget.templateName!;
-    } else {
-      // Usar la fecha actual formateada para el título por defecto
-      trainingTitle = "Entrenamiento del ${_getFormattedCurrentDate()}";
-    }
 
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) { // Asegúrate de que el widget todavía esté montado
+        final l10n = AppLocalizations.of(context)!;
+        final String formattedDate = _getFormattedCurrentDate(context); // Usa la nueva función
+
+        setState(() {
+          if (widget.templateName != null && widget.templateName!.isNotEmpty) {
+
+            trainingTitle = widget.templateName!;
+            _isTitleInitialized = true;
+          } else {
+            // Aquí usamos la clave de localización con el placeholder
+            trainingTitle = l10n.training_title_date(formattedDate);
+          }
+        });
+      }
+    });
+    if (widget.templateName != null && widget.templateName!.isNotEmpty) {
+
+      trainingTitle = widget.templateName!;
+
+    }
     if (widget.initialExercises != null) {
       selectedExercises = widget.initialExercises!.map((ex) {
         var newEx = Map<String, dynamic>.from(ex);
@@ -104,10 +123,36 @@ class _TrainingScreenState extends State<TrainingScreen> {
     }
     _loadAvailableExercises();
   }
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Este método se llama después de initState y también cuando las dependencias del widget cambian.
+    // Es un lugar seguro para usar AppLocalizations.of(context) si el título no ha sido inicializado por la plantilla.
+    if (!_isTitleInitialized) { // Solo si no se inicializó con widget.templateName
+      final l10n = AppLocalizations.of(context)!;
+      final String formattedDate = _getFormattedCurrentDate(context);
+
+      // Es importante llamar a setState aquí si estás actualizando una variable
+      // que afecta a la UI y el widget ya está construido.
+      // Sin embargo, como esto se llama antes del primer build después de initState,
+      // podemos asignar directamente.
+      // Para ser más robusto y si esta lógica se pudiera volver a llamar:
+      if (mounted) {
+        setState(() {
+          trainingTitle = l10n.training_title_date(formattedDate); // Asegúrate de tener esta clave
+        });
+      } else {
+        trainingTitle = l10n.training_title_date(formattedDate);
+      }
+      _isTitleInitialized = true; // Marcar como inicializado
+    }
+  }
 
   Future<List<Map<String, dynamic>>> _loadAvailableExercises() async {
+    final l10n = AppLocalizations.of(context)!;
     final db = DatabaseHelper.instance;
     debugPrint("Cargando ejercicios disponibles desde DB...");
+
 
     List<Map<String, dynamic>> exercisesFromDb;
     try {
@@ -118,7 +163,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text("Error al cargar ejercicios: $e"),
+              content: Text(l10n.training_db_error(e.toString())),
               backgroundColor: Colors.red),
         );
       }
@@ -580,11 +625,12 @@ class _TrainingScreenState extends State<TrainingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
         appBar: AppBar(
-          title: Text("Entrenamiento"),
+          title: Text(l10n.training_title),
           leading: IconButton(
             icon: Icon(Icons.arrow_back),
             onPressed: _confirmCancelTraining,
@@ -613,19 +659,19 @@ class _TrainingScreenState extends State<TrainingScreen> {
                     child: ElevatedButton.icon(
                         icon: Icon(Icons.add),
                         onPressed: _openExerciseOverlay,
-                        label: Text("Añadir Ejer."))),
+                        label: Text(l10n.training_add_exercise))),
                 SizedBox(width: 10),
                 Expanded(
                     child: ElevatedButton.icon(
                         icon: Icon(Icons.save_alt),
                         onPressed: _confirmSaveTemplate,
-                        label: Text("Crear Plantilla"))),
+                        label: Text(l10n.training_create_template))),
               ]),
               SizedBox(height: 16),
               if (selectedExercises.isEmpty)
                 Expanded(
                     child: Center(
-                        child: Text("Añade ejercicios a tu entrenamiento.",
+                        child: Text(l10n.training_add_exercises_to_training,
                             style:
                             TextStyle(fontSize: 16, color: Colors.grey))))
               else
@@ -737,7 +783,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
               ElevatedButton.icon(
                 icon: Icon(Icons.check_circle),
                 onPressed: _confirmFinishTraining,
-                label: Text("Terminar y Guardar Entrenamiento"),
+                label: Text(l10n.training_finish_and_save),
                 style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green.shade600,
                     foregroundColor: Colors.white,
@@ -821,7 +867,9 @@ class _ExerciseOverlayState extends State<ExerciseOverlay> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     List<Map<String, dynamic>> filteredExercises = exercises.where((exercise) {
+
       final name = exercise['name']?.toString() ?? '';
       final nameMatch = name.toLowerCase().contains(searchQuery.toLowerCase());
       final categoryOfExercise =
@@ -829,11 +877,13 @@ class _ExerciseOverlayState extends State<ExerciseOverlay> {
       final categoryMatch =
           filterCategory.isEmpty || categoryOfExercise == filterCategory;
       return nameMatch && categoryMatch;
+
     }).toList();
     filteredExercises.sort((a, b) =>
         (a['name']?.toString() ?? '').compareTo(b['name']?.toString() ?? ''));
 
     return Container(
+
       constraints:
       BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.85),
       padding: EdgeInsets.all(16),
@@ -848,7 +898,7 @@ class _ExerciseOverlayState extends State<ExerciseOverlay> {
             Expanded(
                 child: TextField(
                     decoration: InputDecoration(
-                        labelText: "Buscar ejercicio",
+                        labelText: l10n.training_search_exercise,
                         prefixIcon: Icon(Icons.search)),
                     onChanged: (value) =>
                         setState(() => searchQuery = value))),
@@ -1024,7 +1074,7 @@ class _ExerciseOverlayState extends State<ExerciseOverlay> {
               padding: const EdgeInsets.only(top: 12.0),
               child: ElevatedButton.icon(
                 icon: Icon(Icons.add_circle_outline),
-                label: Text('Crear Nuevo Ejercicio'),
+                label: Text(l10n.training_new_exercise),
                 style:
                 ElevatedButton.styleFrom(minimumSize: Size(double.infinity, 44)),
                 onPressed: () async {
@@ -1176,6 +1226,7 @@ class _NewExerciseDialogState extends State<NewExerciseDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     Widget imagePreviewWidget;
     if (_imageFile != null) {
       imagePreviewWidget = Image.file( _imageFile!, height: 120, width: double.infinity, fit: BoxFit.contain,
@@ -1202,9 +1253,14 @@ class _NewExerciseDialogState extends State<NewExerciseDialog> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Row( mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [ Expanded( child: Text( isEditMode ? (widget.exerciseToEdit!['name'] ?? 'Editar Ejercicio') : "Crear Nuevo Ejercicio", style: Theme.of(context).textTheme.titleLarge, overflow: TextOverflow.ellipsis, ), ), IconButton( icon: Icon(Icons.close), onPressed: () => Navigator.pop(context)) ]),
+                    Row( mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [ Expanded( child: Text( isEditMode ?
+                    (widget.exerciseToEdit!['name'] ?? l10n.training_edit_title) :
+                    l10n.training_new_title, style: Theme.of(context).textTheme.titleLarge, overflow: TextOverflow.ellipsis, ), ), IconButton( icon: Icon(Icons.close), onPressed: () => Navigator.pop(context)) ]),
                     SizedBox(height: 20),
-                    TextFormField( controller: nameController, textCapitalization: TextCapitalization.sentences, decoration: InputDecoration( labelText: "Nombre del ejercicio *", border: OutlineInputBorder(), hintText: "Ej: Press de Banca"), validator: (value) => (value == null || value.trim().isEmpty) ? 'El nombre es requerido' : null, ),
+                    TextFormField( controller: nameController, textCapitalization: TextCapitalization.sentences, decoration: InputDecoration(
+                        labelText: l10n.training_name_exercise, border: OutlineInputBorder(),
+                        hintText: l10n.training_name_exercise_hint), validator: (value) => (value == null || value.trim().isEmpty)
+                        ? l10n.training_name_exercise_required : null, ),
                     SizedBox(height: 16),
                     DropdownButtonFormField<String>(
                       value: selectedMuscleGroup,
@@ -1224,11 +1280,14 @@ class _NewExerciseDialogState extends State<NewExerciseDialog> {
                           : null,
                     ),
                     SizedBox(height: 16),
-                    TextFormField( controller: descriptionController, textCapitalization: TextCapitalization.sentences, decoration: InputDecoration( labelText: "Descripción (opcional)", border: OutlineInputBorder(), alignLabelWithHint: true, hintText: "Ej: Movimiento principal para pectorales..."), maxLines: 3, minLines: 1, ),
+                    TextFormField( controller: descriptionController, textCapitalization: TextCapitalization.sentences, decoration: InputDecoration(
+                        labelText: l10n.training_description, border: OutlineInputBorder(), alignLabelWithHint: true,
+                        hintText: l10n.training_description_hint), maxLines: 3, minLines: 1, ),
                     SizedBox(height: 16),
                     Text("Imagen del Ejercicio (opcional):", style: Theme.of(context).textTheme.titleSmall), SizedBox(height: 8),
                     Center(child: imagePreviewWidget),
-                    Row( mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [ TextButton.icon( icon: Icon(Icons.photo_library_outlined), label: Text("Galería"), onPressed: () => _pickImage(ImageSource.gallery)), TextButton.icon( icon: Icon(Icons.camera_alt_outlined), label: Text("Cámara"), onPressed: () => _pickImage(ImageSource.camera)), ]),
+                    Row( mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [ TextButton.icon( icon: Icon(Icons.photo_library_outlined),
+                        label: Text("Galería"), onPressed: () => _pickImage(ImageSource.gallery)), TextButton.icon( icon: Icon(Icons.camera_alt_outlined), label: Text("Cámara"), onPressed: () => _pickImage(ImageSource.camera)), ]),
                     if (_imageFile != null || (_initialImagePathPreview != null && _initialImagePathPreview!.isNotEmpty)) TextButton.icon( icon: Icon(Icons.delete_outline, color: Colors.red.shade600), label: Text("Quitar Imagen", style: TextStyle(color: Colors.red.shade600)), onPressed: () { setState(() { _imageFile = null; _initialImagePathPreview = null; _imageWasRemovedOrReplaced = true; }); }, ),
                     SizedBox(height: 24),
                     ElevatedButton( style: ElevatedButton.styleFrom( minimumSize: Size(double.infinity, 44), textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),

@@ -213,7 +213,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           Padding(
             padding: const EdgeInsets.only(left: 4.0, right: 4.0),
             child: Text(
-              "${l10n.calendar_notes}$notes",
+              l10n.calendar_notes(notes),
               style: TextStyle(fontSize: 11.5, fontStyle: FontStyle.italic, color: Colors.grey.shade400),
             ),
           )

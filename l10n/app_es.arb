@@ -12,7 +12,6 @@
   "languageEnglish": "English",
   "languageSpanish": "Español",
   "close": "Cerrar",
-  "trainingScreenTitle": "Entrenamiento",
   "cancel": "Cancelar",
   "returnbutton": "Regresar",
   "deleteButton": "Borrar",
@@ -26,6 +25,43 @@
   "addExerciseButton": "Añadir Ejer.",
   "createTemplateButton": "Crear Plantilla",
   "addExercisesToTraining": "Añade ejercicios a tu entrenamiento.",
+
+
+  "training_title": "Entrenamiento",
+  "training_title_date": "Entrenamiento del {formattedDate}",
+  "@training_title_date": {
+    "description": "Título por defecto para una nueva sesión de entrenamiento, incluyendo la fecha.",
+    "placeholders": {
+      "formattedDate": {
+        "type": "String",
+        "example": "03/06/2025"
+      }
+    }
+  },
+  "training_exercise_loading": "Cargando ejercicios disponibles...",
+  "training_db_error": "Error al cargar los ejercicios de: {e} ",
+  "@training_db_error": {
+    "description": "Error de base de datos al cargar los ejercicios.",
+    "placeholders": {
+      "e": {
+        "type": "String"
+      }
+    }
+  },
+  "training_add_exercise": "Añadir Ejercicio",
+  "training_create_template": "Crear Plantilla",
+  "training_add_exercises_to_training": "Añade ejercicios a tu entrenamiento.",
+  "training_finish_and_save": "Terminar y Guardar Entrenamiento",
+  "training_search_exercise": "Buscar ejercicio",
+  "training_new_exercise": "Crear Nuevo Ejercicio",
+  "training_new_title": "Crear Nuevo Ejercicio",
+  "training_edit_title": "Editar Ejercicio",
+  "training_name_exercise": "Nombre del ejercicio *",
+  "training_name_exercise_hint": "Ej: Press de Banca",
+  "training_name_exercise_required": "El nombre es requerido",
+  "training_description": "Descripción (opcional)",
+  "training_description_hint": "Ej: Movimiento principal para pectorales...",
+
   "finishAndSaveTraining": "Terminar y Guardar Entrenamiento",
   "confirmFinishTrainingTitle": "Terminar Entrenamiento",
   "confirmFinishTrainingContent": "¿Guardar y terminar el entrenamiento actual?",
@@ -111,15 +147,6 @@
     }
   },
 
-  "trainingTitleDefault": "Entrenamiento del {date}",
-  "@exerciseOverlayNewExerciseCreated": {
-    "description": "Snackbar message when a new exercise is created from overlay",
-    "placeholders": {
-      "exerciseName": {
-        "type": "Object"
-      }
-    }
-  },
 
   "tips_title": "\uD83D\uDCA1 Consejos Rápidos",
   "tips_rm": "Conoce tu RM  ",

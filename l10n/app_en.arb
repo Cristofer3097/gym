@@ -11,7 +11,6 @@
   "languageEnglish": "English",
   "languageSpanish": "Español",
   "close": "Close",
-  "trainingScreenTitle": "Training",
   "cancel": "Cancel",
   "returnbutton": "Return",
   "deleteButton": "Delete",
@@ -25,6 +24,43 @@
   "addExerciseButton": "Add Exer.",
   "createTemplateButton": "Create Template",
   "addExercisesToTraining": "Add exercises to your training.",
+
+
+  "training_title": "Training",
+  "training_title_date": "Training of {formattedDate}",
+  "@training_title_date": {
+    "description": "Default training title with date",
+    "placeholders": {
+      "formattedDate": {
+        "type": "String",
+        "example": "03/06/2025"
+      }
+    }
+  },
+  "training_exercise_loading": "Loading available exercises...",
+  "training_db_error": "Error loading exercises: {e} ",
+  "@training_db_error": {
+    "description": "Database error while loading exercises.",
+    "placeholders": {
+      "e": {
+        "type": "String"
+      }
+    }
+  },
+  "training_add_exercise": "Add Exercise",
+  "training_create_template": "Create Template",
+  "training_add_exercises_to_training": "Add exercises to your training.",
+  "training_finish_and_save": "Finish and Save Training",
+  "training_search_exercise": "Search exercise",
+  "training_new_exercise": "Create New Exercise",
+  "training_new_title": "Create New Exercise",
+  "training_edit_title": "Edit Exercise",
+  "training_name_exercise": "Exercise name *",
+  "training_name_exercise_hint": "Ej: Bench Press",
+  "training_name_exercise_required": "Exercise name is required",
+  "training_description": "Description (optional)",
+  "training_description_hint": "Ej: Main movement for pecs...",
+
   "finishAndSaveTraining": "Finish and Save Training",
   "confirmFinishTrainingTitle": "Finish Training",
   "confirmFinishTrainingContent": "Save and finish current training?",
