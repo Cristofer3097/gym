@@ -15,7 +15,6 @@
   "cancel": "Cancelar",
   "returnbutton": "Regresar",
   "deleteButton": "Borrar",
-  "editTrainingTitle": "Editar Título del Entrenamiento",
   "title": "Título",
   "save": "Guardar",
   "weight": "Peso",
@@ -93,6 +92,15 @@
       }
     }
   },
+  "training_template_success": "Plantilla '{name}' guardada",
+  "@training_template_success": {
+    "description": "Mensaje de éxito al guardar una plantilla.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "training_quit_confirm": "Sí, Quitar",
   "training_quit_message": "¿Quitar {exerciseName} del entrenamiento? Los datos ingresados para este ejercicio se perderán.",
   "@training_quit_message": {
@@ -104,12 +112,87 @@
       }
     }
   },
+  "training_edit": "Editar Título del Entrenamiento",
+  "training_edit_message": "El ejercicio '{exerciseName}' no tiene series definidas.",
+  "@training_edit_message": {
+    "description": "Mensaje de error para ejercicios sin series.",
+    "placeholders": {
+      "exerciseName": {
+        "type": "String"
+      }
+    }
+  },
+  "training_edit_reps_message": "Datos de repeticiones incompletos para '{exerciseName}'.",
+  "@training_edit_reps_message": {
+    "description": "Mensaje de error para ejercicios sin repeticiones.",
+    "placeholders": {
+      "exerciseName": {
+        "type": "String"
+      }
+    }
+  },
+  "training_edit_weight_message": "Datos de peso incompletos para '{exerciseName}'.",
+  "@training_edit_weight_message": {
+    "description": "Mensaje de error para ejercicios sin peso.",
+    "placeholders": {
+      "exerciseName": {
+        "type": "String"
+      }
+    }
+  },
+  "training_edit_weight_units_message": "Unidades de peso incompletas para '{exerciseName}'.",
+  "@training_edit_weight_units_message": {
+    "description": "Mensaje de error para ejercicios sin unidades de peso.",
+    "placeholders": {
+      "exerciseName": {
+        "type": "String"
+      }
+    }
+  },
   "finishAndSaveTraining": "Terminar y Guardar Entrenamiento",
-  "confirmFinishTrainingTitle": "Terminar Entrenamiento",
-  "confirmFinishTrainingContent": "¿Guardar y terminar el entrenamiento actual?",
+  "training_confirm_finish": "Terminar Entrenamiento",
+  "training_confirm_finish_message": "¿Guardar y terminar el entrenamiento actual?",
   "go": "Iniciar",
+  "training_save_success": "Entrenamiento '{currentSessionTitle}' guardado con éxito",
+  "@training_save_success": {
+    "description": "Mensaje de éxito al guardar un entrenamiento.",
+    "placeholders": {
+      "currentSessionTitle": {
+        "type": "String"
+      }
+    }
+  },
+  "training_save_error": "Error al guardar entrenamiento",
+  "training_no_name": "Ejercicio sin nombre",
+  "training_delete_exercise":  "¿Borrar Ejercicio?",
+  "training_delete_exercise_message":"'{exerciseNameForDialog}' se eliminará permanentemente de la lista de ejercicios disponibles. Esta acción no se puede deshacer.",
+  "@training_delete_exercise_message": {
+    "description": "Mensaje de confirmación para borrar un ejercicio.",
+    "placeholders": {
+      "exerciseNameForDialog": {
+        "type": "String"
+      }
+    }
+  },
+  "training_delete_exercise_success": "Ejercicio '{exerciseNameForDialog}' eliminado",
+  "@training_delete_exercise_success": {
+    "description": "Mensaje del Snackbar que se muestra después de eliminar un ejercicio exitosamente.",
+    "placeholders": {
+      "exerciseNameForDialog": {
+        "type": "String"
+      }
+    }
+  },
   "yesSaveChanges": "Sí, Guardar",
-  "trainingSavedSuccess": "Entrenamiento '{trainingTitle}' guardado con éxito",
+  "training_required": "Permiso Requerido",
+  "training_invalid": "Esta función requiere permisos que fueron denegados permanentemente. Por favor, habilítalos en la configuración de la aplicación.",
+  "training_required_message": "Abrir Configuración",
+  "training_image_required": "Por favor, corrige los errores.",
+  "training_cancel_training": "Cancelar Entrenamiento",
+  "training_cancel_training_message": "Los datos del entrenamiento actual no guardados se perderán. ¿Seguro que quieres salir?",
+  "training_cancel_exit": "Sí, Salir",
+  "training_exercise_required":"Añade al menos un ejercicio para terminar el entrenamiento.",
+
   "errorSavingTraining": "Error al guardar entrenamiento: {error}",
   "addAtLeastOneExerciseToFinish": "Añade al menos un ejercicio para terminar el entrenamiento.",
   "exerciseHasNoSeries": "El ejercicio '{exerciseName}' no tiene series definidas.",
@@ -118,7 +201,6 @@
   "incompleteWeightUnits": "Unidades de peso incompletas para '{exerciseName}'.",
 
   "templateNameCannotBeEmpty": "El nombre de la plantilla no puede estar vacío.",
-  "templateSavedSuccess": "Plantilla '{templateName}' guardada",
   "template_delete": "Selecciona Plantilla a Borrar",
   "template_donthave": "No hay plantillas para borrar.",
   "template_id": "Error: Plantilla sin ID",
@@ -160,14 +242,10 @@
   "loadingOrNoExercises": "Cargando o no hay ejercicios definidos...",
   "noExercisesFoundWithFilters": "No se encontraron ejercicios con los filtros actuales.",
   "deletePermanentlyTooltip": "Borrar permanentemente",
-  "deleteExerciseDialogTitle": "¿Borrar Ejercicio?",
-  "deleteExerciseDialogContent": "'{exerciseName}' se eliminará permanentemente de la lista de ejercicios disponibles. Esta acción no se puede deshacer.",
 
   "exerciseDeletedSuccess": "Ejercicio '{exerciseName}' eliminado.",
   "createNewExerciseButton": "Crear Nuevo Ejercicio",
-  "cancelTrainingDialogTitle": "Cancelar Entrenamiento",
-  "cancelTrainingDialogContent": "Los datos del entrenamiento actual no guardados se perderán. ¿Seguro que quieres salir?",
-  "yesExit": "Sí, Salir",
+
   "removeExerciseDialogTitle": "Quitar Ejercicio",
   "removeExerciseDialogContent": "¿Quitar '{exerciseName}' del entrenamiento? Los datos ingresados para este ejercicio se perderán.",
   "yesRemove": "Sí, Quitar",

@@ -14,7 +14,6 @@
   "cancel": "Cancel",
   "returnbutton": "Return",
   "deleteButton": "Delete",
-  "editTrainingTitle": "Edit Training Title",
   "title": "Title",
   "save": "Save",
   "weight": "Weight",
@@ -91,6 +90,15 @@
       }
     }
   },
+  "training_template_success": "Template '{name}' saved",
+  "@training_template_success": {
+    "description": "Success message for saving a template.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "training_quit_confirm": "Yes, Quit",
   "training_quit_message": "Quit '{exerciseName}' from training? Entered data for this exercise will be lost.",
   "@training_quit_message": {
@@ -101,13 +109,87 @@
       }
     }
   },
-
+  "training_edit": "Edit Training Title",
+  "training_edit_message": "The exercise '{exerciseName}' has no series defined.",
+  "@training_edit_message": {
+    "description": "Error message for exercises without series.",
+    "placeholders": {
+      "exerciseName": {
+        "type": "String"
+      }
+  }},
+  "training_edit_reps_message": "Incomplete repetition data for '{exerciseName}'.",
+  "@training_edit_reps_message": {
+    "description": "Error message for exercises without repetitions.",
+    "placeholders": {
+      "exerciseName": {
+        "type": "String"
+      }
+    }
+  },
+  "training_edit_weight_message": "Incomplete weight data for '{exerciseName}'.",
+  "@training_edit_weight_message": {
+    "description": "Error message for exercises without weight.",
+    "placeholders": {
+      "exerciseName": {
+        "type": "String"
+      }
+    }
+  },
+  "training_edit_weight_units_message": "Incomplete weight units for '{exerciseName}'.",
+  "@training_edit_weight_units_message": {
+    "description": "Error message for exercises without weight units.",
+    "placeholders": {
+      "exerciseName": {
+        "type": "String"
+      }
+    }
+  },
   "finishAndSaveTraining": "Finish and Save Training",
-  "confirmFinishTrainingTitle": "Finish Training",
-  "confirmFinishTrainingContent": "Save and finish current training?",
+  "training_confirm_finish": "Finish Training",
+  "training_confirm_finish_message": "Save and finish current training?",
+  "training_save_success": "Training '{currentSessionTitle}' saved successfully",
+  "@training_save_success": {
+    "description": "Success message for saving a training.",
+    "placeholders": {
+      "currentSessionTitle": {
+        "type": "String"
+      }
+    }
+  },
+  "training_save_error": "Error saving training",
+  "training_no_name": "Exercise without name",
+  "training_delete_exercise": "Delete Exercise?",
+  "training_delete_exercise_message": "'{exerciseNameForDialog}' will be permanently deleted from the list of available exercises. This action cannot be undone.",
+  "@training_delete_exercise_message": {
+    "description": "Confirmation message for deleting an exercise.",
+    "placeholders": {
+      "exerciseNameForDialog": {
+        "type": "String"
+      }
+    }
+  },
+  "training_delete_exercise_success": "Exercise '{exerciseNameForDialog}' deleted",
+  "@training_delete_exercise_success": {
+    "description": "Snackbar message shown after an exercise is successfully deleted.",
+    "placeholders": {
+      "exerciseNameForDialog": {
+        "type": "String"
+      }
+    }
+  },
+
   "go": "Go",
   "yesSaveChanges": "Yes, Save",
-  "trainingSavedSuccess": "Training '{trainingTitle}' saved successfully",
+  "training_required": "Permit Required",
+  "training_invalid": "This function requires permissions that have been permanently denied. Please enable them in the application settings.",
+  "training_required_message": "Open Settings",
+  "training_image_required": "Please correct the errors.",
+  "training_cancel_training": "Cancel Training",
+  "training_cancel_training_message": "Unsaved data for the current training will be lost. Are you sure you want to exit?",
+  "training_cancel_exit": "Yes, Exit",
+  "training_exercise_required": "Add at least one exercise to finish the training.",
+
   "errorSavingTraining": "Error saving training: {error}",
   "addAtLeastOneExerciseToFinish": "Add at least one exercise to finish the training.",
   "exerciseHasNoSeries": "Exercise '{exerciseName}' has no series defined.",
@@ -116,7 +198,6 @@
   "incompleteWeightUnits": "Incomplete weight units for '{exerciseName}'.",
   "templateNameLabel": "Template name",
   "templateNameCannotBeEmpty": "Template name cannot be empty.",
-  "templateSavedSuccess": "Template '{templateName}' saved",
   "template_delete": "Select Template to Delete",
   "template_donthave": "No templates to delete.",
   "template_id": "Error: Template without ID",
@@ -158,13 +239,10 @@
   "loadingOrNoExercises": "Loading or no exercises defined...",
   "noExercisesFoundWithFilters": "No exercises found with current filters.",
   "deletePermanentlyTooltip": "Delete permanently",
-  "deleteExerciseDialogTitle": "Delete Exercise?",
-  "deleteExerciseDialogContent": "'{exerciseName}' will be permanently deleted from the list of available exercises. This action cannot be undone.",
+
   "exerciseDeletedSuccess": "Exercise '{exerciseName}' deleted.",
   "createNewExerciseButton": "Create New Exercise",
-  "cancelTrainingDialogTitle": "Cancel Training",
-  "cancelTrainingDialogContent": "Unsaved data for the current training will be lost. Are you sure you want to exit?",
-  "yesExit": "Yes, Exit",
+
   "removeExerciseDialogTitle": "Remove Exercise",
   "removeExerciseDialogContent": "Remove '{exerciseName}' from training? Entered data for this exercise will be lost.",
   "yesRemove": "Yes, Remove",

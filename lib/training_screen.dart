@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:io';
@@ -287,15 +289,16 @@ class _TrainingScreenState extends State<TrainingScreen> {
   }
 
   Future<bool> _onWillPop() async {
+    final l10n = AppLocalizations.of(context)!;
     if (selectedExercises.isEmpty && !_didDataChange) {
       Navigator.of(context).pop(false);
       return false;
     }
-    final String dialogMessage = "Los datos del entrenamiento actual no guardados se perderán. ¿Seguro que quieres salir?";
+    final String dialogMessage = l10n.training_cancel_training;
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text("Cancelar Entrenamiento"),
+        title: Text(l10n.training_cancel_training_message),
         content: Text(dialogMessage),
         actions: [
           TextButton(
@@ -303,7 +306,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
               child: Text("No")),
           ElevatedButton( // Para destacar la acción de salida
               onPressed: () => Navigator.of(context).pop(true),
-              child: Text("Sí, Salir")),
+              child: Text(l10n.training_cancel_exit)),
         ],
       ),
     );
@@ -329,8 +332,10 @@ class _TrainingScreenState extends State<TrainingScreen> {
     }).toList();
     await db.insertTemplateExercises(templateId, exercisesForTemplateDb);
     if (mounted) {
+      final l10n = AppLocalizations.of(context)!;
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Plantilla '$name' guardada")),
+        SnackBar(content: Text(l10n.training_template_success(name))),
       );
       setState(() {
         _didDataChange = true;
@@ -383,14 +388,15 @@ class _TrainingScreenState extends State<TrainingScreen> {
   }
 
   void _editTrainingTitle() {
+    final l10n = AppLocalizations.of(context)!;
     TextEditingController controller = TextEditingController(text: trainingTitle);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text("Editar Título del Entrenamiento"),
+        title: Text(l10n.training_edit),
         content: TextField(
           controller: controller,
-          decoration: InputDecoration(labelText: "Título"),
+          decoration: InputDecoration(labelText: l10n.title),
           autofocus: true,
           onSubmitted: (newTitle) {
             if (mounted && newTitle.trim().isNotEmpty) {
@@ -405,7 +411,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
         actions: [
           TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text("Cancelar")),
+              child: Text(l10n.cancel)),
           ElevatedButton(
             onPressed: () {
               if (mounted && controller.text.trim().isNotEmpty) {
@@ -416,7 +422,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
               }
               Navigator.of(context).pop();
             },
-            child: Text("Guardar"),
+            child: Text(l10n.save),
           ),
         ],
       ),
@@ -424,9 +430,10 @@ class _TrainingScreenState extends State<TrainingScreen> {
   }
 
   void _confirmFinishTraining() async {
+    final l10n = AppLocalizations.of(context)!;
     if (selectedExercises.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Añade al menos un ejercicio para terminar el entrenamiento.")),
+        SnackBar(content: Text(l10n.training_exercise_required)),
       );
       return;
     }
@@ -436,10 +443,14 @@ class _TrainingScreenState extends State<TrainingScreen> {
       final repsValue = exercise['reps'];
       final weightsStr = exercise['weight']?.toString() ?? '';
       final unitsStr = exercise['weightUnit']?.toString() ?? '';
+      final l10n = AppLocalizations.of(context)!;
+
+
+      final String displayExerciseName = getLocalizedExerciseName(context, exercise);
 
       if (seriesStr.isEmpty || seriesStr == '0') {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("El ejercicio '${exercise['name']}' no tiene series definidas.")),
+          SnackBar(content: Text(l10n.training_edit_message(displayExerciseName))),
         );
         return;
       }
@@ -453,31 +464,32 @@ class _TrainingScreenState extends State<TrainingScreen> {
       List<String> weightsList = weightsStr.split(',').map((s) => s.trim()).toList();
       List<String> unitsList = unitsStr.split(',').map((s) => s.trim()).toList();
 
+
       if (repsList.length != seriesCount || repsList.any((r) => r.isEmpty)) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Datos de repeticiones incompletos para '${exercise['name']}'.")),
+          SnackBar(content: Text(l10n.training_edit_reps_message(displayExerciseName))),
         );
         return;
       }
       if (weightsList.length != seriesCount || weightsList.any((w) => w.isEmpty)) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Datos de peso incompletos para '${exercise['name']}'.")),
+          SnackBar(content: Text(l10n.training_edit_weight_message(displayExerciseName))),
         );
         return;
       }
       if (unitsList.length != seriesCount || unitsList.any((u) => u.isEmpty)) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Unidades de peso incompletas para '${exercise['name']}'.")),
+          SnackBar(content: Text(l10n.training_edit_weight_units_message(displayExerciseName))),
         );
         return;
       }
     }
-
     final confirm = await showDialog<bool>(
+
       context: context,
       builder: (context) => AlertDialog(
-        title: Text("Terminar Entrenamiento"),
-        content: Text("¿Guardar y terminar el entrenamiento actual?"),
+        title: Text(l10n.training_confirm_finish),
+        content: Text(l10n.training_confirm_finish_message),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: Text("No")),
           ElevatedButton(onPressed: () => Navigator.pop(context, true), child: Text("Sí, Guardar")),
@@ -492,6 +504,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
 
       try {
         int sessionId = await db.insertTrainingSession(currentSessionTitle, sessionDateTimeStr);
+        //debug
         print("Nueva sesión guardada con ID: $sessionId, Título: '$currentSessionTitle'");
 
         for (final exercise in selectedExercises) {
@@ -517,7 +530,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("Entrenamiento '$currentSessionTitle' guardado con éxito"),
+              SnackBar(content: Text(l10n.training_save_success(currentSessionTitle)),
           behavior: SnackBarBehavior.floating, // <-- AÑADE ESTO
     margin: const EdgeInsets.all(12.0), // <-- AÑADE UN MARGEN
     shape: RoundedRectangleBorder( // <-- FORMA OPCIONAL
@@ -529,10 +542,11 @@ class _TrainingScreenState extends State<TrainingScreen> {
           Navigator.pop(context, _didDataChange);
         }
       } catch (e) {
+        //debug
         print("Error al guardar la sesión de entrenamiento: $e");
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text("Error al guardar entrenamiento: $e"),
+              content: Text(l10n.training_save_error),
               backgroundColor: Colors.red));
         }
       }
@@ -982,8 +996,8 @@ class _ExerciseOverlayState extends State<ExerciseOverlay> {
                       padding: const EdgeInsets.all(16.0),
                       child: Text(
                           exercises.isEmpty
-                              ? "Cargando o no hay ejercicios definidos..."
-                              : "No se encontraron ejercicios con los filtros actuales.",
+                              ? l10n.loadingOrNoExercises
+                              : l10n.noExercisesFoundWithFilters,
                           textAlign: TextAlign.center, style: TextStyle(color: Colors.grey[500]))))
                   : ListView.builder(
                 shrinkWrap: true,
@@ -1007,30 +1021,30 @@ class _ExerciseOverlayState extends State<ExerciseOverlay> {
                           padding: EdgeInsets.zero,
                           icon: Icon(Icons.delete_forever,
                               color: Colors.red.shade700),
-                          tooltip: "Borrar permanentemente",
+                          tooltip: l10n.deletePermanentlyTooltip,
                           onPressed: () async {
                             final String exerciseNameForDialog =
                                 exercise['name']?.toString() ??
-                                    'Ejercicio sin nombre';
+                                    l10n.training_no_name;
                             final confirmed =
                             await showDialog<bool>(
                                 context: context,
                                 builder: (ctx) => AlertDialog(
-                                  title: Text("¿Borrar Ejercicio?"),
-                                  content: Text(
-                                      "'$exerciseNameForDialog' se eliminará permanentemente de la lista de ejercicios disponibles. Esta acción no se puede deshacer."),
+                                  title: Text(l10n.training_delete_exercise),
+                                  content: Text(l10n.training_delete_exercise_message(exerciseNameForDialog)
+                                      ),
                                   actions: [
                                     TextButton(
                                         onPressed: () =>
                                             Navigator.pop(
                                                 ctx, false),
-                                        child: Text("Cancelar")),
+                                        child: Text(l10n.cancel)),
                                     ElevatedButton( // Destacar acción de borrado
                                         style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                                         onPressed: () =>
                                             Navigator.pop(
                                                 ctx, true),
-                                        child: Text("Borrar")),
+                                        child: Text(l10n.deleteButton)),
                                   ],
                                 ));
                             if (confirmed == true) {
@@ -1048,7 +1062,9 @@ class _ExerciseOverlayState extends State<ExerciseOverlay> {
                                 ScaffoldMessenger.of(context)
                                     .showSnackBar(SnackBar(
                                     content: Text(
-                                        "Ejercicio '$exerciseNameForDialog' eliminado.")));
+                                        l10n.training_delete_exercise_success(exerciseNameForDialog)))
+                                );
+
                               }
                             }
                           },
@@ -1213,6 +1229,8 @@ class _NewExerciseDialogState extends State<NewExerciseDialog> {
   }
 
   Future<void> _pickImage(ImageSource source) async {
+    final l10n = AppLocalizations.of(context)!;
+
     debugPrint(" Iniciando _pickImage con fuente: $source");
     PermissionStatus status;
     if (Platform.isAndroid) {
@@ -1250,14 +1268,15 @@ class _NewExerciseDialogState extends State<NewExerciseDialog> {
     } else if (status.isPermanentlyDenied) {
       debugPrint(" Permiso DENEGADO PERMANENTEMENTE.");
       if (mounted) {
+
         await showDialog(
           context: context,
           builder: (BuildContext dialogContext) => AlertDialog(
-            title: Text("Permiso Requerido"),
-            content: Text( "Esta función requiere permisos que fueron denegados permanentemente. Por favor, habilítalos en la configuración de la aplicación."),
+            title: Text(l10n.training_required),
+            content: Text(l10n.training_invalid),
             actions: <Widget>[
-              TextButton( child: Text("Cancelar"), onPressed: () => Navigator.of(dialogContext).pop(), ),
-              ElevatedButton( child: Text("Abrir Configuración"), onPressed: () { Navigator.of(dialogContext).pop(); openAppSettings(); }, ),
+              TextButton( child: Text(l10n.cancel), onPressed: () => Navigator.of(dialogContext).pop(), ),
+              ElevatedButton( child: Text(l10n.training_required_message), onPressed: () { Navigator.of(dialogContext).pop(); openAppSettings(); }, ),
             ],
           ),
         );
@@ -1265,7 +1284,8 @@ class _NewExerciseDialogState extends State<NewExerciseDialog> {
     } else {
       debugPrint(" Permisos NO concedidos. Estado: $status");
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar( SnackBar(content: Text('Se requieren permisos para acceder a las imágenes.')), );
+        ScaffoldMessenger.of(context).showSnackBar( SnackBar(content:
+        Text(l10n.training_image_required)), );
       }
     }
   }
