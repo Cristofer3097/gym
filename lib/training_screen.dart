@@ -540,30 +540,41 @@ class _TrainingScreenState extends State<TrainingScreen> {
   }
 
   void _confirmSaveTemplate() async {
+    final l10n = AppLocalizations.of(context)!;
+
     if (selectedExercises.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+         SnackBar(
             content: Text(
-                "Añade ejercicios al entrenamiento para guardarlo como plantilla.")),
+                l10n.training_template_add)),
       );
       return;
     }
     final nameController = TextEditingController(text: trainingTitle);
     final templateNameFromDialog = await showDialog<String>(
+
       context: context,
       builder: (context) => AlertDialog(
-        title: Text("Guardar como Nueva Plantilla"),
-        content: TextField(
+        title: Text(l10n.training_template_save),
+        content: Column( // Envuelve el contenido en un Column
+          mainAxisSize: MainAxisSize.min, // Para que la columna no ocupe todo el espacio vertical
+          children: <Widget>[
+
+          SizedBox(height: 10),
+
+          TextField(
           controller: nameController,
-          decoration: InputDecoration(labelText: "Nombre de la plantilla"),
+          decoration: InputDecoration(labelText: l10n.training_template_name),
           autofocus: true,
           textCapitalization: TextCapitalization.sentences,
-
+          ),
+             SizedBox(height: 2),
+          ],
         ),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text("Cancelar")),
+              child: Text(l10n.cancel)),
           ElevatedButton(
             onPressed: () {
               if (nameController.text.trim().isNotEmpty) {
@@ -572,11 +583,11 @@ class _TrainingScreenState extends State<TrainingScreen> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                       content:
-                      Text("El nombre de la plantilla no puede estar vacío.")),
+                      Text(l10n.training_template_name_message)),
                 );
               }
             },
-            child: Text("Guardar Plantilla"),
+            child: Text(l10n.training_template_button),
           ),
         ],
       ),
@@ -598,11 +609,11 @@ class _TrainingScreenState extends State<TrainingScreen> {
             context: context, // Usar el contexto de _TrainingScreenState
             builder: (BuildContext dialogContext) {
               return AlertDialog(
-                title: Text("Nombre Duplicado"),
-                content: Text("Ya existe una plantilla con el nombre '$templateNameFromDialog'. Por favor, elige un nombre diferente."),
+                title: Text(l10n.training_template_duplicate),
+                content: Text(l10n.training_template_duplicate_message(templateNameFromDialog)),
                 actions: <Widget>[
                   TextButton(
-                    child: Text("Cerrar"),
+                    child: Text(l10n.close),
                     onPressed: () {
                       Navigator.of(dialogContext).pop();
                     },
@@ -638,7 +649,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
           actions: [
             TextButton(
               onPressed: _confirmCancelTraining,
-              child: Text("Cancelar", style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
+              child: Text(l10n.cancel, style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
             ),
           ],
         ),
@@ -712,7 +723,41 @@ class _TrainingScreenState extends State<TrainingScreen> {
 
 
                       return Card(
-                        margin: const EdgeInsets.symmetric(vertical: 6.0),
+                          margin: const EdgeInsets.symmetric(vertical: 6.0),
+                      child: InkWell( // Envuelve con InkWell para onLongPress y efecto visual
+                      onLongPress: () async {
+                      // Obtén l10n aquí si no está disponible en el scope superior del itemBuilder
+                      // final l10n = AppLocalizations.of(context)!; // (Si es necesario)
+
+                      // Usa el nombre canónico para el mensaje del diálogo,
+                      // o el nombre localizado si tu clave ARB lo maneja así.
+                      // Asumiendo que 'exerciseName' es el nombre localizado que quieres mostrar al usuario:
+
+                        final bool? confirmed = await showDialog<bool>(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: Text(l10n.removeExerciseDialogTitle), // Usa tu clave de localización
+                              content: Text(
+                            l10n.training_quit_message(exerciseName) // Usa tu clave con placeholder
+                      ),
+                      actions: [
+                      TextButton(
+                          onPressed: () => Navigator.pop(ctx, false),
+                          child: Text("No") // Usa tu clave de localización
+                        ),
+                        ElevatedButton(
+                            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                            onPressed: () => Navigator.pop(ctx, true),
+                            child: Text(l10n.training_quit_confirm) // Usa tu clave de localización
+                        ),
+                      ],
+                          ),
+                        );
+
+                        if (confirmed == true && mounted) {
+                          _removeExerciseFromTraining(index);
+                        }
+                        },
                         child: Dismissible(
                           key: UniqueKey(),
                           direction: DismissDirection.endToStart,
@@ -725,13 +770,14 @@ class _TrainingScreenState extends State<TrainingScreen> {
                             padding: EdgeInsets.symmetric(horizontal: 20),
                             child: Icon(Icons.delete_sweep, color: Colors.white),
                           ),
+
                           confirmDismiss: (direction) async {
                             return await showDialog<bool>(
                               context: context,
                               builder: (ctx) => AlertDialog(
-                                title: Text("Quitar Ejercicio"),
+                                title: Text(l10n.removeExerciseDialogTitle),
                                 content: Text(
-                                    "¿Quitar '$exerciseName' del entrenamiento? Los datos ingresados para este ejercicio se perderán."),
+                                    l10n.training_quit_message(exerciseName)),
                                 actions: [
                                   TextButton(
                                       onPressed: () =>
@@ -741,7 +787,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                                       style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                                       onPressed: () =>
                                           Navigator.pop(ctx, true),
-                                      child: Text("Sí, Quitar")),
+                                      child: Text(l10n.training_quit_confirm)),
                                 ],
                               ),
                             ) ?? false;
@@ -753,8 +799,8 @@ class _TrainingScreenState extends State<TrainingScreen> {
                           },
                           child: ListTile(
                             contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-                            title: Text(exerciseName,
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
+                      title: Text(getLocalizedExerciseName(context, exercise),
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
                             subtitle: Column( // Usar Column para mejor estructura
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -775,6 +821,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
                             isThreeLine: true, // Ajustar según sea necesario
                           ),
                         ),
+                      ),
                       );
                     },
                   ),
@@ -1284,11 +1331,13 @@ class _NewExerciseDialogState extends State<NewExerciseDialog> {
                         labelText: l10n.training_description, border: OutlineInputBorder(), alignLabelWithHint: true,
                         hintText: l10n.training_description_hint), maxLines: 3, minLines: 1, ),
                     SizedBox(height: 16),
-                    Text("Imagen del Ejercicio (opcional):", style: Theme.of(context).textTheme.titleSmall), SizedBox(height: 8),
+                    Text(l10n.training_image, style: Theme.of(context).textTheme.titleSmall), SizedBox(height: 8),
                     Center(child: imagePreviewWidget),
                     Row( mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [ TextButton.icon( icon: Icon(Icons.photo_library_outlined),
-                        label: Text("Galería"), onPressed: () => _pickImage(ImageSource.gallery)), TextButton.icon( icon: Icon(Icons.camera_alt_outlined), label: Text("Cámara"), onPressed: () => _pickImage(ImageSource.camera)), ]),
-                    if (_imageFile != null || (_initialImagePathPreview != null && _initialImagePathPreview!.isNotEmpty)) TextButton.icon( icon: Icon(Icons.delete_outline, color: Colors.red.shade600), label: Text("Quitar Imagen", style: TextStyle(color: Colors.red.shade600)), onPressed: () { setState(() { _imageFile = null; _initialImagePathPreview = null; _imageWasRemovedOrReplaced = true; }); }, ),
+                        label: Text(l10n.training_gallery), onPressed: () => _pickImage(ImageSource.gallery)), TextButton.icon( icon: Icon(Icons.camera_alt_outlined),
+                        label: Text(l10n.training_camera), onPressed: () => _pickImage(ImageSource.camera)), ]),
+                    if (_imageFile != null || (_initialImagePathPreview != null && _initialImagePathPreview!.isNotEmpty)) TextButton.icon( icon: Icon(Icons.delete_outline, color: Colors.red.shade600),
+                      label: Text(l10n.training_image_quit, style: TextStyle(color: Colors.red.shade600)), onPressed: () { setState(() { _imageFile = null; _initialImagePathPreview = null; _imageWasRemovedOrReplaced = true; }); }, ),
                     SizedBox(height: 24),
                     ElevatedButton( style: ElevatedButton.styleFrom( minimumSize: Size(double.infinity, 44), textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
                       onPressed: () async {
@@ -1317,7 +1366,6 @@ class _NewExerciseDialogState extends State<NewExerciseDialog> {
 
                             if (trimmedName.toLowerCase() != oldName.toLowerCase()) {
 
-
                               final actualDb = await db.database;
                               List<Map<String, dynamic>> existingExercises = await actualDb.query(
                                 'categories',
@@ -1331,11 +1379,11 @@ class _NewExerciseDialogState extends State<NewExerciseDialog> {
                                     context: context,
                                     builder: (BuildContext dialogContext) {
                                       return AlertDialog(
-                                        title: Text("Nombre Duplicado"),
-                                        content: Text("Ya existe otro ejercicio con el nombre '$trimmedName'. Por favor, elige un nombre diferente."),
+                                        title: Text(l10n.training_name_duplicated),
+                                        content: Text(l10n.training_name_message(trimmedName)),
                                         actions: <Widget>[
                                           TextButton(
-                                            child: Text("Cerrar"),
+                                            child: Text(l10n.close),
                                             onPressed: () {
                                               Navigator.of(dialogContext).pop();
                                             },
@@ -1378,11 +1426,11 @@ class _NewExerciseDialogState extends State<NewExerciseDialog> {
                                   context: context,
                                   builder: (BuildContext dialogContext) {
                                     return AlertDialog(
-                                      title: Text("Nombre Duplicado"),
-                                      content: Text("Ya existe un ejercicio con el nombre '$trimmedName'. Por favor, elige un nombre diferente."),
+                                      title: Text(l10n.training_name_duplicated),
+                                      content: Text(l10n.training_name_message(trimmedName)),
                                       actions: <Widget>[
                                         TextButton(
-                                          child: Text("Cerrar"),
+                                          child: Text(l10n.close),
                                           onPressed: () {
                                             Navigator.of(dialogContext).pop();
                                           },
@@ -1411,7 +1459,7 @@ class _NewExerciseDialogState extends State<NewExerciseDialog> {
                           }
                         }
                       },
-                      child: Text(isEditMode ? "Guardar Cambios" : "Confirmar y Guardar"),
+                      child: Text(isEditMode ? l10n.training_name_edit : l10n.training_name_confirm),
                     ),
                   ],
                 ))),

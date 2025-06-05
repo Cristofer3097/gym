@@ -61,7 +61,49 @@
   "training_name_exercise_required": "El nombre es requerido",
   "training_description": "Descripción (opcional)",
   "training_description_hint": "Ej: Movimiento principal para pectorales...",
+  "training_image": "Imagen (opcional):",
+  "training_gallery": "Galería",
+  "training_camera":"Cámara",
+  "training_image_quit": "Quitar Imagen",
+  "training_name_duplicated": "El nombre ya existe",
+  "training_name_message": "Ya existe otro ejercicio con el nombre {trimmedName}. Por favor, elige un nombre diferente.",
+  "@training_name_message": {
+    "description": "Mensaje de error para nombres duplicados.",
+    "placeholders": {
+      "trimmedName": {
+        "type": "String"
+      }
+    }
+  },
+  "training_name_confirm": "Confirmar y Guardar",
+  "training_name_edit": "Guardar Cambios",
+  "training_template_save": "Guardar como Nueva Plantilla",
+  "training_template_add:": "Añade ejercicios al entrenamiento para guardarlo como plantilla.",
+  "training_template_name": "Nombre de la plantilla *",
+  "training_template_name_message": "El nombre de la plantilla no puede estar vacío.",
+  "training_template_button": "Guardar plantilla",
+  "training_template_duplicate": "Nombre Duplicado",
+  "training_template_duplicate_message": "Ya existe una plantilla con el nombre {templateNameFromDialog}. Por favor, elige un nombre diferente.",
+  "@training_template_duplicate_message": {
+    "description": "Mensaje de error para nombres duplicados.",
+    "placeholders": {
+      "templateNameFromDialog": {
+        "type": "String"
 
+      }
+    }
+  },
+  "training_quit_confirm": "Sí, Quitar",
+  "training_quit_message": "¿Quitar {exerciseName} del entrenamiento? Los datos ingresados para este ejercicio se perderán.",
+  "@training_quit_message": {
+    "description": "Mensaje de confirmacion para quitar un ejercicio del entrenamiento.",
+    "placeholders": {
+      "exerciseName": {
+        "type": "String"
+
+      }
+    }
+  },
   "finishAndSaveTraining": "Terminar y Guardar Entrenamiento",
   "confirmFinishTrainingTitle": "Terminar Entrenamiento",
   "confirmFinishTrainingContent": "¿Guardar y terminar el entrenamiento actual?",
@@ -74,9 +116,7 @@
   "incompleteRepsData": "Datos de repeticiones incompletos para '{exerciseName}'.",
   "incompleteWeightData": "Datos de peso incompletos para '{exerciseName}'.",
   "incompleteWeightUnits": "Unidades de peso incompletas para '{exerciseName}'.",
-  "saveAsNewTemplateTitle": "Guardar como Nueva Plantilla",
-  "templateNameLabel": "Nombre de la plantilla",
-  "saveTemplateButton": "Guardar Plantilla",
+
   "templateNameCannotBeEmpty": "El nombre de la plantilla no puede estar vacío.",
   "templateSavedSuccess": "Plantilla '{templateName}' guardada",
   "template_delete": "Selecciona Plantilla a Borrar",
@@ -114,10 +154,6 @@
       }
     }
   },
-  "duplicateNameDialogTitle": "Nombre Duplicado",
-  "duplicateExerciseNameContent": "Ya existe un ejercicio con el nombre '{exerciseName}'. Por favor, elige un nombre diferente.",
-  "duplicateTemplateNameContent": "Ya existe una plantilla con el nombre '{templateName}'. Por favor, elige un nombre diferente.",
-  "close": "Cerrar",
   "searchExercise": "Buscar ejercicio",
   "category": "Categoría",
   "allCategories": "Todas",

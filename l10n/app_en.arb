@@ -60,6 +60,47 @@
   "training_name_exercise_required": "Exercise name is required",
   "training_description": "Description (optional)",
   "training_description_hint": "Ej: Main movement for pecs...",
+  "training_image": "Image (optional):",
+  "training_gallery": "Gallery",
+  "training_camera":"Camera",
+  "training_image_quit": "Quit Image",
+  "training_name_duplicated": "The name already exists",
+  "training_name_message": "There is already an exercise with the name '{trimmedName}'. Please choose a different name.",
+  "@training_name_message": {
+    "description": "Error message for duplicated names.",
+    "placeholders": {
+      "trimmedName": {
+        "type": "String"
+      }
+    }
+  },
+  "training_name_confirm": "Confirm and Save",
+  "training_name_edit": "Save Changes",
+  "training_template_save": "Save as New Template",
+  "training_template_add": "Add exercises to the training to save it as a template.",
+  "training_template_name": "Template name *",
+  "training_template_name_message": "Template name cannot be empty.",
+  "training_template_button": "Save template",
+  "training_template_duplicate": "Name Duplicated",
+  "training_template_duplicate_message": "There is already a template with the name '{templateNameFromDialog}'. Please choose a different name.",
+  "@training_template_duplicate_message": {
+    "description": "Error message for duplicated names.",
+    "placeholders": {
+      "templateNameFromDialog": {
+        "type": "String"
+      }
+    }
+  },
+  "training_quit_confirm": "Yes, Quit",
+  "training_quit_message": "Quit '{exerciseName}' from training? Entered data for this exercise will be lost.",
+  "@training_quit_message": {
+    "description": "Confirmation message for quitting an exercise from a training.",
+    "placeholders": {
+      "exerciseName": {
+        "type": "String"
+      }
+    }
+  },
 
   "finishAndSaveTraining": "Finish and Save Training",
   "confirmFinishTrainingTitle": "Finish Training",
@@ -73,9 +114,7 @@
   "incompleteRepsData": "Incomplete repetition data for '{exerciseName}'.",
   "incompleteWeightData": "Incomplete weight data for '{exerciseName}'.",
   "incompleteWeightUnits": "Incomplete weight units for '{exerciseName}'.",
-  "saveAsNewTemplateTitle": "Save as New Template",
   "templateNameLabel": "Template name",
-  "saveTemplateButton": "Save Template",
   "templateNameCannotBeEmpty": "Template name cannot be empty.",
   "templateSavedSuccess": "Template '{templateName}' saved",
   "template_delete": "Select Template to Delete",
@@ -113,10 +152,6 @@
     }
   },
   "template_exercise": "This template doesn't have exercises.",
-  "duplicateNameDialogTitle": "Duplicate Name",
-  "duplicateExerciseNameContent": "An exercise with the name '{exerciseName}' already exists. Please choose a different name.",
-  "duplicateTemplateNameContent": "A template with the name '{templateName}' already exists. Please choose a different name.",
-  "close": "Close",
   "searchExercise": "Search exercise",
   "category": "Category",
   "allCategories": "All",
