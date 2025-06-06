@@ -241,6 +241,10 @@
   "training_num_max": "Máximo 4 series permitidas.",
   "training_weight_recommend": "Se recomienda bajar el peso.",
   "training_weight_recommend2":"Se recomienda subir el peso",
+  "training_negative": "No negativo",
+  "training_selection_units": "Selecciona unidad",
+  "training_description_unknown": "No hay descripción disponible para este ejercicio.",
+  "training_archive_error": "Error al cargar preview de archivo",
 
   "templateNameCannotBeEmpty": "El nombre de la plantilla no puede estar vacío.",
   "template_delete": "Selecciona Plantilla a Borrar",

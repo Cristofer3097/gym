@@ -446,10 +446,20 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 20),
             SizedBox(
+
               height: 40, // Ajusta la altura según tu diseño
               child: Stack(
                 children: [
                   // Texto de versión centrado
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: CircleAvatar(
+                      radius: 20, // La mitad de la altura (40) para que encaje perfectamente
+                      backgroundColor: Colors.transparent, // Fondo transparente
+                      // Asegúrate de que la ruta a tu logo sea correcta
+                      backgroundImage: AssetImage('assets/images/logo.png'),
+                    ),
+                  ),
                   Align(
                     alignment: Alignment.center,
                     child: Text ("Version 1.0.1",

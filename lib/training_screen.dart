@@ -1296,11 +1296,13 @@ class _NewExerciseDialogState extends State<NewExerciseDialog> {
 
   @override
   Widget build(BuildContext context) {
+
     final l10n = AppLocalizations.of(context)!;
     Widget imagePreviewWidget;
     if (_imageFile != null) {
       imagePreviewWidget = Image.file( _imageFile!, height: 120, width: double.infinity, fit: BoxFit.contain,
-        errorBuilder: (context, error, stackTrace) => Container( height: 120, width: double.infinity, decoration: BoxDecoration( color: Colors.grey[300], borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.red.shade200) ), child: Center( child: Padding( padding: const EdgeInsets.all(8.0), child: Text("Error al cargar preview de archivo", textAlign: TextAlign.center, style: TextStyle(color: Colors.red.shade700, fontSize: 12)), ))), );
+        errorBuilder: (context, error, stackTrace) => Container( height: 120, width: double.infinity, decoration: BoxDecoration( color: Colors.grey[300], borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.red.shade200) ), child: Center( child: Padding( padding: const EdgeInsets.all(8.0),
+          child: Text(l10n.training_archive_error, textAlign: TextAlign.center, style: TextStyle(color: Colors.red.shade700, fontSize: 12)), ))), );
     } else if (_initialImagePathPreview != null && _initialImagePathPreview!.isNotEmpty) {
       if (_initialImagePathPreview!.startsWith('assets/')) {
         imagePreviewWidget = Image.asset(_initialImagePathPreview!, height: 120, width: double.infinity, fit: BoxFit.contain);
@@ -1868,10 +1870,10 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
                         });
                       },
                       validator: (value) {
-                        if (value == null || value.trim().isEmpty) return 'Requerido';
+                        if (value == null || value.trim().isEmpty) return l10n.calculator_required;
                         final n = int.tryParse(value.trim());
-                        if (n == null) return 'Inválido';
-                        if (n < 0) return 'No negativo';
+                        if (n == null) return l10n.training_set_invalid;
+                        if (n < 0) return l10n.training_negative;
                         if (n > 10) return 'Máx. 10';
                         return null;
                       },
@@ -1891,7 +1893,7 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
                           .map((unit) => DropdownMenuItem(value: unit, child: Text(unit)))
                           .toList(),
                       onChanged: (value) => setState(() => weightUnit = value ?? 'lb'),
-                      validator: (value) => value == null || value.isEmpty ? 'Selecciona unidad' : null,
+                      validator: (value) => value == null || value.isEmpty ? l10n.training_selection_units : null,
                     ),
                   ),
                 ],
@@ -2223,6 +2225,7 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
     final String localizedExerciseDescription = getLocalizedExerciseDescription(context, exerciseDefinition);
     final String canonicalCategoryKey = exerciseDefinition['category']?.toString() ?? ''; // Suponiendo que 'category' tiene la clave canónica
     final String localizedCategory = getLocalizedCategoryName(context, canonicalCategoryKey);
+    final l10n = AppLocalizations.of(context)!;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
@@ -2243,7 +2246,7 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
           ),
           SizedBox(height: 6),
           Text(
-            localizedExerciseDescription.isNotEmpty ? localizedExerciseDescription : "No hay descripción disponible para este ejercicio.", // Usar descripción localizada
+            localizedExerciseDescription.isNotEmpty ? localizedExerciseDescription : l10n.training_description_unknown, // Usar descripción localizada
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.5),
           ),
           // ... (resto del widget) ...

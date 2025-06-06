@@ -239,7 +239,10 @@
   "training_num_max": "Maximum 4 series allowed.",
   "training_weight_recommend": "Recommend lowering the weight.",
   "training_weight_recommend2": "Recommend raising the weight",
-
+  "training_negative": "Negative",
+  "training_selection_units": "Select unit",
+  "training_description_unknown": "No description available for this exercise.",
+  "training_archive_error": "Error loading preview of file",
 
   "templateNameLabel": "Template name",
   "templateNameCannotBeEmpty": "Template name cannot be empty.",
