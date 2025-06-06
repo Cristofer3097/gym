@@ -36,7 +36,9 @@ class _TrainingScreenState extends State<TrainingScreen> {
   bool _isTitleInitialized = false;
 
   void _removeExerciseFromTraining(int index) {
+
     if (mounted) {
+      final l10n = AppLocalizations.of(context)!;
       if (index >= 0 && index < selectedExercises.length) {
         final String exerciseNameToRemove =
             selectedExercises[index]['name']?.toString() ?? 'Ejercicio';
@@ -49,14 +51,14 @@ class _TrainingScreenState extends State<TrainingScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content:
-              Text("'$exerciseNameToRemove' quitado del entrenamiento")),
+              Text(l10n.training_quit_exercise(exerciseNameToRemove))),
         );
       } else {
         debugPrint(
             "Error en _removeExerciseFromTraining: Índice $index está fuera de los límites para selectedExercises de tamaño ${selectedExercises.length}.");
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text("Error al quitar el ejercicio. Índice inválido."),
+              content: Text(l10n.training_quit_error),
               backgroundColor: Colors.red),
         );
       }
@@ -265,11 +267,12 @@ class _TrainingScreenState extends State<TrainingScreen> {
                   await _loadAvailableExercises();
                   setDialogState(() {});
                   if (mounted) {
+                    final l10n = AppLocalizations.of(sbfContext)!;
+                    final String exerciseName = newExerciseMap['name']?.toString() ?? '';
                     ScaffoldMessenger.of(sbfContext).showSnackBar(
                       SnackBar(
-                          content:
-                          Text("Ejercicio '${newExerciseMap['name']}' creado y disponible.")),
-                    );
+                          content: Text(l10n.training_create_exercise(exerciseName)))
+                      );
                   }
                 },
                 onExerciseChecked: (exercise) {
@@ -819,8 +822,8 @@ class _TrainingScreenState extends State<TrainingScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 SizedBox(height: 4),
-                                Text('Series: $seriesText', style: TextStyle(fontSize: 14, height: 1.4)),
-                                Text('Peso: $weightText', style: TextStyle(fontSize: 14, height: 1.4)),
+                                Text('${l10n.serie}: $seriesText', style: TextStyle(fontSize: 14, height: 1.4)),
+                                Text('${l10n.weight}: $weightText', style: TextStyle(fontSize: 14, height: 1.4)),
                                 Text('Reps: $repsText', style: TextStyle(fontSize: 14, height: 1.4)),
                               ],
                             ),
@@ -1582,12 +1585,13 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
   }
 
   void _initializeSeriesSpecificFields() {
+    final l10n = AppLocalizations.of(context)!;
     int targetSeriesForRepFields = seriesCountFromInput;
     if (seriesCountFromInput > 4) { // Límite que quieres restaurar
-      seriesWarningText = "Se recomienda menos de 4 series para no sobrentrenar";
+      seriesWarningText = l10n.training_set_recommend;
       targetSeriesForRepFields = 4; // Limitar a 4 campos
     } else if (seriesCountFromInput < 0) {
-      seriesWarningText = "Número de series inválido.";
+      seriesWarningText = l10n.training_set_error;
       targetSeriesForRepFields = 0; // No mostrar campos si es inválido
     } else {
       seriesWarningText = ""; // Limpiar advertencia para casos válidos (0 a 4 series)
@@ -1605,40 +1609,46 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
 
 
   void _validateRepValue(String value, int index) {
+    final l10n = AppLocalizations.of(context)!;
     if (index >= repControllers.length) return;
     String trimmedValue = value.trim();
     setState(() {
       if (trimmedValue.isEmpty) {
-        repWarnings[index] = "Requerido";
+        repWarnings[index] = l10n.calculator_required;
       } else {
         int? reps = int.tryParse(trimmedValue);
         if (reps != null) {
           if (reps < 1) repWarnings[index] = "Mín. 1";
           else if (reps > 99) repWarnings[index] = "Máx. 99";
-          else if (reps < 6 && (weightWarnings[index].isEmpty || !weightWarnings[index].contains("Debe ser >0"))) repWarnings[index] = 'Se recomienda bajar el peso';
-          else if (reps > 12 && (weightWarnings[index].isEmpty || !weightWarnings[index].contains("Debe ser >0"))) repWarnings[index] = 'Se recomienda subir el peso';
+          else if (reps < 6 && (weightWarnings[index].isEmpty ||
+              !weightWarnings[index].contains("Mín. 1")))
+            repWarnings[index] = l10n.training_weight_recommend;
+          else if (reps > 12 && (weightWarnings[index].isEmpty ||
+              !weightWarnings[index].contains("Mín. 1")))
+            repWarnings[index] = l10n.training_weight_recommend2;
           else repWarnings[index] = "";
         } else {
-          repWarnings[index] = "Inválido";
+          repWarnings[index] = l10n.training_set_invalid;
         }
       }
     });
   }
 
   void _validateWeightValue(String value, int index) {
+    final l10n = AppLocalizations.of(context)!;
     if (index >= weightControllers.length) return;
     String trimmedValue = value.trim().replaceAll(',', '.');
     setState(() {
       if (trimmedValue.isEmpty) {
-        weightWarnings[index] = "Requerido";
+        weightWarnings[index] = l10n.calculator_required;
       } else {
         double? weightVal = double.tryParse(trimmedValue);
         if (weightVal != null) {
-          if (weightVal <= 0) weightWarnings[index] = "Debe ser >0";
+          if (weightVal < 1) weightWarnings[index] = "Mín. 1";
           else if (weightVal > 9999) weightWarnings[index] = "Máx. 9999";
           else weightWarnings[index] = "";
         } else {
-          weightWarnings[index] = "Inválido";
+          weightWarnings[index] = l10n.training_set_invalid;
         }
       }
     });
@@ -1646,9 +1656,10 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
 
 
   void _confirmAndSaveData() {
+    final l10n = AppLocalizations.of(context)!;
     if (!_formKeyCurrentDataTab.currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("Por favor, corrige los errores en el formulario."),
+          content: Text(l10n.training_error_form),
           backgroundColor: Colors.redAccent));
       return;
     }
@@ -1657,9 +1668,9 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
     int currentSeriesCount = int.tryParse(seriesController.text.trim()) ?? 0;
 
     if (currentSeriesCount < 0) {
-      setState(() => seriesWarningText = "Número de series inválido."); hasBlockingErrors = true;
+      setState(() => seriesWarningText = l10n.training_num_invalid); hasBlockingErrors = true;
     } else if (currentSeriesCount > 10) {
-      setState(() => seriesWarningText = "Máximo 4 series permitidas."); hasBlockingErrors = true;
+      setState(() => seriesWarningText = l10n.training_num_max); hasBlockingErrors = true;
     } else {
       setState(() => seriesWarningText = "");
     }
@@ -1667,21 +1678,21 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
     if (currentSeriesCount > 0) {
       for (int i = 0; i < repControllers.length; i++) {
         String repVal = repControllers[i].text.trim();
-        if (repVal.isEmpty) { setState(() => repWarnings[i] = "Requerido"); hasBlockingErrors = true;
+        if (repVal.isEmpty) { setState(() => repWarnings[i] = l10n.calculator_required); hasBlockingErrors = true;
         } else {
           int? r = int.tryParse(repVal);
-          if (r == null) { setState(() => repWarnings[i] = "Inválido"); hasBlockingErrors = true;}
+          if (r == null) { setState(() => repWarnings[i] = l10n.training_set_invalid); hasBlockingErrors = true;}
           else if (r < 1) { setState(() => repWarnings[i] = "Mín. 1"); hasBlockingErrors = true;}
           else if (r > 99) { setState(() => repWarnings[i] = "Máx. 99"); hasBlockingErrors = true;}
-          else { if(repWarnings[i] == "Requerido" || repWarnings[i] == "Inválido" || repWarnings[i] == "Mín. 1" || repWarnings[i] == "Máx. 99") {} else {setState(() => repWarnings[i] = "");} }
+          else { if(repWarnings[i] == l10n.calculator_required || repWarnings[i] == l10n.training_set_invalid || repWarnings[i] == "Mín. 1" || repWarnings[i] == "Máx. 99") {} else {setState(() => repWarnings[i] = "");} }
         }
 
         String weightValStr = weightControllers[i].text.trim().replaceAll(',', '.');
-        if (weightValStr.isEmpty) { setState(() => weightWarnings[i] = "Requerido"); hasBlockingErrors = true;
+        if (weightValStr.isEmpty) { setState(() => weightWarnings[i] = l10n.calculator_required); hasBlockingErrors = true;
         } else {
           double? w = double.tryParse(weightValStr);
-          if (w == null) { setState(() => weightWarnings[i] = "Inválido"); hasBlockingErrors = true;}
-          else if (w <= 0) { setState(() => weightWarnings[i] = "Debe ser >0"); hasBlockingErrors = true;}
+          if (w == null) { setState(() => weightWarnings[i] = l10n.training_set_invalid); hasBlockingErrors = true;}
+          else if (w <= 0) { setState(() => weightWarnings[i] = "Min. 1"); hasBlockingErrors = true;}
           else if (w > 9999) { setState(() => weightWarnings[i] = "Máx. 9999"); hasBlockingErrors = true;}
           else { setState(() => weightWarnings[i] = "");}
         }
@@ -1690,7 +1701,7 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
 
     if (hasBlockingErrors) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("Corrige los errores marcados antes de guardar."),
+          content: Text(l10n.training_image_required),
           backgroundColor: Colors.redAccent));
       return;
     }
@@ -1758,6 +1769,7 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
   @override
   Widget build(BuildContext context) {
     final lastLogData = widget.lastLog;
+    final l10n = AppLocalizations.of(context)!;
     final exerciseDefinitionForInfoTab = {
       'name': _currentExerciseDataLog['name'],
       'description': _currentExerciseDataLog['description'],
@@ -1770,13 +1782,19 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
     };
 
     return Dialog(
-        insetPadding: EdgeInsets.all(16),
+
+    insetPadding: EdgeInsets.all(16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Stack(alignment: Alignment.centerRight, children: [
-              TabBar( controller: _tabController, labelColor: Theme.of(context).primaryColor, unselectedLabelColor: Colors.grey, tabs: const [ Tab(text: 'Actual'), Tab(text: 'Historial'), Tab(text: 'Info'), ], ),
-              Positioned( right: 0, top: 0, bottom: 0, child: IconButton( icon: Icon(Icons.close), onPressed: () => Navigator.pop(context), tooltip: "Cerrar"), )
+              TabBar( controller: _tabController, labelColor: Theme.of(context).primaryColor, unselectedLabelColor: Colors.grey,
+                tabs:  [
+                Tab(text: l10n.training_current),
+                  Tab(text: l10n.training_history),
+                  Tab(text: 'Info'), ], ),
+              Positioned( right: 0, top: 0, bottom: 0, child: IconButton( icon: Icon(Icons.close), onPressed: () => Navigator.pop(context),
+                  tooltip: l10n.close), )
             ]),
             Flexible(
                 child: Container(
@@ -1812,7 +1830,7 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
     BorderSide seriesFocusedBorderSide = isAdvisoryWarningActive
         ? BorderSide(color: theme.colorScheme.error, width: 2.0) // Borde rojo más grueso si advertencia activa
         : inputDecorationTheme.focusedBorder?.borderSide ?? BorderSide(color: const Color(0xFFFFC107), width: 1.5); // Amarillo (amarilloPrincipal)
-
+    final l10n = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Form(
@@ -1829,7 +1847,7 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
                       controller: seriesController,
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
-                        labelText: 'Número de Series *',
+                        labelText: l10n.training_num_series,
                         labelStyle: seriesLabelStyle, // Aplicar estilo de etiqueta dinámico
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)), // Borde base
                         enabledBorder: OutlineInputBorder( // Borde cuando está habilitado
@@ -1865,7 +1883,7 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
                     child: DropdownButtonFormField<String>(
                       value: weightUnit,
                       decoration: InputDecoration(
-                        labelText: 'Unidad de Peso',
+                        labelText: l10n.training_units,
                         border: OutlineInputBorder(),
                         // Los estilos de error para este campo son manejados por defecto
                       ),
@@ -1890,9 +1908,11 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
                   ),
                 ),
               SizedBox(height: 12),
-              Text('Detalles por Serie:', style: Theme.of(context).textTheme.titleMedium),
-              if (seriesCountFromInput <= 0 && repControllers.isEmpty && weightControllers.isEmpty) Padding( padding: const EdgeInsets.symmetric(vertical: 10.0), child: Text("Define el número de series arriba.", style: TextStyle(color: Colors.grey.shade600, fontStyle: FontStyle.italic)))
-              else if (repControllers.isEmpty && weightControllers.isEmpty && seriesCountFromInput > 0) Padding( padding: const EdgeInsets.symmetric(vertical: 10.0), child: Text("Ajustando campos para $seriesCountFromInput series...", style: TextStyle(color: Colors.grey.shade600, fontStyle: FontStyle.italic)))
+              Text(l10n.training_Details, style: Theme.of(context).textTheme.titleMedium),
+              if (seriesCountFromInput <= 0 && repControllers.isEmpty && weightControllers.isEmpty) Padding( padding: const EdgeInsets.symmetric(vertical: 10.0),
+                  child: Text(l10n.training_details_text, style: TextStyle(color: Colors.grey.shade600, fontStyle: FontStyle.italic)))
+              else if (repControllers.isEmpty && weightControllers.isEmpty && seriesCountFromInput > 0) Padding( padding: const EdgeInsets.symmetric(vertical: 10.0),
+                  child: Text(l10n.training_details_text_2(seriesCountFromInput.toString()), style: TextStyle(color: Colors.grey.shade600, fontStyle: FontStyle.italic)))
               else
                 ListView.builder(
                     shrinkWrap: true,
@@ -1906,7 +1926,7 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
 
                             children: [
                           Text(
-                          'Serie ${index + 1}',
+                          ' ${l10n.serie} ${index + 1}',
                             style: TextStyle(
                               fontWeight: FontWeight.w500, // Un poco más de énfasis
                               fontSize: 16, // Tamaño legible
@@ -1924,7 +1944,7 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
                                       controller: repControllers[index],
                                       keyboardType: TextInputType.number,
                                       decoration: InputDecoration(
-                                        labelText: 'Repeticiones',
+                                        labelText: l10n.repetitions,
                                         border: OutlineInputBorder(),
                                         errorMaxLines: 2,
                                         errorText: (repWarnings.length > index && repWarnings[index].isNotEmpty)
@@ -1941,7 +1961,7 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
                                       controller: weightControllers[index],
                                       keyboardType: TextInputType.numberWithOptions(decimal: true),
                                       decoration: InputDecoration(
-                                        labelText: 'Peso',
+                                        labelText: l10n.weight,
                                         border: OutlineInputBorder(),
                                         errorMaxLines: 2,
                                         errorText: (weightWarnings.length > index && weightWarnings[index].isNotEmpty)
@@ -1957,22 +1977,24 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
                           ));
                     }),
               SizedBox(height: 20),
-              TextFormField( controller: notesController, decoration: InputDecoration( labelText: 'Notas (opcional)', border: OutlineInputBorder(), alignLabelWithHint: true, hintText: "Técnica, sensaciones, etc."), maxLines: 3, minLines: 1, textCapitalization: TextCapitalization.sentences),
+              TextFormField( controller: notesController, decoration: InputDecoration(
+                  labelText: l10n.training_notes, border: OutlineInputBorder(), alignLabelWithHint: true,
+                  hintText: l10n.training_notes_hint), maxLines: 3, minLines: 1, textCapitalization: TextCapitalization.sentences),
               SizedBox(height: 24),
 
               if (widget.lastLog != null) ...[
-                Text("Último Registro:", style: Theme.of(context).textTheme.titleMedium),
+                Text(l10n.training_register, style: Theme.of(context).textTheme.titleMedium),
                 SizedBox(height: 8),
                 Builder( // Usar Builder para acceder al context dentro de la condición
                     builder: (context) {
-                      String formattedDate = "Fecha no disponible";
+                      String formattedDate = l10n.training_date_unknown;
                       if (widget.lastLog!['dateTime'] != null) {
                         try {
                           DateTime dt = DateTime.parse(widget.lastLog!['dateTime']);
                           // Puedes elegir el formato que prefieras. Ej: "dd 'de' MMMM 'de' yyyy" o "dd/MM/yyyy"
-                          formattedDate = DateFormat.yMMMMd('es_ES').format(dt); // Ej: "25 de mayo de 2025"
+                          formattedDate = DateFormat.yMMMMd(l10n.localeName).format(dt);
                         } catch (e) {
-                          print("Error al formatear fecha del último log: $e");
+                          print(l10n.training_error_format);
                         }
                       }
                       return Text(
@@ -1988,8 +2010,28 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
                 SizedBox(height: 8),
                 _buildLastLogTable(widget.lastLog!), // Usar el nuevo método para la tabla
                 SizedBox(height: 24),
+              ] else ...[
+                // <<< INICIO DEL NUEVO BLOQUE "else" >>>
+                Text(l10n.training_register, style: Theme.of(context).textTheme.titleMedium),
+                SizedBox(height: 8),
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 20.0),
+                    child: Text(
+                      l10n.training_register_error, // <<< TU NUEVO MENSAJE LOCALIZADO
+                      style: TextStyle(
+                        color: Colors.grey[500],
+                        fontStyle: FontStyle.italic,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 24),
+                // <<< FIN DEL NUEVO BLOQUE "else" >>>
               ],
-              ElevatedButton( onPressed: _confirmAndSaveData, child: Text('Actualizar Registro'), style: ElevatedButton.styleFrom( padding: EdgeInsets.symmetric(vertical: 12))),
+              ElevatedButton( onPressed: _confirmAndSaveData,
+                  child: Text(l10n.training_update), style: ElevatedButton.styleFrom( padding: EdgeInsets.symmetric(vertical: 12))),
             ]
         ),
       ),
@@ -2004,14 +2046,14 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
     // Ahora 'weightUnit' del log es una sola string.
     final String logUnit = (lastLog['weightUnit']?.toString() ?? 'lb').split(',')[0].trim(); // Tomar la primera si era lista, o la unidad.
     final String notes = lastLog['notes']?.toString() ?? '';
-
+    final l10n = AppLocalizations.of(context)!;
     List<TableRow> rows = [
       TableRow(
         decoration: BoxDecoration(color: theme.colorScheme.surfaceVariant.withOpacity(0.3)),
         children: [
-          Padding(padding: const EdgeInsets.all(8.0), child: Text('Serie', style: TextStyle(fontWeight: FontWeight.bold))),
+          Padding(padding: const EdgeInsets.all(8.0), child: Text(l10n.serie, style: TextStyle(fontWeight: FontWeight.bold))),
           Padding(padding: const EdgeInsets.all(8.0), child: Text('Reps', style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
-          Padding(padding: const EdgeInsets.all(8.0), child: Text('Peso', style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
+          Padding(padding: const EdgeInsets.all(8.0), child: Text(l10n.weight, style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
         ],
       ),
     ];
@@ -2036,7 +2078,6 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
       ]));
     }
 
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -2051,7 +2092,7 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
         ),
         if (lastLog['notes'] != null && (lastLog['notes'] as String).isNotEmpty) ...[
           SizedBox(height: 8),
-          Text("Notas: ${lastLog['notes']}", style: TextStyle(fontSize: 13, fontStyle: FontStyle.italic)),
+          Text("${l10n.notes} ${lastLog['notes']}", style: TextStyle(fontSize: 13, fontStyle: FontStyle.italic)),
         ]
       ],
     );
@@ -2072,12 +2113,13 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
           itemCount: logs.length,
           separatorBuilder: (_, __) => Divider(height: 28, thickness: 1),
           itemBuilder: (context, index) {
+            final l10n = AppLocalizations.of(context)!;
             final log = logs[index];
-            String formattedDate = "Fecha desconocida";
+            String formattedDate = l10n.training_date_unknown;
             if (log['dateTime'] != null) {
               try {
                 DateTime dt = DateTime.parse(log['dateTime']);
-                formattedDate = DateFormat.yMd('es_ES').add_Hm().format(dt); // "d/M/yyyy HH:mm"
+                formattedDate = DateFormat.yMd(l10n.localeName).add_Hm().format(dt);
               } catch (_) {}
             }
             return Column(
@@ -2106,15 +2148,18 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
 
     const TextStyle whiteTextStyle = TextStyle(color: Colors.white, fontSize: 13);
     const TextStyle whiteBoldTextStyle = TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13);
-
+    final l10n = AppLocalizations.of(context)!;
 
     List<TableRow> rows = [
       TableRow(
         decoration: BoxDecoration(color: theme.colorScheme.surfaceVariant.withOpacity(0.2)),
         children: [
-          Padding(padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0), child: Text('Serie', style: whiteBoldTextStyle, textAlign: TextAlign.center)),
-          Padding(padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0), child: Text('Reps', style: whiteBoldTextStyle, textAlign: TextAlign.center)),
-          Padding(padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0), child: Text('Peso', style: whiteBoldTextStyle, textAlign: TextAlign.center)),
+          Padding(padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0), child:
+          Text(l10n.serie, style: whiteBoldTextStyle, textAlign: TextAlign.center)),
+          Padding(padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0), child:
+          Text('Reps', style: whiteBoldTextStyle, textAlign: TextAlign.center)),
+          Padding(padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0), child:
+          Text(l10n.weight, style: whiteBoldTextStyle, textAlign: TextAlign.center)),
           // Quitar columna Notas si se decide así para el historial también
           // Padding(padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0), child: Text('Notas', style: whiteBoldTextStyle, textAlign: TextAlign.center)),
         ],
@@ -2144,6 +2189,7 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
         // Padding(padding: const EdgeInsets.all(6.0), child: Text(notes, style: whiteTextStyle.copyWith(fontStyle: FontStyle.italic, fontSize: 12), textAlign: TextAlign.left)),
       ]));
     }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -2161,7 +2207,7 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
         // Si las notas no están en la tabla, mostrarlas aquí:
         if (notes.isNotEmpty) ...[
           SizedBox(height: 6),
-          Text("Notas: $notes", style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic, color: Colors.white70)),
+          Text("${l10n.notes} $notes", style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic, color: Colors.white70)),
         ]
       ],
     );

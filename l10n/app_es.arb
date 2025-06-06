@@ -20,7 +20,7 @@
   "weight": "Peso",
   "serie": "Serie",
   "reps": "Repeticiones",
-  "repetitions": "Repeticiones",
+  "notes": "Notas:",
   "addExerciseButton": "Añadir Ejer.",
   "createTemplateButton": "Crear Plantilla",
   "addExercisesToTraining": "Añade ejercicios a tu entrenamiento.",
@@ -192,13 +192,55 @@
   "training_cancel_training_message": "Los datos del entrenamiento actual no guardados se perderán. ¿Seguro que quieres salir?",
   "training_cancel_exit": "Sí, Salir",
   "training_exercise_required":"Añade al menos un ejercicio para terminar el entrenamiento.",
-
-  "errorSavingTraining": "Error al guardar entrenamiento: {error}",
-  "addAtLeastOneExerciseToFinish": "Añade al menos un ejercicio para terminar el entrenamiento.",
-  "exerciseHasNoSeries": "El ejercicio '{exerciseName}' no tiene series definidas.",
-  "incompleteRepsData": "Datos de repeticiones incompletos para '{exerciseName}'.",
-  "incompleteWeightData": "Datos de peso incompletos para '{exerciseName}'.",
-  "incompleteWeightUnits": "Unidades de peso incompletas para '{exerciseName}'.",
+  "training_current": "Actual",
+  "training_history": "Historial",
+  "training_num_series": "Número de Series *",
+  "training_units": "Unidad",
+  "training_Details": "Detalles por Serie:",
+  "training_details_text": "Ingresa las números de series.",
+  "training_details_text_2":"Ajustando campos para '{seriesCountFromInput}' series...",
+  "@training_details_text_2": {
+    "description": "Mensaje de actualización de detalles de series.",
+    "placeholders": {
+      "seriesCountFromInput": {
+        "type": "String"
+      }
+    }
+  },
+  "training_notes": "Notas (opcional)",
+  "training_notes_hint":"Técnica, sensaciones, etc.",
+  "training_register": "Último Registro:",
+  "training_register_error": "Sin registros para este ejercicio.",
+  "training_date_unknown": "Fecha desconocida",
+  "training_error_format": "Error al formatear fecha registrada",
+  "training_update": "Actualizar Registro",
+  "training_create_exercise": "Ejercicio '{exerciseName}' creado y disponible.",
+  "@training_create_exercise": {
+    "description": "Mensaje del Snackbar que se muestra después de crear un ejercicio exitosamente.",
+    "placeholders": {
+      "exerciseName": {
+        "type": "String"
+      }
+    }
+  },
+  "training_quit_exercise": "'{exerciseNameToRemove}' quitado del entrenamiento",
+  "@training_quit_exercise": {
+    "description": "Mensaje del Snackbar que se muestra después de quitar un ejercicio del entrenamiento.",
+    "placeholders": {
+      "exerciseNameToRemove": {
+        "type": "String"
+      }
+    }
+  },
+"training_quit_error": "Error al quitar el ejercicio. Índice inválido.",
+  "training_set_recommend": "Se recomienda menos de 4 series para no sobrentrenar",
+  "training_set_error": "Número de series inválido.",
+  "training_set_invalid": "Inválido",
+  "training_error_form": "Por favor, corrige los errores en el formulario.",
+  "training_num_invalid":"Número de series inválido.",
+  "training_num_max": "Máximo 4 series permitidas.",
+  "training_weight_recommend": "Se recomienda bajar el peso.",
+  "training_weight_recommend2":"Se recomienda subir el peso",
 
   "templateNameCannotBeEmpty": "El nombre de la plantilla no puede estar vacío.",
   "template_delete": "Selecciona Plantilla a Borrar",

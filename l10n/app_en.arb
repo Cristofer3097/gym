@@ -18,8 +18,8 @@
   "save": "Save",
   "weight": "Weight",
   "serie": "Set",
-  "reps": "Reps",
   "repetitions": "Repetitions",
+  "notes": "Notes:",
   "addExerciseButton": "Add Exer.",
   "createTemplateButton": "Create Template",
   "addExercisesToTraining": "Add exercises to your training.",
@@ -178,6 +178,11 @@
       }
     }
   },
+  "training_notes": "Notes (optional)",
+  "training_notes_hint": "Technique, feelings, etc.",
+  "training_register": "Last Register:",
+  "training_register_error": "No records for this exercise.",
+  "training_date_unknown": "Unknown Date",
 
   "go": "Go",
   "yesSaveChanges": "Yes, Save",
@@ -189,13 +194,53 @@
   "training_cancel_training_message": "Unsaved data for the current training will be lost. Are you sure you want to exit?",
   "training_cancel_exit": "Yes, Exit",
   "training_exercise_required": "Add at least one exercise to finish the training.",
+  "training_current": "Current",
+  "training_history": "History",
+  "training_num_series": "Number of Series *",
+  "training_units": "Unit",
+  "training_Details": "Details by Set:",
+  "training_details_text": "Enter the number of sets.",
+  "training_details_text_2": "Adjusting details for '{seriesCountFromInput}' sets...",
+  "@training_details_text_2": {
+    "description": "Update details message for sets.",
+    "placeholders": {
+      "seriesCountFromInput": {
+        "type": "String"
+      }
+    }
+  },
+  "training_error_format": "Error formatting registered date",
+  "training_update": "Update Register",
+  "training_create_exercise": "Exercise '{exerciseName}' created and available",
+  "@training_create_exercise": {
+    "description": "Snackbar message shown after creating an exercise successfully.",
+    "placeholders": {
+      "exerciseName": {
+        "type": "String"
+      }
+    }
+  },
+  "training_quit_exercise": "'{exerciseNameToRemove}' removed from training",
+  "@training_quit_exercise": {
+    "description": "Snackbar message shown after removing an exercise from a training.",
+    "placeholders": {
+      "exerciseNameToRemove": {
+        "type": "String",
+        "example": "Bench Press"
+      }
+    }
+  },
+  "training_quit_error": "Error removing exercise. Invalid index.",
+  "training_set_recommend": "Recommend less than 4 series to not overload training",
+  "training_set_error": "Invalid number of series.",
+  "training_set_invalid": "Invalid",
+  "training_error_form": "Please correct the errors in the form.",
+  "training_num_invalid": "Invalid number of series.",
+  "training_num_max": "Maximum 4 series allowed.",
+  "training_weight_recommend": "Recommend lowering the weight.",
+  "training_weight_recommend2": "Recommend raising the weight",
 
-  "errorSavingTraining": "Error saving training: {error}",
-  "addAtLeastOneExerciseToFinish": "Add at least one exercise to finish the training.",
-  "exerciseHasNoSeries": "Exercise '{exerciseName}' has no series defined.",
-  "incompleteRepsData": "Incomplete repetition data for '{exerciseName}'.",
-  "incompleteWeightData": "Incomplete weight data for '{exerciseName}'.",
-  "incompleteWeightUnits": "Incomplete weight units for '{exerciseName}'.",
+
   "templateNameLabel": "Template name",
   "templateNameCannotBeEmpty": "Template name cannot be empty.",
   "template_delete": "Select Template to Delete",

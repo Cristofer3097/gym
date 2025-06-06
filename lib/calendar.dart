@@ -168,7 +168,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         decoration: BoxDecoration(color: theme.colorScheme.onSurface.withOpacity(0.08)),
         children: [
           Padding(padding: const EdgeInsets.symmetric(vertical: 7.0, horizontal: 5.0), child: Text(l10n.serie, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5), textAlign: TextAlign.center)),
-          Padding(padding: const EdgeInsets.symmetric(vertical: 7.0, horizontal: 5.0), child: Text(l10n.reps, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5), textAlign: TextAlign.center)),
+          Padding(padding: const EdgeInsets.symmetric(vertical: 7.0, horizontal: 5.0), child: Text("Reps", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5), textAlign: TextAlign.center)),
           Padding(padding: const EdgeInsets.symmetric(vertical: 7.0, horizontal: 5.0), child: Text(l10n.weight, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5), textAlign: TextAlign.center)),
         ],
       ),
