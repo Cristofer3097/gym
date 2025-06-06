@@ -495,7 +495,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
         content: Text(l10n.training_confirm_finish_message),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: Text("No")),
-          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: Text("Sí, Guardar")),
+          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: Text(l10n.yesSaveChanges)),
         ],
       ),
     );
@@ -1587,17 +1587,8 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
   }
 
   void _initializeSeriesSpecificFields() {
-    final l10n = AppLocalizations.of(context)!;
     int targetSeriesForRepFields = seriesCountFromInput;
-    if (seriesCountFromInput > 4) { // Límite que quieres restaurar
-      seriesWarningText = l10n.training_set_recommend;
-      targetSeriesForRepFields = 4; // Limitar a 4 campos
-    } else if (seriesCountFromInput < 0) {
-      seriesWarningText = l10n.training_set_error;
-      targetSeriesForRepFields = 0; // No mostrar campos si es inválido
-    } else {
-      seriesWarningText = ""; // Limpiar advertencia para casos válidos (0 a 4 series)
-    }
+
 
     List<String> oldRepValues = repControllers.map((c) => c.text).toList();
     List<String> oldWeightValues = weightControllers.map((c) => c.text).toList();
@@ -1864,9 +1855,21 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
                         // Si el validador retorna un error, TextFormField usará errorBorder, errorStyle, etc.
                       ),
                       onChanged: (value) {
+                        final l10n = AppLocalizations.of(context)!; // Obtén l10n aquí
                         setState(() {
                           seriesCountFromInput = int.tryParse(value.trim()) ?? 0;
-                          _initializeSeriesSpecificFields();
+
+                          // --- LÓGICA DE ADVERTENCIA MOVIDA AQUÍ ---
+                          if (seriesCountFromInput > 10) { // Límite que pusiste en el validador
+                            seriesWarningText = 'Máx. 10'; // O usa una clave l10n
+                          } else if (seriesCountFromInput > 4) {
+                            seriesWarningText = l10n.training_set_recommend; // Clave ARB
+                          } else if (seriesCountFromInput < 0) {
+                            seriesWarningText = l10n.training_set_error; // Clave ARB
+                          } else {
+                            seriesWarningText = ""; // Limpiar advertencia
+                          }
+                          _initializeSeriesSpecificFields(); // Ahora esta función solo prepara los campos
                         });
                       },
                       validator: (value) {
