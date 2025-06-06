@@ -135,20 +135,13 @@ class _TrainingScreenState extends State<TrainingScreen> {
     if (!_isTitleInitialized) { // Solo si no se inicializó con widget.templateName
       final l10n = AppLocalizations.of(context)!;
       final String formattedDate = _getFormattedCurrentDate(context);
-
-      // Es importante llamar a setState aquí si estás actualizando una variable
-      // que afecta a la UI y el widget ya está construido.
-      // Sin embargo, como esto se llama antes del primer build después de initState,
-      // podemos asignar directamente.
-      // Para ser más robusto y si esta lógica se pudiera volver a llamar:
-      if (mounted) {
-        setState(() {
-          trainingTitle = l10n.training_title_date(formattedDate); // Asegúrate de tener esta clave
-        });
+      if (widget.templateName != null && widget.templateName!.isNotEmpty) {
+        trainingTitle = widget.templateName!;
       } else {
+        final String formattedDate = _getFormattedCurrentDate(context);
         trainingTitle = l10n.training_title_date(formattedDate);
       }
-      _isTitleInitialized = true; // Marcar como inicializado
+      _isTitleInitialized = true;
     }
   }
 
