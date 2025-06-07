@@ -1580,16 +1580,17 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
   }
 
   void _initializeSeriesSpecificFields() {
-    int targetSeriesForRepFields = seriesCountFromInput;
-
+    int targetSeriesForRepFields = min(seriesCountFromInput, 4);
 
     List<String> oldRepValues = repControllers.map((c) => c.text).toList();
     List<String> oldWeightValues = weightControllers.map((c) => c.text).toList();
 
-    repControllers = List.generate(targetSeriesForRepFields, (i) => TextEditingController(text: i < oldRepValues.length ? oldRepValues[i] : ''));
+    repControllers = List.generate(targetSeriesForRepFields,
+            (i) => TextEditingController(text: i < oldRepValues.length ? oldRepValues[i] : ''));
     repWarnings = List.generate(targetSeriesForRepFields, (_) => '');
 
-    weightControllers = List.generate(targetSeriesForRepFields, (i) => TextEditingController(text: i < oldWeightValues.length ? oldWeightValues[i] : ''));
+    weightControllers = List.generate(targetSeriesForRepFields,
+            (i) => TextEditingController(text: i < oldWeightValues.length ? oldWeightValues[i] : ''));
     weightWarnings = List.generate(targetSeriesForRepFields, (_) => '');
   }
 
@@ -1653,34 +1654,60 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
     bool hasBlockingErrors = false;
     int currentSeriesCount = int.tryParse(seriesController.text.trim()) ?? 0;
 
-    if (currentSeriesCount < 0) {
-      setState(() => seriesWarningText = l10n.training_num_invalid); hasBlockingErrors = true;
-    } else if (currentSeriesCount > 10) {
-      setState(() => seriesWarningText = l10n.training_num_max); hasBlockingErrors = true;
+    if (seriesCountFromInput > 4) { // Límite que quieres restaurar
+      seriesWarningText = l10n.training_set_recommend;
+      seriesCountFromInput = 4; // Limitar a 4 campos
+    } else if (seriesCountFromInput < 0) {
+      seriesWarningText = l10n.training_set_error;
+      seriesCountFromInput = 0; // No mostrar campos si es inválido
     } else {
-      setState(() => seriesWarningText = "");
+      seriesWarningText = ""; // Limpiar advertencia para casos válidos (0 a 4 series)
     }
 
     if (currentSeriesCount > 0) {
       for (int i = 0; i < repControllers.length; i++) {
         String repVal = repControllers[i].text.trim();
-        if (repVal.isEmpty) { setState(() => repWarnings[i] = l10n.calculator_required); hasBlockingErrors = true;
-        } else {
+        // --- CAMBIO 2: Se valida solo si el campo de repeticiones NO está vacío ---
+        if (repVal.isNotEmpty) {
           int? r = int.tryParse(repVal);
-          if (r == null) { setState(() => repWarnings[i] = l10n.training_set_invalid); hasBlockingErrors = true;}
-          else if (r < 1) { setState(() => repWarnings[i] = "Mín. 1"); hasBlockingErrors = true;}
-          else if (r > 99) { setState(() => repWarnings[i] = "Máx. 99"); hasBlockingErrors = true;}
-          else { if(repWarnings[i] == l10n.calculator_required || repWarnings[i] == l10n.training_set_invalid || repWarnings[i] == "Mín. 1" || repWarnings[i] == "Máx. 99") {} else {setState(() => repWarnings[i] = "");} }
+          if (r == null) {
+            setState(() => repWarnings[i] = l10n.training_set_invalid);
+            hasBlockingErrors = true;
+          } else if (r < 1) {
+            setState(() => repWarnings[i] = "Mín. 1");
+            hasBlockingErrors = true;
+          } else if (r > 99) {
+            setState(() => repWarnings[i] = "Máx. 99");
+            hasBlockingErrors = true;
+          } else {
+            // Limpia advertencias si el valor es válido
+            if(repWarnings[i] == l10n.calculator_required || repWarnings[i] == l10n.training_set_invalid || repWarnings[i] == "Mín. 1" || repWarnings[i] == "Máx. 99") {} else {setState(() => repWarnings[i] = "");}
+          }
+        } else {
+          // Si el campo está vacío, nos aseguramos de que no haya advertencias
+          setState(() => repWarnings[i] = "");
         }
 
+
         String weightValStr = weightControllers[i].text.trim().replaceAll(',', '.');
-        if (weightValStr.isEmpty) { setState(() => weightWarnings[i] = l10n.calculator_required); hasBlockingErrors = true;
-        } else {
+        // --- CAMBIO 3: Se valida solo si el campo de peso NO está vacío ---
+        if (weightValStr.isNotEmpty) {
           double? w = double.tryParse(weightValStr);
-          if (w == null) { setState(() => weightWarnings[i] = l10n.training_set_invalid); hasBlockingErrors = true;}
-          else if (w <= 0) { setState(() => weightWarnings[i] = "Min. 1"); hasBlockingErrors = true;}
-          else if (w > 9999) { setState(() => weightWarnings[i] = "Máx. 9999"); hasBlockingErrors = true;}
-          else { setState(() => weightWarnings[i] = "");}
+          if (w == null) {
+            setState(() => weightWarnings[i] = l10n.training_set_invalid);
+            hasBlockingErrors = true;
+          } else if (w <= 0) {
+            setState(() => weightWarnings[i] = "Min. 1");
+            hasBlockingErrors = true;
+          } else if (w > 9999) {
+            setState(() => weightWarnings[i] = "Máx. 9999");
+            hasBlockingErrors = true;
+          } else {
+            setState(() => weightWarnings[i] = "");
+          }
+        } else {
+          // Si el campo está vacío, nos aseguramos de que no haya advertencias
+          setState(() => weightWarnings[i] = "");
         }
       }
     }
@@ -1779,7 +1806,8 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
                 Tab(text: l10n.training_current),
                   Tab(text: l10n.training_history),
                   Tab(text: 'Info'), ], ),
-              Positioned( right: 0, top: 0, bottom: 0, child: IconButton( icon: Icon(Icons.close), onPressed: () => Navigator.pop(context),
+              Positioned( right: 0, top: 0, bottom: 0, child: IconButton( icon: Icon(Icons.close),
+                  onPressed:  _confirmAndSaveData,
                   tooltip: l10n.close), )
             ]),
             Flexible(
@@ -1853,14 +1881,14 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
                           seriesCountFromInput = int.tryParse(value.trim()) ?? 0;
 
                           // --- LÓGICA DE ADVERTENCIA MOVIDA AQUÍ ---
-                          if (seriesCountFromInput > 10) { // Límite que pusiste en el validador
-                            seriesWarningText = 'Máx. 10'; // O usa una clave l10n
-                          } else if (seriesCountFromInput > 4) {
-                            seriesWarningText = l10n.training_set_recommend; // Clave ARB
+                          if (seriesCountFromInput > 4) { // Límite que quieres restaurar
+                            seriesWarningText = l10n.training_set_recommend;
+                            seriesCountFromInput = 4; // Limitar a 4 campos
                           } else if (seriesCountFromInput < 0) {
-                            seriesWarningText = l10n.training_set_error; // Clave ARB
+                            seriesWarningText = l10n.training_set_error;
+                            seriesCountFromInput = 0; // No mostrar campos si es inválido
                           } else {
-                            seriesWarningText = ""; // Limpiar advertencia
+                            seriesWarningText = ""; // Limpiar advertencia para casos válidos (0 a 4 series)
                           }
                           _initializeSeriesSpecificFields(); // Ahora esta función solo prepara los campos
                         });
@@ -1870,7 +1898,7 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
                         final n = int.tryParse(value.trim());
                         if (n == null) return l10n.training_set_invalid;
                         if (n < 0) return l10n.training_negative;
-                        if (n > 10) return 'Máx. 10';
+                        if (n > 99) return 'Máx. 99';
                         return null;
                       },
                     ),

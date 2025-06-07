@@ -245,6 +245,8 @@
   "training_selection_units": "Selecciona unidad",
   "training_description_unknown": "No hay descripción disponible para este ejercicio.",
   "training_archive_error": "Error al cargar preview de archivo",
+  "training_unselect_error": "No se puede deseleccionar un ejercicio con datos ingresados.",
+
 
   "templateNameCannotBeEmpty": "El nombre de la plantilla no puede estar vacío.",
   "template_delete": "Selecciona Plantilla a Borrar",

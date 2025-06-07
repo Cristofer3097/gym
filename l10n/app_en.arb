@@ -243,6 +243,7 @@
   "training_selection_units": "Select unit",
   "training_description_unknown": "No description available for this exercise.",
   "training_archive_error": "Error loading preview of file",
+  "training_unselect_error": "Cannot deselect an exercise with entered data.",
 
   "templateNameLabel": "Template name",
   "templateNameCannotBeEmpty": "Template name cannot be empty.",
