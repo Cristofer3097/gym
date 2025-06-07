@@ -909,6 +909,41 @@ class _ExerciseOverlayState extends State<ExerciseOverlay> {
     }
   }
 
+  void _handleUncheck(Map<String, dynamic> exerciseToUncheck) {
+    final l10n = AppLocalizations.of(context)!;
+
+    // Busca el ejercicio correspondiente en la lista que contiene los datos del usuario.
+    final exerciseWithData = widget.selectedExercisesForCheckboxes.firstWhere(
+          (ex) => ex['name'] == exerciseToUncheck['name'],
+      orElse: () => <String, dynamic>{}, // Devuelve un mapa vacío si no lo encuentra
+    );
+
+    // Verifica si alguno de los campos de datos tiene contenido.
+    final bool hasSeries = exerciseWithData['series']?.toString().isNotEmpty ?? false;
+    final bool hasReps = (exerciseWithData['reps'] is List) && (exerciseWithData['reps'] as List).isNotEmpty;
+    final bool hasWeight = exerciseWithData['weight']?.toString().isNotEmpty ?? false;
+
+    if (hasSeries || hasReps || hasWeight) {
+      // Si hay datos, muestra un mensaje y no hagas nada más.
+      showDialog(
+        context: context, // Usa el contexto del _ExerciseOverlayState
+        builder: (dialogContext) => AlertDialog(
+          title: Text(l10n.training_unselect_error), // Nuevo título
+          content: Text(l10n.training_unselect_error), // Mismo mensaje de antes
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(l10n.close), // Usa tu clave para "Cerrar"
+            ),
+          ],
+        ),
+      );
+    } else {
+      // Si no hay datos, procede a deseleccionar el ejercicio.
+      widget.onExerciseUnchecked(exerciseToUncheck);
+    }
+  }
+
 
   Future<void> refreshExercises() async {
     debugPrint("ExerciseOverlay: Refrescando ejercicios...");
@@ -1075,7 +1110,7 @@ class _ExerciseOverlayState extends State<ExerciseOverlay> {
                         if (newValue == true)
                           widget.onExerciseChecked(exercise);
                         else
-                          widget.onExerciseUnchecked(exercise);
+                          _handleUncheck(exercise);
                       }));
 
                   return Card(
@@ -1120,7 +1155,7 @@ class _ExerciseOverlayState extends State<ExerciseOverlay> {
                           children: trailingItems),
                       onTap: () {
                         if (isSelected) {
-                          widget.onExerciseUnchecked(exercise);
+                          _handleUncheck(exercise);
                         } else {
                           widget.onExerciseChecked(exercise);
                         }
@@ -1320,7 +1355,8 @@ class _NewExerciseDialogState extends State<NewExerciseDialog> {
                   children: [
                     Row( mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [ Expanded( child: Text( isEditMode ?
                     (widget.exerciseToEdit!['name'] ?? l10n.training_edit_title) :
-                    l10n.training_new_title, style: Theme.of(context).textTheme.titleLarge, overflow: TextOverflow.ellipsis, ), ), IconButton( icon: Icon(Icons.close), onPressed: () => Navigator.pop(context)) ]),
+                    l10n.training_new_title, style: Theme.of(context).textTheme.titleLarge, overflow: TextOverflow.ellipsis, ), ),
+                      IconButton( icon: Icon(Icons.close), onPressed: () => Navigator.pop(context)) ]),
                     SizedBox(height: 20),
                     TextFormField( controller: nameController, textCapitalization: TextCapitalization.sentences, decoration: InputDecoration(
                         labelText: l10n.training_name_exercise, border: OutlineInputBorder(),
@@ -1644,11 +1680,13 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
 
   void _confirmAndSaveData() {
     final l10n = AppLocalizations.of(context)!;
-    if (!_formKeyCurrentDataTab.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(l10n.training_error_form),
-          backgroundColor: Colors.redAccent));
-      return;
+    if (_tabController.index == 0) {
+      if (!_formKeyCurrentDataTab.currentState!.validate()) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(l10n.training_error_form),
+            backgroundColor: Colors.redAccent));
+        return;
+      }
     }
 
     bool hasBlockingErrors = false;
@@ -1807,8 +1845,8 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
                   Tab(text: l10n.training_history),
                   Tab(text: 'Info'), ], ),
               Positioned( right: 0, top: 0, bottom: 0, child: IconButton( icon: Icon(Icons.close),
-                  onPressed:  _confirmAndSaveData,
-                  tooltip: l10n.close), )
+                  onPressed:_confirmAndSaveData,
+        tooltip: l10n.close), )
             ]),
             Flexible(
                 child: Container(
