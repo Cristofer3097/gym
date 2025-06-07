@@ -190,10 +190,15 @@ class _RMCalculatorDialogState extends State<RMCalculatorDialog> {
                         if (value == null || value.trim().isEmpty) {
                           return l10n.calculator_required;
                         }
-                        if (double.tryParse(value.trim().replaceAll(',', '.')) == null ||
-                            double.parse(value.trim().replaceAll(',', '.')) <= 0) {
+                        final double? weight = double.tryParse(value.trim().replaceAll(',', '.'));
+                        if (weight == null || weight <= 0) {
                           return l10n.calculator_invalid;
                         }
+                        // --- INICIO DEL CAMBIO ---
+                        if (weight > 999) {
+                          return 'Máx 999'; // Mensaje de error para el límite
+                        }
+                        // --- FIN DEL CAMBIO ---
                         return null;
                       },
                     ),

@@ -311,8 +311,10 @@
 
 
   "tips_title": "\uD83D\uDCA1 Consejos Rápidos",
-  "tips_rm": "Conoce tu RM  ",
-  "tips_rm_text": "PR (Personal Record) y RM (Repetición Máxima) son conceptos clave para medir el progreso y la fuerza. PR es el máximo peso que has levantado en un ejercicio en particular, mientras que RM es el peso máximo que puedes levantar en una sola repetición, independientemente de tu récord personal.",
+  "tips_rm": "RM  ",
+  "tips_rm_text": "Para conocer tu máximo de una repetición, utiliza la siguiente calculadora:",
+  "tips_rm_is_title": " ¿Qué es RM?",
+  "tips_rm_is": "RM (Repetición Máxima) y PR (Personal Record) y son conceptos clave para medir el progreso y la fuerza. PR es el máximo peso que has levantado en un ejercicio en particular, mientras que RM es el peso máximo que puedes levantar en una sola repetición, independientemente de tu récord personal.",
   "tips_book": "Libro Recomendado",
   "tips_book_text": "Un libro que me ayudó a entender la importancia del entrenamiento efectivo y de alta intensidad.",
   "tips_book_link": "Link del libro",
@@ -341,7 +343,7 @@
   "tips_project_text": "Esta aplicación, 'Gym Diary', nació de mi necesidad personal de contar con una herramienta simple, directa y efectiva para llevar un registro detallado de mis entrenamientos en el gimnasio. Buscaba algo que me permitiera personalizar mis rutinas, seguir mi progreso en series, repeticiones y pesos, y tener un historial accesible pero siempre me encontraba aplicaciones de servicio o con un costo muy escesivo para simplemente guardar datos numericos, funciones innecesarias y/o complejas. \n \n \nEl objetivo principal es ofrecer una experiencia de usuario clara, enfocada en la funcionalidad esencial para el seguimiento del entrenamiento de fuerza, permitiendo al usuario concentrarse en lo importante: su progreso y constancia. \n \n \nEspero sinceramente que encuentres esta aplicación útil para alcanzar tus metas de fitness. ¡Cualquier comentario o sugerencia para mejorarla será muy apreciado!",
   "creatorCredit": "Creador Cristofer3097",
 
-  "calculator_RM": "Calculadora de RM",
+  "calculator_RM": "Calculadora RM",
   "calculator_warning": "Esto no es preciso y puede generarte ciertos errores.",
   "calculator_required": "Requerido",
   "calculator_invalid": "Inválido (>0)",

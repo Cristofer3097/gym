@@ -31,6 +31,24 @@ class TipsExtrasScreen extends StatelessWidget {
       },
     );
   }
+  void _showRmInfoDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text(l10n.tips_rm_is_title),
+          content: Text(l10n.tips_rm_is),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(l10n.close),
+            ),
+          ],
+        );
+      },
+    );
+  }
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -47,34 +65,46 @@ class TipsExtrasScreen extends StatelessWidget {
           children: <Widget>[
 
             _buildSectionTitle(context, l10n.tips_title, theme.primaryColor),
-            Card( // Usamos una Card directamente para tener más control sobre el título
+            Card( // Se mantiene la Card para el diseño
               child: Padding(
                 padding: const EdgeInsets.all(12.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    InkWell( // Para hacer el área del título clickeable
-                      onTap: () => _showRMCalculatorDialog(context),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min, // Para que el Row no ocupe todo el ancho innecesariamente
-                        children: [
-                          Text(
-                            l10n.tips_rm, // Título
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
+                    // --- CAMBIO: Se quita el InkWell, ahora es solo un Row para mostrar el título y el ícono ---
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          l10n.tips_rm, // Título
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                            height: 1.4,
                           ),
-                          Icon(Icons.info_outline_rounded, color: theme.primaryColor, size: 20),                        ],
-                      ),
+                        ),
+                        const SizedBox(width: 4), // Espacio entre texto e ícono
+                        IconButton(
+                          icon: Icon(Icons.info_outline_rounded, color: theme.primaryColor, size: 20),
+                          onPressed: () => _showRmInfoDialog(context),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(), // Ayuda a reducir el área de toque excesiva
+                        )                      ],
                     ),
-                    const SizedBox(height: 6),
-                    Text( // Descripción del tip
+                    Text( // La descripción no cambia
                       l10n.tips_rm_text,
-
                       style: theme.textTheme.bodyLarge?.copyWith(
                         color: Colors.white.withOpacity(0.85),
                         height: 1.4,
+                      ),
+                    ),
+                    // --- CAMBIO: Se añade el botón de acción ---
+                    const SizedBox(height: 12),
+                    Center(
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.calculate_outlined, size: 20),
+                        label: Text(l10n.tips_rm), // Usamos el nuevo texto
+                        onPressed: () => _showRMCalculatorDialog(context), // La acción ahora está aquí
                       ),
                     ),
                   ],
