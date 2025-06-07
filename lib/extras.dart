@@ -14,13 +14,13 @@ class TipsExtrasScreen extends StatelessWidget {
 
   Future<void>  _launchGenericUrl(BuildContext context, String urlString) async {
     final Uri url = Uri.parse(urlString);
+    final l10n = AppLocalizations.of(context)!;
        if (!await launchUrl(url)) {
          if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-             SnackBar(content: Text('No se pudo abrir el enlace: $urlString')),
+             SnackBar(content: Text(l10n.tips_book_link_error)),
            );
          }
-        print('Could not launch $urlString');
        }
      }
   void _showRMCalculatorDialog(BuildContext context) {
@@ -39,6 +39,24 @@ class TipsExtrasScreen extends StatelessWidget {
         return AlertDialog(
           title: Text(l10n.tips_rm_is_title),
           content: Text(l10n.tips_rm_is),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(l10n.close),
+            ),
+          ],
+        );
+      },
+    );
+  }
+  void _hypertrophyDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text(l10n.tips_hypertrophy),
+          content: Text(l10n.tips_hypertrophy_dialog),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
@@ -80,10 +98,8 @@ class TipsExtrasScreen extends StatelessWidget {
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w600,
                             color: Colors.white,
-                            height: 1.4,
                           ),
                         ),
-                        const SizedBox(width: 4), // Espacio entre texto e ícono
                         IconButton(
                           icon: Icon(Icons.info_outline_rounded, color: theme.primaryColor, size: 20),
                           onPressed: () => _showRmInfoDialog(context),
@@ -103,7 +119,7 @@ class TipsExtrasScreen extends StatelessWidget {
                     Center(
                       child: ElevatedButton.icon(
                         icon: const Icon(Icons.calculate_outlined, size: 20),
-                        label: Text(l10n.tips_rm), // Usamos el nuevo texto
+                        label: Text(l10n.calculator_RM), // Usamos el nuevo texto
                         onPressed: () => _showRMCalculatorDialog(context), // La acción ahora está aquí
                       ),
                     ),
@@ -129,6 +145,45 @@ class TipsExtrasScreen extends StatelessWidget {
                 },
               ),
             ),
+
+            Card( // Se mantiene la Card para el diseño
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // --- CAMBIO: Se quita el InkWell, ahora es solo un Row para mostrar el título y el ícono ---
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          l10n.tips_hypertrophy_title, // Título
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.info_outline_rounded, color: theme.primaryColor, size: 20),
+                          onPressed: () => _hypertrophyDialog(context),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(), // Ayuda a reducir el área de toque excesiva
+                        )                      ],
+                    ),
+                    Text( // La descripción no cambia
+                      l10n.tips_hypertrophy_text,
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        color: Colors.white.withOpacity(0.85),
+                        height: 1.4,
+                      ),
+                    ),
+                    // --- CAMBIO: Se añade el botón de acción ---
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+
             _buildTip(context, l10n.tips_proof, l10n.tips_proof_text,),
             _buildTip(context, l10n.tips_Heating, l10n.tips_Heating_text),
             _buildTip(context, l10n.tips_aprox, l10n.tips_aprox_text),
