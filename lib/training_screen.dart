@@ -11,6 +11,7 @@ import 'package:intl/intl.dart'; // Para formateo de fechas si es necesario
 import '../utils/localization_utils.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/services.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 
 
@@ -1779,6 +1780,108 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
     Navigator.pop(context);
   }
 
+  double _calculate1RM(double weight, int reps) {
+    if (reps <= 0) return 0;
+    if (reps == 1) return weight;
+    // Fórmula de Epley: 1RM = peso / (1.0278 – (0.0278 * reps))
+    return weight / (1.0278 - (0.0278 * reps));
+  }
+
+// Widget que construye el gráfico
+  Widget _buildHistoryChart(BuildContext context, List<Map<String, dynamic>> logs) {
+    final l10n = AppLocalizations.of(context)!;
+    final String localeName = l10n.localeName;
+    final limitedLogs = logs.length > 5 ? logs.sublist(0, 5) : logs;
+    final List<FlSpot> spots = [];
+    final List<String> bottomTitles = [];
+    final reversedLogs = limitedLogs.reversed.toList();
+
+    for (int i = 0; i < reversedLogs.length; i++) {
+      final log = reversedLogs[i];
+      final List<String> repsList = (log['reps'] as String? ?? '').split(',');
+      final List<String> weightsList = (log['weight'] as String? ?? '').split(',');
+
+      if (repsList.isNotEmpty && weightsList.isNotEmpty) {
+        final lastRepStr = repsList.lastWhere((r) => r.isNotEmpty, orElse: () => '');
+        final lastWeightStr = weightsList.lastWhere((w) => w.isNotEmpty, orElse: () => '');
+
+        if (lastRepStr.isNotEmpty && lastWeightStr.isNotEmpty) {
+          final int? reps = int.tryParse(lastRepStr);
+          final double? weight = double.tryParse(lastWeightStr);
+          final DateTime? logDate = DateTime.tryParse(log['dateTime'] as String? ?? '');
+
+          if (reps != null && weight != null && logDate != null && reps > 0 && weight > 0) {
+            final double rm = _calculate1RM(weight, reps);
+            spots.add(FlSpot(i.toDouble(), rm));
+            bottomTitles.add(DateFormat('d MMM', localeName).format(logDate)); // Formato como "9 oct."
+          }
+        }
+      }
+    }
+
+    if (spots.isEmpty) {
+      return const SizedBox.shrink(); // No mostrar nada si no hay datos
+    }
+
+    // Configuración y estilo del gráfico
+    return LineChart(
+      LineChartData(
+        gridData: FlGridData(show: false),
+        titlesData: FlTitlesData(
+          show: true,
+          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 30,
+              interval: 1,
+              getTitlesWidget: (value, meta) {
+                int index = value.toInt();
+                if (index >= 0 && index < bottomTitles.length) {
+                  // Muestra títulos de manera inteligente para evitar superposición
+                  if (bottomTitles.length <= 5 || index == 0 || index == bottomTitles.length - 1 || index == (bottomTitles.length / 2).floor()) {
+                    return SideTitleWidget(
+                      meta: meta,
+                      space: 8.0,
+                      child: Text(bottomTitles[index], style: const TextStyle(color: Colors.grey, fontSize: 10)),
+                    );
+                  }
+                }
+                return const Text('');
+              },
+            ),
+          ),
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: (value, meta) {
+                return Text(value.toStringAsFixed(0), style: const TextStyle(color: Colors.grey, fontSize: 10));
+              },
+              reservedSize: 40,
+            ),
+          ),
+        ),
+        borderData: FlBorderData(show: false),
+        minY: spots.map((s) => s.y).reduce(min) * 0.95, // Margen inferior
+        maxY: spots.map((s) => s.y).reduce(max) * 1.05, // Margen superior
+        lineBarsData: [
+          LineChartBarData(
+            spots: spots,
+            isCurved: false,
+            color: Theme.of(context).primaryColor,
+            barWidth: 2,
+            isStrokeCapRound: true,
+            dotData: FlDotData(show: true),
+            belowBarData: BarAreaData(
+              show: true,
+              color: Theme.of(context).primaryColor.withOpacity(0.3),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   void dispose() {
@@ -2173,31 +2276,50 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
         final logs = snapshot.data ?? [];
         if (logs.isEmpty) return Center(child: Padding(padding: const EdgeInsets.all(16.0), child: Text("No hay registros anteriores para '$exerciseNameToQuery'.", textAlign: TextAlign.center)));
 
-        return ListView.separated(
-          padding: EdgeInsets.all(16),
-          itemCount: logs.length,
-          separatorBuilder: (_, __) => Divider(height: 28, thickness: 1),
-          itemBuilder: (context, index) {
-            final l10n = AppLocalizations.of(context)!;
-            final log = logs[index];
-            String formattedDate = l10n.training_date_unknown;
-            if (log['dateTime'] != null) {
-              try {
-                DateTime dt = DateTime.parse(log['dateTime']);
-                formattedDate = DateFormat.yMd(l10n.localeName).add_Hm().format(dt);
-              } catch (_) {}
-            }
-            return Column(
+        return SingleChildScrollView( // Permite el scroll de toda la vista
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(formattedDate, style: TextStyle(fontWeight: FontWeight.bold,
-                    color: Colors.white, fontSize: 15)),
-                SizedBox(height: 8),
-                _buildLogTableForHistory(log), // Usar la tabla para cada log
+                // Contenedor para el gráfico con altura definida
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.3, // Aprox. mitad de la ventana
+                  child: _buildHistoryChart(context, logs),
+                ),
+                const SizedBox(height: 24), // Espacio entre gráfico y tablas
+
+                // ListView de las tablas de historial
+                ListView.separated(
+                  physics: const NeverScrollableScrollPhysics(), // Deshabilita el scroll de esta lista
+                  shrinkWrap: true, // Se encoge para caber en la Column
+                  itemCount: logs.length,
+                  separatorBuilder: (_, __) => const Divider(height: 28, thickness: 1),
+                  itemBuilder: (context, index) {
+                    final l10n = AppLocalizations.of(context)!;
+                    final log = logs[index];
+                    String formattedDate = l10n.training_date_unknown;
+                    if (log['dateTime'] != null) {
+                      try {
+                        DateTime dt = DateTime.parse(log['dateTime']);
+                        formattedDate = DateFormat.yMd(l10n.localeName).add_Hm().format(dt);
+                      } catch (_) {}
+                    }
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(formattedDate, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 15)),
+                        const SizedBox(height: 8),
+                        _buildLogTableForHistory(log),
+                      ],
+                    );
+                  },
+                ),
               ],
-            );
-          },
+            ),
+          ),
         );
+        // --- FIN DEL CAMBIO ---
       },
     );
   }
