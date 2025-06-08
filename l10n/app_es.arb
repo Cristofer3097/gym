@@ -194,6 +194,7 @@
   "training_exercise_required":"Añade al menos un ejercicio para terminar el entrenamiento.",
   "training_current": "Actual",
   "training_history": "Historial",
+  "training_history_all": "Todos los Registros",
   "training_num_series": "Número de Series *",
   "training_units": "Unidad",
   "training_Details": "Detalles por Serie:",

@@ -1567,8 +1567,10 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
     _currentExerciseDataLog = Map<String, dynamic>.from(widget.exercise);
     _tabController = TabController(length: 3, vsync: this);
 
-    seriesController = TextEditingController(text: _currentExerciseDataLog['series']?.toString() ?? '');
-    notesController = TextEditingController(text: _currentExerciseDataLog['notes']?.toString() ?? '');
+    seriesController = TextEditingController(
+        text: _currentExerciseDataLog['series']?.toString() ?? '');
+    notesController = TextEditingController(
+        text: _currentExerciseDataLog['notes']?.toString() ?? '');
     seriesCountFromInput = int.tryParse(seriesController.text.trim()) ?? 0;
 
     String initialUnit = 'lb'; // Default a 'lb'
@@ -1607,10 +1609,13 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
       repControllers[i].text = initialReps[i];
     }
 
-    final String weightsString = _currentExerciseDataLog['weight']?.toString() ?? '';
+    final String weightsString = _currentExerciseDataLog['weight']
+        ?.toString() ?? '';
     if (weightsString.isNotEmpty) {
-      List<String> initialWeights = weightsString.split(',').map((s) => s.trim()).toList();
-      for (int i = 0; i < weightControllers.length && i < initialWeights.length; i++) {
+      List<String> initialWeights = weightsString.split(',').map((s) =>
+          s.trim()).toList();
+      for (int i = 0; i < weightControllers.length &&
+          i < initialWeights.length; i++) {
         weightControllers[i].text = initialWeights[i];
       }
     }
@@ -1621,14 +1626,20 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
     int targetSeriesForRepFields = min(seriesCountFromInput, 4);
 
     List<String> oldRepValues = repControllers.map((c) => c.text).toList();
-    List<String> oldWeightValues = weightControllers.map((c) => c.text).toList();
+    List<String> oldWeightValues = weightControllers
+        .map((c) => c.text)
+        .toList();
 
     repControllers = List.generate(targetSeriesForRepFields,
-            (i) => TextEditingController(text: i < oldRepValues.length ? oldRepValues[i] : ''));
+            (i) =>
+            TextEditingController(
+                text: i < oldRepValues.length ? oldRepValues[i] : ''));
     repWarnings = List.generate(targetSeriesForRepFields, (_) => '');
 
     weightControllers = List.generate(targetSeriesForRepFields,
-            (i) => TextEditingController(text: i < oldWeightValues.length ? oldWeightValues[i] : ''));
+            (i) =>
+            TextEditingController(
+                text: i < oldWeightValues.length ? oldWeightValues[i] : ''));
     weightWarnings = List.generate(targetSeriesForRepFields, (_) => '');
   }
 
@@ -1643,15 +1654,18 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
       } else {
         int? reps = int.tryParse(trimmedValue);
         if (reps != null) {
-          if (reps < 1) repWarnings[index] = "Mín. 1";
-          else if (reps > 99) repWarnings[index] = "Máx. 99";
+          if (reps < 1)
+            repWarnings[index] = "Mín. 1";
+          else if (reps > 99)
+            repWarnings[index] = "Máx. 99";
           else if (reps < 6 && (weightWarnings[index].isEmpty ||
               !weightWarnings[index].contains("Mín. 1")))
             repWarnings[index] = l10n.training_weight_recommend;
           else if (reps > 12 && (weightWarnings[index].isEmpty ||
               !weightWarnings[index].contains("Mín. 1")))
             repWarnings[index] = l10n.training_weight_recommend2;
-          else repWarnings[index] = "";
+          else
+            repWarnings[index] = "";
         } else {
           repWarnings[index] = l10n.training_set_invalid;
         }
@@ -1669,9 +1683,12 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
       } else {
         double? weightVal = double.tryParse(trimmedValue);
         if (weightVal != null) {
-          if (weightVal < 1) weightWarnings[index] = "Mín. 1";
-          else if (weightVal > 9999) weightWarnings[index] = "Máx. 9999";
-          else weightWarnings[index] = "";
+          if (weightVal < 1)
+            weightWarnings[index] = "Mín. 1";
+          else if (weightVal > 9999)
+            weightWarnings[index] = "Máx. 9999";
+          else
+            weightWarnings[index] = "";
         } else {
           weightWarnings[index] = l10n.training_set_invalid;
         }
@@ -1701,7 +1718,8 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
       seriesWarningText = l10n.training_set_error;
       seriesCountFromInput = 0; // No mostrar campos si es inválido
     } else {
-      seriesWarningText = ""; // Limpiar advertencia para casos válidos (0 a 4 series)
+      seriesWarningText =
+      ""; // Limpiar advertencia para casos válidos (0 a 4 series)
     }
 
     if (currentSeriesCount > 0) {
@@ -1721,7 +1739,12 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
             hasBlockingErrors = true;
           } else {
             // Limpia advertencias si el valor es válido
-            if(repWarnings[i] == l10n.calculator_required || repWarnings[i] == l10n.training_set_invalid || repWarnings[i] == "Mín. 1" || repWarnings[i] == "Máx. 99") {} else {setState(() => repWarnings[i] = "");}
+            if (repWarnings[i] == l10n.calculator_required ||
+                repWarnings[i] == l10n.training_set_invalid ||
+                repWarnings[i] == "Mín. 1" ||
+                repWarnings[i] == "Máx. 99") {} else {
+              setState(() => repWarnings[i] = "");
+            }
           }
         } else {
           // Si el campo está vacío, nos aseguramos de que no haya advertencias
@@ -1729,7 +1752,8 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
         }
 
 
-        String weightValStr = weightControllers[i].text.trim().replaceAll(',', '.');
+        String weightValStr = weightControllers[i].text.trim().replaceAll(
+            ',', '.');
         // --- CAMBIO 3: Se valida solo si el campo de peso NO está vacío ---
         if (weightValStr.isNotEmpty) {
           double? w = double.tryParse(weightValStr);
@@ -1759,13 +1783,16 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
       return;
     }
 
-    List<String> repsData = currentSeriesCount > 0 ? repControllers.map((c) => c.text.trim()).toList() : [];
-    List<String> weightsData = currentSeriesCount > 0 ? weightControllers.map((c) => c.text.trim().replaceAll(',', '.')).toList() : [];
+    List<String> repsData = currentSeriesCount > 0 ? repControllers.map((c) =>
+        c.text.trim()).toList() : [];
+    List<String> weightsData = currentSeriesCount > 0 ? weightControllers.map((
+        c) => c.text.trim().replaceAll(',', '.')).toList() : [];
 
     String unitsForDb;
     if (currentSeriesCount > 0) {
       // Repite la unidad de peso seleccionada para cada serie
-      unitsForDb = List.generate(currentSeriesCount, (_) => weightUnit.trim()).join(',');
+      unitsForDb =
+          List.generate(currentSeriesCount, (_) => weightUnit.trim()).join(',');
     } else {
       // Si no hay series, la cadena de unidades debe estar vacía
       unitsForDb = "";
@@ -1773,7 +1800,8 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
     _currentExerciseDataLog['series'] = seriesController.text.trim();
     _currentExerciseDataLog['reps'] = repsData;
     _currentExerciseDataLog['weight'] = weightsData.join(',');
-    _currentExerciseDataLog['weightUnit'] = unitsForDb;  // Guardar string de unidades
+    _currentExerciseDataLog['weightUnit'] =
+        unitsForDb; // Guardar string de unidades
     _currentExerciseDataLog['notes'] = notesController.text.trim();
 
     widget.onDataUpdated(_currentExerciseDataLog);
@@ -1783,12 +1811,14 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
   double _calculate1RM(double weight, int reps) {
     if (reps <= 0) return 0;
     if (reps == 1) return weight;
-    // Fórmula de Epley: 1RM = peso / (1.0278 – (0.0278 * reps))
-    return weight / (1.0278 - (0.0278 * reps));
+    // Usamos la fórmula de O'Conner para una estimación más conservadora.
+    // 1RM = Peso * (1 + 0.025 * Repeticiones)
+    return weight * (1 + (0.025 * reps));
   }
 
 // Widget que construye el gráfico
-  Widget _buildHistoryChart(BuildContext context, List<Map<String, dynamic>> logs) {
+  Widget _buildHistoryChart(BuildContext context,
+      List<Map<String, dynamic>> logs) {
     final l10n = AppLocalizations.of(context)!;
     final String localeName = l10n.localeName;
     final limitedLogs = logs.length > 5 ? logs.sublist(0, 5) : logs;
@@ -1799,21 +1829,29 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
     for (int i = 0; i < reversedLogs.length; i++) {
       final log = reversedLogs[i];
       final List<String> repsList = (log['reps'] as String? ?? '').split(',');
-      final List<String> weightsList = (log['weight'] as String? ?? '').split(',');
+      final List<String> weightsList = (log['weight'] as String? ?? '').split(
+          ',');
 
       if (repsList.isNotEmpty && weightsList.isNotEmpty) {
-        final lastRepStr = repsList.lastWhere((r) => r.isNotEmpty, orElse: () => '');
-        final lastWeightStr = weightsList.lastWhere((w) => w.isNotEmpty, orElse: () => '');
+        final lastRepStr = repsList.lastWhere((r) => r.isNotEmpty,
+            orElse: () => '');
+        final lastWeightStr = weightsList.lastWhere((w) => w.isNotEmpty,
+            orElse: () => '');
 
         if (lastRepStr.isNotEmpty && lastWeightStr.isNotEmpty) {
           final int? reps = int.tryParse(lastRepStr);
           final double? weight = double.tryParse(lastWeightStr);
-          final DateTime? logDate = DateTime.tryParse(log['dateTime'] as String? ?? '');
+          final DateTime? logDate = DateTime.tryParse(
+              log['dateTime'] as String? ?? '');
 
-          if (reps != null && weight != null && logDate != null && reps > 0 && weight > 0) {
-            final double rm = _calculate1RM(weight, reps);
-            spots.add(FlSpot(i.toDouble(), rm));
-            bottomTitles.add(DateFormat('d MMM', localeName).format(logDate)); // Formato como "9 oct."
+          if (reps != null && weight != null && logDate != null && reps > 0 &&
+              weight > 0) {
+            //en base a tu fuerza maxima 1RM
+            //final double rm = _calculate1RM(weight, reps);
+            //spots.add(FlSpot(i.toDouble(), rm));
+            spots.add(FlSpot(i.toDouble(), weight));
+            bottomTitles.add(DateFormat('d MMM', localeName).format(
+                logDate)); // Formato como "9 oct."
           }
         }
       }
@@ -1829,8 +1867,10 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
         gridData: FlGridData(show: false),
         titlesData: FlTitlesData(
           show: true,
-          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false)),
+          topTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false)),
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
@@ -1840,11 +1880,15 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
                 int index = value.toInt();
                 if (index >= 0 && index < bottomTitles.length) {
                   // Muestra títulos de manera inteligente para evitar superposición
-                  if (bottomTitles.length <= 5 || index == 0 || index == bottomTitles.length - 1 || index == (bottomTitles.length / 2).floor()) {
+                  if (bottomTitles.length <= 5 || index == 0 ||
+                      index == bottomTitles.length - 1 ||
+                      index == (bottomTitles.length / 2).floor()) {
                     return SideTitleWidget(
                       meta: meta,
                       space: 8.0,
-                      child: Text(bottomTitles[index], style: const TextStyle(color: Colors.grey, fontSize: 10)),
+                      child: Text(bottomTitles[index],
+                          style: const TextStyle(color: Colors.grey,
+                              fontSize: 10)),
                     );
                   }
                 }
@@ -1856,26 +1900,34 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
             sideTitles: SideTitles(
               showTitles: true,
               getTitlesWidget: (value, meta) {
-                return Text(value.toStringAsFixed(0), style: const TextStyle(color: Colors.grey, fontSize: 10));
+                return Text(value.toStringAsFixed(0),
+                    style: const TextStyle(color: Colors.grey, fontSize: 10));
               },
               reservedSize: 40,
             ),
           ),
         ),
         borderData: FlBorderData(show: false),
-        minY: spots.map((s) => s.y).reduce(min) * 0.95, // Margen inferior
-        maxY: spots.map((s) => s.y).reduce(max) * 1.05, // Margen superior
+        minY: spots.map((s) => s.y).reduce(min) * 0.95,
+        // Margen inferior
+        maxY: spots.map((s) => s.y).reduce(max) * 1.05,
+        // Margen superior
         lineBarsData: [
           LineChartBarData(
             spots: spots,
             isCurved: false,
-            color: Theme.of(context).primaryColor,
+            color: Theme
+                .of(context)
+                .primaryColor,
             barWidth: 2,
             isStrokeCapRound: true,
             dotData: FlDotData(show: true),
             belowBarData: BarAreaData(
               show: true,
-              color: Theme.of(context).primaryColor.withOpacity(0.3),
+              color: Theme
+                  .of(context)
+                  .primaryColor
+                  .withOpacity(0.3),
             ),
           ),
         ],
@@ -1888,12 +1940,14 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
     _tabController.dispose();
     seriesController.dispose();
     notesController.dispose();
-    for (var controller in repControllers) controller.dispose();
-    for (var controller in weightControllers) controller.dispose();
+    for (var controller in repControllers)
+      controller.dispose();
+    for (var controller in weightControllers)
+      controller.dispose();
     super.dispose();
   }
 
-  Future<void> _openEditExerciseDialog( BuildContext parentDialogContext) async {
+  Future<void> _openEditExerciseDialog(BuildContext parentDialogContext) async {
     Map<String, dynamic> definitionDataToEdit = {
       'id': widget.exercise['id'],
       'name': widget.exercise['name'],
@@ -1906,18 +1960,23 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
     final result = await showDialog<Map<String, dynamic>>(
       context: parentDialogContext,
       barrierDismissible: false,
-      builder: (dialogCtx) => NewExerciseDialog( exerciseToEdit: definitionDataToEdit, ),
+      builder: (dialogCtx) =>
+          NewExerciseDialog(exerciseToEdit: definitionDataToEdit,),
     );
 
     if (result != null && mounted) {
       setState(() {
-        _currentExerciseDataLog['name'] = result['name'] ?? _currentExerciseDataLog['name'];
-        _currentExerciseDataLog['description'] = result['description'] ?? _currentExerciseDataLog['description'];
+        _currentExerciseDataLog['name'] =
+            result['name'] ?? _currentExerciseDataLog['name'];
+        _currentExerciseDataLog['description'] =
+            result['description'] ?? _currentExerciseDataLog['description'];
         _currentExerciseDataLog['image'] = result['image'];
-        _currentExerciseDataLog['category'] = result['category'] ?? _currentExerciseDataLog['category'];
+        _currentExerciseDataLog['category'] =
+            result['category'] ?? _currentExerciseDataLog['category'];
       });
       widget.onExerciseDefinitionChanged();
-      debugPrint( "Definición de ejercicio actualizada en ExerciseDataDialog: ${_currentExerciseDataLog['name']}");
+      debugPrint(
+          "Definición de ejercicio actualizada en ExerciseDataDialog: ${_currentExerciseDataLog['name']}");
     }
   }
 
@@ -1932,30 +1991,47 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
       'category': _currentExerciseDataLog['category'],
       'isManual': _currentExerciseDataLog['isManual'],
       'id': _currentExerciseDataLog['id'],
-      'is_predefined': _currentExerciseDataLog['is_predefined'], // Asegúrate que esté
+      'is_predefined': _currentExerciseDataLog['is_predefined'],
+      // Asegúrate que esté
       'original_id': _currentExerciseDataLog['original_id']
     };
 
     return Dialog(
 
-    insetPadding: EdgeInsets.all(16),
+        insetPadding: EdgeInsets.all(16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Stack(alignment: Alignment.centerRight, children: [
-              TabBar( controller: _tabController, labelColor: Theme.of(context).primaryColor, unselectedLabelColor: Colors.grey,
-                tabs:  [
-                Tab(text: l10n.training_current),
+              TabBar(controller: _tabController, labelColor: Theme
+                  .of(context)
+                  .primaryColor, unselectedLabelColor: Colors.grey,
+                tabs: [
+                  Tab(text: l10n.training_current),
                   Tab(text: l10n.training_history),
-                  Tab(text: 'Info'), ], ),
-              Positioned( right: 0, top: 0, bottom: 0, child: IconButton( icon: Icon(Icons.close),
-                  onPressed:_confirmAndSaveData,
-        tooltip: l10n.close), )
+                  Tab(text: 'Info'),
+                ],),
+              Positioned(right: 0,
+                top: 0,
+                bottom: 0,
+                child: IconButton(icon: Icon(Icons.close),
+                    onPressed: _confirmAndSaveData,
+                    tooltip: l10n.close),)
             ]),
             Flexible(
                 child: Container(
-                  constraints: BoxConstraints( maxHeight: MediaQuery.of(context).size.height * 0.75),
-                  child: TabBarView( controller: _tabController, children: [ _buildCurrentDataTab(), _buildHistoryTab(exerciseNameToQuery: _currentExerciseDataLog['name'] ?? widget.exercise['name'] ?? ''), _buildDescriptionTab(exerciseDefinitionForInfoTab), ], ),
+                  constraints: BoxConstraints(maxHeight: MediaQuery
+                      .of(context)
+                      .size
+                      .height * 0.75),
+                  child: TabBarView(controller: _tabController,
+                    children: [
+                      _buildCurrentDataTab(),
+                      _buildHistoryTab(
+                          exerciseNameToQuery: _currentExerciseDataLog['name'] ??
+                              widget.exercise['name'] ?? ''),
+                      _buildDescriptionTab(exerciseDefinitionForInfoTab),
+                    ],),
                 )),
           ],
         ));
@@ -1974,18 +2050,24 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
     TextStyle seriesLabelStyle = TextStyle(
       color: isAdvisoryWarningActive
           ? theme.colorScheme.error // Rojo si la advertencia está activa
-          : inputDecorationTheme.labelStyle?.color, // Color normal del tema si no
+          : inputDecorationTheme.labelStyle
+          ?.color, // Color normal del tema si no
     );
 
     // BorderSide para el campo de Series cuando está habilitado (no enfocado)
     BorderSide seriesEnabledBorderSide = isAdvisoryWarningActive
-        ? BorderSide(color: theme.colorScheme.error, width: 1.0) // Borde rojo si advertencia activa
-        : inputDecorationTheme.enabledBorder?.borderSide ?? BorderSide(color: Colors.grey[700]!, width: 0.5);
+        ? BorderSide(color: theme.colorScheme.error,
+        width: 1.0) // Borde rojo si advertencia activa
+        : inputDecorationTheme.enabledBorder?.borderSide ??
+        BorderSide(color: Colors.grey[700]!, width: 0.5);
 
     // BorderSide para el campo de Series cuando está enfocado
     BorderSide seriesFocusedBorderSide = isAdvisoryWarningActive
-        ? BorderSide(color: theme.colorScheme.error, width: 2.0) // Borde rojo más grueso si advertencia activa
-        : inputDecorationTheme.focusedBorder?.borderSide ?? BorderSide(color: const Color(0xFFFFC107), width: 1.5); // Amarillo (amarilloPrincipal)
+        ? BorderSide(color: theme.colorScheme.error,
+        width: 2.0) // Borde rojo más grueso si advertencia activa
+        : inputDecorationTheme.focusedBorder?.borderSide ?? BorderSide(
+        color: const Color(0xFFFFC107),
+        width: 1.5); // Amarillo (amarilloPrincipal)
     final l10n = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
@@ -1995,7 +2077,8 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Row(
-                crossAxisAlignment: CrossAxisAlignment.start, // Alinea los elementos al inicio si tienen alturas diferentes (debido a errores)
+                crossAxisAlignment: CrossAxisAlignment.start,
+                // Alinea los elementos al inicio si tienen alturas diferentes (debido a errores)
                 children: [
                   Expanded(
                     flex: 2,
@@ -2004,8 +2087,11 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
                         labelText: l10n.training_num_series,
-                        labelStyle: seriesLabelStyle, // Aplicar estilo de etiqueta dinámico
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)), // Borde base
+                        labelStyle: seriesLabelStyle,
+                        // Aplicar estilo de etiqueta dinámico
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0)),
+                        // Borde base
                         enabledBorder: OutlineInputBorder( // Borde cuando está habilitado
                           borderRadius: BorderRadius.circular(8.0),
                           borderSide: seriesEnabledBorderSide,
@@ -2018,25 +2104,32 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
                         // Si el validador retorna un error, TextFormField usará errorBorder, errorStyle, etc.
                       ),
                       onChanged: (value) {
-                        final l10n = AppLocalizations.of(context)!; // Obtén l10n aquí
+                        final l10n = AppLocalizations.of(
+                            context)!; // Obtén l10n aquí
                         setState(() {
-                          seriesCountFromInput = int.tryParse(value.trim()) ?? 0;
+                          seriesCountFromInput = int.tryParse(value.trim()) ??
+                              0;
 
                           // --- LÓGICA DE ADVERTENCIA MOVIDA AQUÍ ---
-                          if (seriesCountFromInput > 4) { // Límite que quieres restaurar
+                          if (seriesCountFromInput >
+                              4) { // Límite que quieres restaurar
                             seriesWarningText = l10n.training_set_recommend;
                             seriesCountFromInput = 4; // Limitar a 4 campos
                           } else if (seriesCountFromInput < 0) {
                             seriesWarningText = l10n.training_set_error;
-                            seriesCountFromInput = 0; // No mostrar campos si es inválido
+                            seriesCountFromInput =
+                            0; // No mostrar campos si es inválido
                           } else {
-                            seriesWarningText = ""; // Limpiar advertencia para casos válidos (0 a 4 series)
+                            seriesWarningText =
+                            ""; // Limpiar advertencia para casos válidos (0 a 4 series)
                           }
                           _initializeSeriesSpecificFields(); // Ahora esta función solo prepara los campos
                         });
                       },
                       validator: (value) {
-                        if (value == null || value.trim().isEmpty) return l10n.calculator_required;
+                        if (value == null || value
+                            .trim()
+                            .isEmpty) return l10n.calculator_required;
                         final n = int.tryParse(value.trim());
                         if (n == null) return l10n.training_set_invalid;
                         if (n < 0) return l10n.training_negative;
@@ -2056,111 +2149,158 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
                         // Los estilos de error para este campo son manejados por defecto
                       ),
                       items: ['lb', 'kg']
-                          .map((unit) => DropdownMenuItem(value: unit, child: Text(unit)))
+                          .map((unit) =>
+                          DropdownMenuItem(value: unit, child: Text(unit)))
                           .toList(),
-                      onChanged: (value) => setState(() => weightUnit = value ?? 'lb'),
-                      validator: (value) => value == null || value.isEmpty ? l10n.training_selection_units : null,
+                      onChanged: (value) =>
+                          setState(() => weightUnit = value ?? 'lb'),
+                      validator: (value) =>
+                      value == null || value.isEmpty
+                          ? l10n.training_selection_units
+                          : null,
                     ),
                   ),
                 ],
               ),
               if (seriesWarningText.isNotEmpty)
                 Padding(
-                  padding: const EdgeInsets.only(top: 5.0, left: 4.0, right: 4.0),
+                  padding: const EdgeInsets.only(
+                      top: 5.0, left: 4.0, right: 4.0),
                   child: Text(
                     seriesWarningText,
                     style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
+                      color: Theme
+                          .of(context)
+                          .colorScheme
+                          .error,
                       fontSize: 12.0,
                     ),
                   ),
                 ),
               SizedBox(height: 12),
-              Text(l10n.training_Details, style: Theme.of(context).textTheme.titleMedium),
-              if (seriesCountFromInput <= 0 && repControllers.isEmpty && weightControllers.isEmpty) Padding( padding: const EdgeInsets.symmetric(vertical: 10.0),
-                  child: Text(l10n.training_details_text, style: TextStyle(color: Colors.grey.shade600, fontStyle: FontStyle.italic)))
-              else if (repControllers.isEmpty && weightControllers.isEmpty && seriesCountFromInput > 0) Padding( padding: const EdgeInsets.symmetric(vertical: 10.0),
-                  child: Text(l10n.training_details_text_2(seriesCountFromInput.toString()), style: TextStyle(color: Colors.grey.shade600, fontStyle: FontStyle.italic)))
+              Text(l10n.training_Details, style: Theme
+                  .of(context)
+                  .textTheme
+                  .titleMedium),
+              if (seriesCountFromInput <= 0 && repControllers.isEmpty &&
+                  weightControllers.isEmpty) Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10.0),
+                  child: Text(l10n.training_details_text, style: TextStyle(
+                      color: Colors.grey.shade600,
+                      fontStyle: FontStyle.italic)))
               else
-                ListView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: repControllers.length,
-                    itemBuilder: (context, index) {
-                      return Padding(
-                          padding: const EdgeInsets.only(top: 10.0),
+                if (repControllers.isEmpty && weightControllers.isEmpty &&
+                    seriesCountFromInput > 0) Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10.0),
+                    child: Text(l10n.training_details_text_2(
+                        seriesCountFromInput.toString()), style: TextStyle(
+                        color: Colors.grey.shade600,
+                        fontStyle: FontStyle.italic)))
+                else
+                  ListView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemCount: repControllers.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                            padding: const EdgeInsets.only(top: 10.0),
 
-                          child: Column(
+                            child: Column(
 
-                            children: [
-                          Text(
-                          ' ${l10n.serie} ${index + 1}',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w500, // Un poco más de énfasis
-                              fontSize: 16, // Tamaño legible
-                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.85), // Color del texto
-                            ),
-                          ),
-                          SizedBox(height: 6), // Espacio entre el título de la serie y los campos de entrada
-
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Expanded(
-                                    flex: 2, // 2/3 para reps
-                                    child: TextFormField(
-                                      controller: repControllers[index],
-                                      keyboardType: TextInputType.number,
-                                      decoration: InputDecoration(
-                                        labelText: l10n.repetitions,
-                                        border: OutlineInputBorder(),
-                                        errorMaxLines: 2,
-                                        errorText: (repWarnings.length > index && repWarnings[index].isNotEmpty)
-                                            ? repWarnings[index]
-                                            : null,
-                                      ),
-                                      onChanged: (value) => _validateRepValue(value, index),
-                                    ),
+                              children: [
+                                Text(
+                                  ' ${l10n.serie} ${index + 1}',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    // Un poco más de énfasis
+                                    fontSize: 16,
+                                    // Tamaño legible
+                                    color: Theme
+                                        .of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withOpacity(0.85), // Color del texto
                                   ),
-                                  SizedBox(width: 8),
-                                  Expanded(
-                                    flex: 1, // 1/3 para peso
-                                    child: TextFormField(
-                                      controller: weightControllers[index],
-                                      keyboardType: TextInputType.numberWithOptions(decimal: true),
-                                      decoration: InputDecoration(
-                                        labelText: l10n.weight,
-                                        border: OutlineInputBorder(),
-                                        errorMaxLines: 2,
-                                        errorText: (weightWarnings.length > index && weightWarnings[index].isNotEmpty)
-                                            ? weightWarnings[index]
-                                            : null,
+                                ),
+                                SizedBox(height: 6),
+                                // Espacio entre el título de la serie y los campos de entrada
+
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      flex: 2, // 2/3 para reps
+                                      child: TextFormField(
+                                        controller: repControllers[index],
+                                        keyboardType: TextInputType.number,
+                                        decoration: InputDecoration(
+                                          labelText: l10n.repetitions,
+                                          border: OutlineInputBorder(),
+                                          errorMaxLines: 2,
+                                          errorText: (repWarnings.length >
+                                              index &&
+                                              repWarnings[index].isNotEmpty)
+                                              ? repWarnings[index]
+                                              : null,
+                                        ),
+                                        onChanged: (value) =>
+                                            _validateRepValue(value, index),
                                       ),
-                                      onChanged: (value) => _validateWeightValue(value, index),
                                     ),
-                                  ),
-                                ],
-                              )
-                            ],
-                          ));
-                    }),
+                                    SizedBox(width: 8),
+                                    Expanded(
+                                      flex: 1, // 1/3 para peso
+                                      child: TextFormField(
+                                        controller: weightControllers[index],
+                                        keyboardType: TextInputType
+                                            .numberWithOptions(decimal: true),
+                                        decoration: InputDecoration(
+                                          labelText: l10n.weight,
+                                          border: OutlineInputBorder(),
+                                          errorMaxLines: 2,
+                                          errorText: (weightWarnings.length >
+                                              index &&
+                                              weightWarnings[index].isNotEmpty)
+                                              ? weightWarnings[index]
+                                              : null,
+                                        ),
+                                        onChanged: (value) =>
+                                            _validateWeightValue(value, index),
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              ],
+                            ));
+                      }),
               SizedBox(height: 20),
-              TextFormField( controller: notesController, decoration: InputDecoration(
-                  labelText: l10n.training_notes, border: OutlineInputBorder(), alignLabelWithHint: true,
-                  hintText: l10n.training_notes_hint), maxLines: 3, minLines: 1, textCapitalization: TextCapitalization.sentences),
+              TextFormField(controller: notesController,
+                  decoration: InputDecoration(
+                      labelText: l10n.training_notes,
+                      border: OutlineInputBorder(),
+                      alignLabelWithHint: true,
+                      hintText: l10n.training_notes_hint),
+                  maxLines: 3,
+                  minLines: 1,
+                  textCapitalization: TextCapitalization.sentences),
               SizedBox(height: 24),
 
               if (widget.lastLog != null) ...[
-                Text(l10n.training_register, style: Theme.of(context).textTheme.titleMedium),
+                Text(l10n.training_register, style: Theme
+                    .of(context)
+                    .textTheme
+                    .titleMedium),
                 SizedBox(height: 8),
                 Builder( // Usar Builder para acceder al context dentro de la condición
                     builder: (context) {
                       String formattedDate = l10n.training_date_unknown;
                       if (widget.lastLog!['dateTime'] != null) {
                         try {
-                          DateTime dt = DateTime.parse(widget.lastLog!['dateTime']);
+                          DateTime dt = DateTime.parse(
+                              widget.lastLog!['dateTime']);
                           // Puedes elegir el formato que prefieras. Ej: "dd 'de' MMMM 'de' yyyy" o "dd/MM/yyyy"
-                          formattedDate = DateFormat.yMMMMd(l10n.localeName).format(dt);
+                          formattedDate =
+                              DateFormat.yMMMMd(l10n.localeName).format(dt);
                         } catch (e) {
                           print(l10n.training_error_format);
                         }
@@ -2169,37 +2309,46 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
                         formattedDate,
                         style: TextStyle(
                           fontSize: 13,
-                          color: Colors.grey[400], // Un color sutil para la fecha
+                          color: Colors.grey[400],
+                          // Un color sutil para la fecha
                           fontStyle: FontStyle.italic,
                         ),
                       );
                     }
                 ),
                 SizedBox(height: 8),
-                _buildLastLogTable(widget.lastLog!), // Usar el nuevo método para la tabla
+                _buildLastLogTable(widget.lastLog!),
+                // Usar el nuevo método para la tabla
                 SizedBox(height: 24),
-              ] else ...[
-                // <<< INICIO DEL NUEVO BLOQUE "else" >>>
-                Text(l10n.training_register, style: Theme.of(context).textTheme.titleMedium),
-                SizedBox(height: 8),
-                Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 20.0),
-                    child: Text(
-                      l10n.training_register_error, // <<< TU NUEVO MENSAJE LOCALIZADO
-                      style: TextStyle(
-                        color: Colors.grey[500],
-                        fontStyle: FontStyle.italic,
+              ] else
+                ...[
+                  // <<< INICIO DEL NUEVO BLOQUE "else" >>>
+                  Text(l10n.training_register, style: Theme
+                      .of(context)
+                      .textTheme
+                      .titleMedium),
+                  SizedBox(height: 8),
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 20.0),
+                      child: Text(
+                        l10n.training_register_error,
+                        // <<< TU NUEVO MENSAJE LOCALIZADO
+                        style: TextStyle(
+                          color: Colors.grey[500],
+                          fontStyle: FontStyle.italic,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
-                      textAlign: TextAlign.center,
                     ),
                   ),
-                ),
-                SizedBox(height: 24),
-                // <<< FIN DEL NUEVO BLOQUE "else" >>>
-              ],
-              ElevatedButton( onPressed: _confirmAndSaveData,
-                  child: Text(l10n.training_update), style: ElevatedButton.styleFrom( padding: EdgeInsets.symmetric(vertical: 12))),
+                  SizedBox(height: 24),
+                  // <<< FIN DEL NUEVO BLOQUE "else" >>>
+                ],
+              ElevatedButton(onPressed: _confirmAndSaveData,
+                  child: Text(l10n.training_update),
+                  style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: 12))),
             ]
         ),
       ),
@@ -2208,20 +2357,31 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
 
   Widget _buildLastLogTable(Map<String, dynamic> lastLog) {
     final theme = Theme.of(context);
-    final int seriesCount = int.tryParse(lastLog['series']?.toString() ?? '0') ?? 0;
+    final int seriesCount = int.tryParse(
+        lastLog['series']?.toString() ?? '0') ?? 0;
     final List<String> reps = (lastLog['reps']?.toString() ?? '').split(',');
-    final List<String> weights = (lastLog['weight']?.toString() ?? '').split(',');
+    final List<String> weights = (lastLog['weight']?.toString() ?? '').split(
+        ',');
     // Ahora 'weightUnit' del log es una sola string.
-    final String logUnit = (lastLog['weightUnit']?.toString() ?? 'lb').split(',')[0].trim(); // Tomar la primera si era lista, o la unidad.
+    final String logUnit = (lastLog['weightUnit']?.toString() ?? 'lb').split(
+        ',')[0].trim(); // Tomar la primera si era lista, o la unidad.
     final String notes = lastLog['notes']?.toString() ?? '';
     final l10n = AppLocalizations.of(context)!;
     List<TableRow> rows = [
       TableRow(
-        decoration: BoxDecoration(color: theme.colorScheme.surfaceVariant.withOpacity(0.3)),
+        decoration: BoxDecoration(
+            color: theme.colorScheme.surfaceVariant.withOpacity(0.3)),
         children: [
-          Padding(padding: const EdgeInsets.all(8.0), child: Text(l10n.serie, style: TextStyle(fontWeight: FontWeight.bold))),
-          Padding(padding: const EdgeInsets.all(8.0), child: Text('Reps', style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
-          Padding(padding: const EdgeInsets.all(8.0), child: Text(l10n.weight, style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
+          Padding(padding: const EdgeInsets.all(8.0),
+              child: Text(
+                  l10n.serie, style: TextStyle(fontWeight: FontWeight.bold))),
+          Padding(padding: const EdgeInsets.all(8.0),
+              child: Text('Reps', style: TextStyle(fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center)),
+          Padding(padding: const EdgeInsets.all(8.0),
+              child: Text(
+                  l10n.weight, style: TextStyle(fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center)),
         ],
       ),
     ];
@@ -2230,9 +2390,12 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
       rows.add(TableRow(
         children: [
           Padding(padding: const EdgeInsets.all(8.0), child: Text('${i + 1}')),
-          Padding(padding: const EdgeInsets.all(8.0), child: Text(i < reps.length ? reps[i].trim() : '-', textAlign: TextAlign.center)),
+          Padding(padding: const EdgeInsets.all(8.0),
+              child: Text(i < reps.length ? reps[i].trim() : '-',
+                  textAlign: TextAlign.center)),
           Padding(padding: const EdgeInsets.all(8.0), child: Text(
-              (i < weights.length ? weights[i].trim() : '-') + " " + logUnit, // Usar la unidad global del log
+              (i < weights.length ? weights[i].trim() : '-') + " " + logUnit,
+              // Usar la unidad global del log
               textAlign: TextAlign.center
           )),
         ],
@@ -2240,9 +2403,12 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
     }
     if (seriesCount == 0) {
       rows.add(TableRow(children: [
-        Padding(padding: const EdgeInsets.all(8.0), child: Text('-', textAlign: TextAlign.center)),
-        Padding(padding: const EdgeInsets.all(8.0), child: Text('-', textAlign: TextAlign.center)),
-        Padding(padding: const EdgeInsets.all(8.0), child: Text('-', textAlign: TextAlign.center)),
+        Padding(padding: const EdgeInsets.all(8.0),
+            child: Text('-', textAlign: TextAlign.center)),
+        Padding(padding: const EdgeInsets.all(8.0),
+            child: Text('-', textAlign: TextAlign.center)),
+        Padding(padding: const EdgeInsets.all(8.0),
+            child: Text('-', textAlign: TextAlign.center)),
       ]));
     }
 
@@ -2258,9 +2424,11 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
           },
           children: rows,
         ),
-        if (lastLog['notes'] != null && (lastLog['notes'] as String).isNotEmpty) ...[
+        if (lastLog['notes'] != null &&
+            (lastLog['notes'] as String).isNotEmpty) ...[
           SizedBox(height: 8),
-          Text("${l10n.notes} ${lastLog['notes']}", style: TextStyle(fontSize: 13, fontStyle: FontStyle.italic)),
+          Text("${l10n.notes} ${lastLog['notes']}",
+              style: TextStyle(fontSize: 13, fontStyle: FontStyle.italic)),
         ]
       ],
     );
@@ -2268,13 +2436,22 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
 
 
   Widget _buildHistoryTab({required String exerciseNameToQuery}) {
+    final l10n = AppLocalizations.of(context)!;
     return FutureBuilder<List<Map<String, dynamic>>>(
       future: DatabaseHelper.instance.getExerciseLogs(exerciseNameToQuery),
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) return Center(child: CircularProgressIndicator());
-        if (snapshot.hasError) return Center(child: Padding(padding: const EdgeInsets.all(16.0), child: Text("Error cargando historial: ${snapshot.error}", textAlign: TextAlign.center)));
+        if (snapshot.connectionState == ConnectionState.waiting)
+          return Center(child: CircularProgressIndicator());
+        if (snapshot.hasError) return Center(child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text("Error cargando historial: ${snapshot.error}",
+                textAlign: TextAlign.center)));
         final logs = snapshot.data ?? [];
-        if (logs.isEmpty) return Center(child: Padding(padding: const EdgeInsets.all(16.0), child: Text("No hay registros anteriores para '$exerciseNameToQuery'.", textAlign: TextAlign.center)));
+        if (logs.isEmpty) return Center(child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+                "No hay registros anteriores para '$exerciseNameToQuery'.",
+                textAlign: TextAlign.center)));
 
         return SingleChildScrollView( // Permite el scroll de toda la vista
           child: Padding(
@@ -2284,17 +2461,35 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
               children: [
                 // Contenedor para el gráfico con altura definida
                 SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.3, // Aprox. mitad de la ventana
+                  height: MediaQuery
+                      .of(context)
+                      .size
+                      .height * 0.3, // Aprox. mitad de la ventana
                   child: _buildHistoryChart(context, logs),
                 ),
                 const SizedBox(height: 24), // Espacio entre gráfico y tablas
+                Text(
+                  l10n.training_history_all,
+                  // Usamos la nueva clave de localización
+                  style: Theme
+                      .of(context)
+                      .textTheme
+                      .titleLarge
+                      ?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 12),
 
                 // ListView de las tablas de historial
                 ListView.separated(
-                  physics: const NeverScrollableScrollPhysics(), // Deshabilita el scroll de esta lista
-                  shrinkWrap: true, // Se encoge para caber en la Column
+                  physics: const NeverScrollableScrollPhysics(),
+                  // Deshabilita el scroll de esta lista
+                  shrinkWrap: true,
+                  // Se encoge para caber en la Column
                   itemCount: logs.length,
-                  separatorBuilder: (_, __) => const Divider(height: 28, thickness: 1),
+                  separatorBuilder: (_, __) =>
+                  const Divider(height: 28, thickness: 1),
                   itemBuilder: (context, index) {
                     final l10n = AppLocalizations.of(context)!;
                     final log = logs[index];
@@ -2302,13 +2497,19 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
                     if (log['dateTime'] != null) {
                       try {
                         DateTime dt = DateTime.parse(log['dateTime']);
-                        formattedDate = DateFormat.yMd(l10n.localeName).add_Hm().format(dt);
+                        formattedDate = DateFormat
+                            .yMd(l10n.localeName)
+                            .add_Hm()
+                            .format(dt);
                       } catch (_) {}
                     }
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(formattedDate, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 15)),
+                        Text(formattedDate, style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            fontSize: 15)),
                         const SizedBox(height: 8),
                         _buildLogTableForHistory(log),
                       ],
@@ -2324,29 +2525,39 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
     );
   }
 
-  Widget _buildLogTableForHistory(Map<String, dynamic> log) { // Similar a _buildLastLogTable
+  Widget _buildLogTableForHistory(Map<String, dynamic> log) {
+    // Similar a _buildLastLogTable
     final theme = Theme.of(context);
     final int seriesCount = int.tryParse(log['series']?.toString() ?? '0') ?? 0;
     final List<String> reps = (log['reps']?.toString() ?? '').split(',');
     final List<String> weights = (log['weight']?.toString() ?? '').split(',');
     // 'weightUnit' del log es una sola string.
-    final String logUnit = (log['weightUnit']?.toString() ?? 'lb').split(',')[0].trim(); // Tomar la primera si era lista, o la unidad.
+    final String logUnit = (log['weightUnit']?.toString() ?? 'lb').split(',')[0]
+        .trim(); // Tomar la primera si era lista, o la unidad.
     final String notes = log['notes']?.toString() ?? '';
 
-    const TextStyle whiteTextStyle = TextStyle(color: Colors.white, fontSize: 13);
-    const TextStyle whiteBoldTextStyle = TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13);
+    const TextStyle whiteTextStyle = TextStyle(
+        color: Colors.white, fontSize: 13);
+    const TextStyle whiteBoldTextStyle = TextStyle(
+        color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13);
     final l10n = AppLocalizations.of(context)!;
 
     List<TableRow> rows = [
       TableRow(
-        decoration: BoxDecoration(color: theme.colorScheme.surfaceVariant.withOpacity(0.2)),
+        decoration: BoxDecoration(
+            color: theme.colorScheme.surfaceVariant.withOpacity(0.2)),
         children: [
-          Padding(padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0), child:
-          Text(l10n.serie, style: whiteBoldTextStyle, textAlign: TextAlign.center)),
-          Padding(padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0), child:
+          Padding(padding: const EdgeInsets.symmetric(
+              vertical: 8.0, horizontal: 4.0), child:
+          Text(l10n.serie, style: whiteBoldTextStyle,
+              textAlign: TextAlign.center)),
+          Padding(padding: const EdgeInsets.symmetric(
+              vertical: 8.0, horizontal: 4.0), child:
           Text('Reps', style: whiteBoldTextStyle, textAlign: TextAlign.center)),
-          Padding(padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0), child:
-          Text(l10n.weight, style: whiteBoldTextStyle, textAlign: TextAlign.center)),
+          Padding(padding: const EdgeInsets.symmetric(
+              vertical: 8.0, horizontal: 4.0), child:
+          Text(l10n.weight, style: whiteBoldTextStyle,
+              textAlign: TextAlign.center)),
           // Quitar columna Notas si se decide así para el historial también
           // Padding(padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0), child: Text('Notas', style: whiteBoldTextStyle, textAlign: TextAlign.center)),
         ],
@@ -2356,10 +2567,19 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
     for (int i = 0; i < seriesCount; i++) {
       rows.add(TableRow(
         children: [
-          Padding(padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 4.0), child: Text('${i + 1}', style: whiteTextStyle, textAlign: TextAlign.center)),
-          Padding(padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 4.0), child: Text(i < reps.length ? reps[i].trim() : '-', style: whiteTextStyle, textAlign: TextAlign.center)),
-          Padding(padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 4.0), child: Text(
-              (i < weights.length ? weights[i].trim() : '-') + " " + logUnit, // Usar la unidad global del log
+          Padding(padding: const EdgeInsets.symmetric(
+              vertical: 6.0, horizontal: 4.0),
+              child: Text('${i + 1}', style: whiteTextStyle,
+                  textAlign: TextAlign.center)),
+          Padding(padding: const EdgeInsets.symmetric(
+              vertical: 6.0, horizontal: 4.0),
+              child: Text(
+                  i < reps.length ? reps[i].trim() : '-', style: whiteTextStyle,
+                  textAlign: TextAlign.center)),
+          Padding(padding: const EdgeInsets.symmetric(
+              vertical: 6.0, horizontal: 4.0), child: Text(
+              (i < weights.length ? weights[i].trim() : '-') + " " + logUnit,
+              // Usar la unidad global del log
               textAlign: TextAlign.center
           )),
           // Quitar celda de Notas si se quita la columna
@@ -2369,9 +2589,15 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
     }
     if (seriesCount == 0) {
       rows.add(TableRow(children: [
-        Padding(padding: const EdgeInsets.all(6.0), child: Text('-', style: whiteTextStyle, textAlign: TextAlign.center)),
-        Padding(padding: const EdgeInsets.all(6.0), child: Text('-', style: whiteTextStyle, textAlign: TextAlign.center)),
-        Padding(padding: const EdgeInsets.all(6.0), child: Text('-', style: whiteTextStyle, textAlign: TextAlign.center)),
+        Padding(padding: const EdgeInsets.all(6.0),
+            child: Text(
+                '-', style: whiteTextStyle, textAlign: TextAlign.center)),
+        Padding(padding: const EdgeInsets.all(6.0),
+            child: Text(
+                '-', style: whiteTextStyle, textAlign: TextAlign.center)),
+        Padding(padding: const EdgeInsets.all(6.0),
+            child: Text(
+                '-', style: whiteTextStyle, textAlign: TextAlign.center)),
         // Quitar celda de Notas si se quita la columna
         // Padding(padding: const EdgeInsets.all(6.0), child: Text(notes, style: whiteTextStyle.copyWith(fontStyle: FontStyle.italic, fontSize: 12), textAlign: TextAlign.left)),
       ]));
@@ -2394,7 +2620,9 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
         // Si las notas no están en la tabla, mostrarlas aquí:
         if (notes.isNotEmpty) ...[
           SizedBox(height: 6),
-          Text("${l10n.notes} $notes", style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic, color: Colors.white70)),
+          Text("${l10n.notes} $notes", style: TextStyle(fontSize: 12,
+              fontStyle: FontStyle.italic,
+              color: Colors.white70)),
         ]
       ],
     );
@@ -2406,10 +2634,14 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
     // exerciseDescription = exerciseDefinition['description'] as String?;
     final exerciseName = exerciseDefinition['name']?.toString();
     final bool isManualExercise = exerciseDefinition['isManual'] == true;
-    final String localizedExerciseName = getLocalizedExerciseName(context, exerciseDefinition);
-    final String localizedExerciseDescription = getLocalizedExerciseDescription(context, exerciseDefinition);
-    final String canonicalCategoryKey = exerciseDefinition['category']?.toString() ?? ''; // Suponiendo que 'category' tiene la clave canónica
-    final String localizedCategory = getLocalizedCategoryName(context, canonicalCategoryKey);
+    final String localizedExerciseName = getLocalizedExerciseName(
+        context, exerciseDefinition);
+    final String localizedExerciseDescription = getLocalizedExerciseDescription(
+        context, exerciseDefinition);
+    final String canonicalCategoryKey = exerciseDefinition['category']
+        ?.toString() ?? ''; // Suponiendo que 'category' tiene la clave canónica
+    final String localizedCategory = getLocalizedCategoryName(
+        context, canonicalCategoryKey);
     final l10n = AppLocalizations.of(context)!;
 
     return SingleChildScrollView(
@@ -2417,24 +2649,80 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (exerciseImage != null && exerciseImage.isNotEmpty) Center( child: Padding( padding: const EdgeInsets.only(bottom: 16.0), child: Container( height: 180, width: double.infinity, clipBehavior: Clip.antiAlias, decoration: BoxDecoration( color: Colors.grey.shade200, borderRadius: BorderRadius.circular(10.0), ),
-            child: exerciseImage.startsWith('assets/') ? Image.asset( exerciseImage, fit: BoxFit.contain, errorBuilder: (_, __, ___) => Center(child: Icon(Icons.broken_image_outlined, size: 60, color: Colors.grey.shade400)), )
-                : Image.file( File(exerciseImage), fit: BoxFit.contain, errorBuilder: (_, __, ___) => Center(child: Icon(Icons.broken_image_outlined, size: 60, color: Colors.grey.shade400)), ), ), ), )
-          else Center( child: Padding( padding: const EdgeInsets.only(bottom: 16.0), child: Container( height: 180, width: double.infinity, decoration: BoxDecoration( color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3), borderRadius: BorderRadius.circular(10.0), border: Border.all(color: Colors.grey.shade400, width: 0.5) ), child: Icon(Icons.image_search_outlined, size: 80, color: Colors.grey[500]), ), ), ),
-          Center( child: Text(
+          if (exerciseImage != null && exerciseImage.isNotEmpty) Center(
+            child: Padding(padding: const EdgeInsets.only(bottom: 16.0),
+              child: Container(height: 180,
+                width: double.infinity,
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(color: Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(10.0),),
+                child: exerciseImage.startsWith('assets/') ? Image.asset(
+                  exerciseImage, fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) =>
+                      Center(child: Icon(Icons.broken_image_outlined, size: 60,
+                          color: Colors.grey.shade400)),)
+                    : Image.file(File(exerciseImage), fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) =>
+                      Center(child: Icon(Icons.broken_image_outlined, size: 60,
+                          color: Colors.grey.shade400)),),),),)
+          else
+            Center(child: Padding(padding: const EdgeInsets.only(bottom: 16.0),
+              child: Container(height: 180,
+                width: double.infinity,
+                decoration: BoxDecoration(color: Theme
+                    .of(context)
+                    .colorScheme
+                    .surfaceVariant
+                    .withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(10.0),
+                    border: Border.all(
+                        color: Colors.grey.shade400, width: 0.5)),
+                child: Icon(Icons.image_search_outlined, size: 80,
+                    color: Colors.grey[500]),),),),
+          Center(child: Text(
             localizedExerciseName,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold), textAlign: TextAlign.center, ), ),
+            style: Theme
+                .of(context)
+                .textTheme
+                .headlineSmall
+                ?.copyWith(fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,),),
           SizedBox(height: 10), Divider(), SizedBox(height: 10),
           Text(
-            AppLocalizations.of(context)!.category, // Ejemplo de cómo usar l10n para "Descripción:"
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+            AppLocalizations.of(context)!.category,
+            // Ejemplo de cómo usar l10n para "Descripción:"
+            style: Theme
+                .of(context)
+                .textTheme
+                .titleMedium
+                ?.copyWith(fontWeight: FontWeight.w600),
           ),
           SizedBox(height: 6),
           Text(
-            localizedExerciseDescription.isNotEmpty ? localizedExerciseDescription : l10n.training_description_unknown, // Usar descripción localizada
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.5),
+            localizedExerciseDescription.isNotEmpty
+                ? localizedExerciseDescription
+                : l10n.training_description_unknown,
+            // Usar descripción localizada
+            style: Theme
+                .of(context)
+                .textTheme
+                .bodyLarge
+                ?.copyWith(height: 1.5),
           ),
-          // ... (resto del widget) ...
+          // --- INICIO DEL CAMBIO ---
+          if (isManualExercise) ...[
+            const SizedBox(height: 24), // Espacio antes del botón
+            Center(
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.edit),
+                label: Text(l10n.training_edit_title), // Usamos la nueva clave
+                onPressed: () {
+                  _openEditExerciseDialog(context);
+                },
+              ),
+            ),
+          ],
+          // --- FIN DEL CAMBIO ---
         ],
       ),
     );
