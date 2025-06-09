@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:intl/intl.dart';
 import 'database_exercise.dart';
 
+
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
   static Database? _database;
@@ -17,17 +18,6 @@ class DatabaseHelper {
     return _database!;
   }
 
-  Future<Database> getDb() async {
-    String databasesPath = await getDatabasesPath();
-    String path = join(databasesPath, 'gym_diary.db');
-
-    return await openDatabase(
-      path,
-      version: 9, // Actualizamos la versión a 4
-      onCreate: _createDB,
-      onUpgrade: _upgradeDB,
-    );
-  }
 
   Future<Database> _initDB(String filePath) async {
     Directory documentsDirectory = await getApplicationDocumentsDirectory();
@@ -41,13 +31,6 @@ class DatabaseHelper {
   }
 
   Future<void> _createDB(Database db, int version) async {
-    // Tabla workouts (debes tenerla definida para las llaves foráneas)
-    await db.execute('''
-      CREATE TABLE IF NOT EXISTS workouts (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL
-      );
-    ''');
 
     // Tabla templates
     await db.execute('''
@@ -64,21 +47,10 @@ class DatabaseHelper {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL UNIQUE,
         original_id INTEGER,
-        date TEXT,
         muscle_group TEXT,
-        workout_id INTEGER,
-        category_id INTEGER,
         image TEXT,
-        weight REAL,
-        weightUnit TEXT,
-        reps INTEGER,
-        sets INTEGER,
-        notes TEXT,
         description TEXT,
-        dateTime TEXT,
-        is_predefined INTEGER DEFAULT 0,
-        FOREIGN KEY (workout_id) REFERENCES workouts (id) ON DELETE CASCADE,
-        FOREIGN KEY (category_id) REFERENCES categories (id)
+        is_predefined INTEGER DEFAULT 0
       );
     ''');
 
@@ -217,10 +189,6 @@ class DatabaseHelper {
     print("Plantillas predefinidas procesadas.");
   }
 
-  Future<void> insertExerciseLog(Map<String, dynamic> log) async {
-    final db = await database;
-    await db.insert('exercise_logs', log);
-  }
   Future<void> deleteCategory(int id) async {
     final db = await database;
     await db.delete('categories', where: 'id = ?', whereArgs: [id]);
@@ -248,120 +216,16 @@ class DatabaseHelper {
     return null;
   }
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < 9) { // Asumiendo que la versión anterior con las correcciones de original_id era 8
-      try {
-        await db.execute('ALTER TABLE templates ADD COLUMN template_key TEXT');
-        print("Columna template_key añadida a templates.");
-        // Poblar template_key para plantillas predefinidas existentes
-        for (final predefTemplate in predefinedTemplatesData) {
-          await db.update(
-            'templates',
-            {'template_key': predefTemplate['templateKey']},
-            where: 'name = ? AND template_key IS NULL', // Solo si el nombre coincide y no tiene ya una clave
-            whereArgs: [predefTemplate['templateName']], // Usar el nombre canónico en inglés
-          );
-        }
-        print("template_key poblado para plantillas predefinidas existentes si aplica.");
-      } catch (e) {
-        print("Error añadiendo/poblando columna template_key: $e");
-      }
+    print("Ejecutando _upgradeDB de v$oldVersion a v$newVersion. Se eliminarán las tablas y se volverán a crear.");
 
+    await db.execute('DROP TABLE IF EXISTS templates');
+    await db.execute('DROP TABLE IF EXISTS categories');
+    await db.execute('DROP TABLE IF EXISTS template_exercises');
+    await db.execute('DROP TABLE IF EXISTS training_sessions');
+    await db.execute('DROP TABLE IF EXISTS exercise_logs');
 
-      // Logic to make templates.name UNIQUE
-      try {
-        await db.execute('DROP TABLE IF EXISTS templates_old_for_unique_constraint'); // Temporary name
-        await db.execute('ALTER TABLE templates RENAME TO templates_old_for_unique_constraint');
-        await db.execute('''
-          CREATE TABLE templates (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL UNIQUE
-          );
-        ''');
-        await db.execute(
-            'INSERT OR IGNORE INTO templates (id, name) SELECT id, name FROM templates_old_for_unique_constraint'); //
-        await db.execute('DROP TABLE templates_old_for_unique_constraint'); //
-        print("Tabla templates actualizada con constraint UNIQUE en name.");
-      } catch (e) {
-        print(
-            "Error actualizando tabla templates para constraint UNIQUE: $e"); //
-        // Fallback: Recreate if critical error
-        await db.execute('DROP TABLE IF EXISTS templates');
-        await db.execute('''
-            CREATE TABLE templates (
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              name TEXT NOT NULL UNIQUE
-            );
-          ''');
-      }
-
-      // Logic to make categories.name UNIQUE (if it wasn't already from _createDB)
-      // This is more complex due to existing data and potential duplicates.
-      // For new installs, _createDB handles it. For upgrades:
-      try {
-        // Similar to templates, ensure categories.name is UNIQUE
-        await db.execute(
-            'DROP TABLE IF EXISTS categories_old_for_unique_constraint');
-        await db.execute(
-            'ALTER TABLE categories RENAME TO categories_old_for_unique_constraint');
-        // Recreate categories table using the definition from _createDB which includes UNIQUE name and is_predefined
-        await db.execute('''
-            CREATE TABLE categories (
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              name TEXT NOT NULL UNIQUE,
-              date TEXT,
-              muscle_group TEXT,
-              workout_id INTEGER,
-              category_id INTEGER,
-              image TEXT,
-              weight REAL,
-              weightUnit TEXT,
-              reps INTEGER,
-              sets INTEGER,
-              notes TEXT,
-              description TEXT,
-              dateTime TEXT,
-              is_predefined INTEGER DEFAULT 0,
-              FOREIGN KEY (workout_id) REFERENCES workouts (id) ON DELETE CASCADE,
-              FOREIGN KEY (category_id) REFERENCES categories (id)
-            );
-        ''');
-        // Copy data, ignoring duplicates in 'name'
-        await db.execute('''
-            INSERT OR IGNORE INTO categories
-            (id, name, date, muscle_group, workout_id, category_id, image, weight, weightUnit, reps, sets, notes, description, dateTime, is_predefined)
-        SELECT id, name, date, muscle_group, workout_id, category_id, image, weight, weightUnit, reps, sets, notes, description, dateTime, COALESCE(is_predefined, 0)
-        FROM categories_old_for_unique_constraint
-        ''');
-    await db.execute('DROP TABLE categories_old_for_unique_constraint');
-    print("Tabla categories actualizada con constraint UNIQUE en name.");
-      } catch (e) {
-        print("Error actualizando tabla categories para constraint UNIQUE: $e");
-        // Fallback: Recreate categories if critical error, using the full schema
-        await db.execute('DROP TABLE IF EXISTS categories');
-        await db.execute('''
-            CREATE TABLE categories (
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              name TEXT NOT NULL UNIQUE,
-              date TEXT,
-              muscle_group TEXT,
-              workout_id INTEGER,
-              category_id INTEGER,
-              image TEXT,
-              weight REAL,
-              weightUnit TEXT,
-              reps INTEGER,
-              sets INTEGER,
-              notes TEXT,
-              description TEXT,
-              dateTime TEXT,
-              is_predefined INTEGER DEFAULT 0,
-              original_id INTEGER,
-              FOREIGN KEY (workout_id) REFERENCES workouts (id) ON DELETE CASCADE,
-              FOREIGN KEY (category_id) REFERENCES categories (id)
-            );
-        ''');
-      }
-    }
+    // Vuelve a llamar a _createDB para construir el esquema limpio.
+    await _createDB(db, newVersion);
   }
 
   Future<int> insertTrainingSession(String title, String dateTime) async {
@@ -377,19 +241,6 @@ class DatabaseHelper {
     return await db.update('categories', category, where: 'id = ?', whereArgs: [id]);
   }
 
-  Future<Map<String, dynamic>?> getCategoryById(int id) async {
-    final db = await database;
-    final List<Map<String, dynamic>> maps = await db.query(
-      'categories',
-      where: 'id = ?',
-      whereArgs: [id],
-      limit: 1,
-    );
-    if (maps.isNotEmpty) {
-      return maps.first;
-    }
-    return null;
-  }
 
   Future<void> updateExerciseLogsName(String oldName, String newName) async {
     final db = await database;
@@ -411,16 +262,6 @@ class DatabaseHelper {
       'muscle_group': categoryData['muscle_group'],
       'image': categoryData['image'],
       'description': categoryData['description'],
-      // Campos que podrían no venir del formulario de definición pero existen en la tabla:
-      'date': categoryData['date'], // o null si no se maneja
-      'workout_id': categoryData['workout_id'], // o null
-      'category_id': categoryData['category_id'], // o null
-      'weight': categoryData['weight'], // o null
-      'weightUnit': categoryData['weightUnit'], // o null
-      'reps': categoryData['reps'], // o null
-      'sets': categoryData['sets'], // o null
-      'notes': categoryData['notes'], // o null
-      'dateTime': categoryData['dateTime'], // o null
     };
     return await db.insert('categories', completeCategoryData);
   }
@@ -439,10 +280,7 @@ class DatabaseHelper {
       print("No se encontró sesión con ID $sessionId para eliminar.");
     }
   }
-  Future<int> insertWorkout(Map<String, dynamic> workout) async {
-    final db = await database;
-    return await db.insert('workouts', workout);
-  }
+
 
   Future<void> deleteTemplate(int templateId) async {
     final db = await database;
@@ -456,16 +294,6 @@ class DatabaseHelper {
   }
 
 
-
-  Future<List<Map<String, dynamic>>> getWorkouts() async {
-    final db = await database;
-    return await db.query('workouts');
-  }
-
-  Future<List<Map<String, dynamic>>> getTemplates() async {
-    final db = await database;
-    return await db.query('templates');
-  }
 
 
   Future<int> insertTemplate(String name) async {
@@ -560,19 +388,7 @@ class DatabaseHelper {
       orderBy: 'id ASC', // O el orden que prefieras para los ejercicios dentro de una sesión
     );
   }
-  Future<void> deleteExerciseLog(int logId) async {
-    final db = await database;
-    int count = await db.delete(
-      'exercise_logs',
-      where: 'id = ?',
-      whereArgs: [logId],
-    );
-    if (count > 0) {
-      print("Log con ID $logId eliminado de exercise_logs.");
-    } else {
-      print("No se encontró log con ID $logId para eliminar.");
-    }
-  }
+
 
 }
 
