@@ -195,6 +195,19 @@
   "training_current": "Actual",
   "training_history": "Historial",
   "training_history_all": "Todos los Registros",
+  "history_chart_description": "Resultados de los cinco registros más recientes.",
+  "training_history_error": "Error cargando historial",
+  "history_exercise_error": "No hay registros anteriores para '{exerciseNameToQuery}'.",
+  "@history_exercise_error": {
+    "description": "Mensaje de error para ejercicios sin registros anteriores.",
+    "placeholders": {
+      "exerciseNameToQuery": {
+        "type": "String"
+      }
+    }
+  },
+
+
   "training_num_series": "Número de Series *",
   "training_units": "Unidad",
   "training_Details": "Detalles por Serie:",

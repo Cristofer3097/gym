@@ -2444,13 +2444,13 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
           return Center(child: CircularProgressIndicator());
         if (snapshot.hasError) return Center(child: Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Text("Error cargando historial: ${snapshot.error}",
+            child: Text(l10n.training_history_error,
                 textAlign: TextAlign.center)));
         final logs = snapshot.data ?? [];
         if (logs.isEmpty) return Center(child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Text(
-                "No hay registros anteriores para '$exerciseNameToQuery'.",
+                l10n.history_exercise_error(exerciseNameToQuery),
                 textAlign: TextAlign.center)));
 
         return SingleChildScrollView( // Permite el scroll de toda la vista
@@ -2466,8 +2466,24 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
                       .size
                       .height * 0.3, // Aprox. mitad de la ventana
                   child: _buildHistoryChart(context, logs),
+
                 ),
-                const SizedBox(height: 24), // Espacio entre gráfico y tablas
+                const SizedBox(height: 4),
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 16.0), // Espacio antes del siguiente título
+                    child: Text(
+                      l10n.history_chart_description, // Nueva clave de localización
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontStyle: FontStyle.italic,
+                        color: Colors.grey[500],
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),// Espacio entre gráfico y tablas
                 Text(
                   l10n.training_history_all,
                   // Usamos la nueva clave de localización
@@ -2709,7 +2725,6 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
                 .bodyLarge
                 ?.copyWith(height: 1.5),
           ),
-          // --- INICIO DEL CAMBIO ---
           if (isManualExercise) ...[
             const SizedBox(height: 24), // Espacio antes del botón
             Center(
@@ -2722,7 +2737,6 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
               ),
             ),
           ],
-          // --- FIN DEL CAMBIO ---
         ],
       ),
     );
