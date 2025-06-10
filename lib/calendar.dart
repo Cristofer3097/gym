@@ -104,53 +104,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
 
   // Diálogo de acciones para una SESIÓN COMPLETA
-  void _showSessionActionsDialog(BuildContext screenContext, Map<String, dynamic> session) {
-    final String sessionTitle = session['session_title']?.toString() ?? 'Entrenamiento';
 
-    showDialog(
-      context: screenContext,
-      builder: (BuildContext dialogContext) {
-        final l10n = AppLocalizations.of(context)!;
-        return AlertDialog(
-          title: Text(l10n.calendar_action(sessionTitle),
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-          // El contenido podría mostrar un resumen rápido o simplemente las acciones
-          content: Text(l10n.calendar_selection),
-          actionsAlignment: MainAxisAlignment.spaceAround,
-          actions: <Widget>[
-            TextButton(
-              child: Text(l10n.close),
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-              },
-            ),
-            ElevatedButton.icon(
-              icon: Icon(Icons.delete_forever_outlined),
-              label: Text(l10n.deleteButton),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red.shade600,
-                foregroundColor: Colors.white,
-              ),
-              onPressed: () async {
-                Navigator.of(dialogContext).pop(); // Cierra diálogo de acciones
-                final bool? deletionConfirmed = await _showConfirmDeleteSessionDialog(screenContext, session);
-
-                if (deletionConfirmed == true) {
-                  if (mounted && _selectedDay != null) {
-                    await _loadSessionsForSelectedDay(_selectedDay!);
-                    await _loadDatesWithTrainingSessions(); // Actualiza marcadores del calendario
-                    ScaffoldMessenger.of(screenContext).showSnackBar(
-                      SnackBar(content: Text(l10n.calendar_session_delete(sessionTitle))),
-                    );
-                  }
-                }
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
 
   Widget _buildExerciseTableForCalendar(Map<String, dynamic> log, BuildContext context) {
     final theme = Theme.of(context);
@@ -311,8 +265,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
                 return Card(
                   // ... card properties ...
-                  child: InkWell(
-                    onTap: () { _showSessionActionsDialog(context, session); },
                     child: Padding(
                       padding: const EdgeInsets.all(12.0),
                       child: Column(
@@ -338,6 +290,24 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                   fontSize: 14,
                                   color: Colors.grey.shade500,
                                 ),
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.delete_outline, color: Colors.red.shade400),
+                                tooltip: l10n.deleteButton,
+                                visualDensity: VisualDensity.compact, // Reduce el espacio del botón
+                                onPressed: () async {
+                                  // Llama directamente al diálogo de confirmación
+                                  final bool? deletionConfirmed = await _showConfirmDeleteSessionDialog(context, session);
+                                  if (deletionConfirmed == true) {
+                                    if (mounted && _selectedDay != null) {
+                                      await _loadSessionsForSelectedDay(_selectedDay!);
+                                      await _loadDatesWithTrainingSessions();
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text(l10n.calendar_session_delete(sessionTitle))),
+                                      );
+                                    }
+                                  }
+                                },
                               ),
                             ],
                           ),
@@ -391,7 +361,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         ],
                       ),
                     ),
-                  ),
+
                 );
               },
             ),
