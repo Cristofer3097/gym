@@ -431,5 +431,21 @@ class DatabaseHelper {
     );
   }
 
+  Future<List<String>> getAllUserImagePaths() async {
+    final db = await database;
+    // Selecciona la columna 'image' de los ejercicios que NO son predefinidos
+    // y cuyo path de imagen no es nulo ni está vacío.
+    final List<Map<String, dynamic>> result = await db.query(
+      'categories',
+      columns: ['image'],
+      where: 'is_predefined = ? AND image IS NOT NULL AND image != ?',
+      whereArgs: [0, ''],
+    );
+
+    // Convierte el resultado en una lista de strings (rutas)
+    return result.map((row) => row['image'] as String).toList();
+  }
+
+
 }
 

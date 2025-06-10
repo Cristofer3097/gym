@@ -7,8 +7,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'database/database_helper.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:device_info_plus/device_info_plus.dart';
-
+import 'package:archive/archive_io.dart';
+import 'package:sqflite/sqflite.dart';
 
 class Settings extends StatefulWidget {
   final void Function(Locale) onLocaleChange;
@@ -21,6 +21,7 @@ class Settings extends StatefulWidget {
 
 class _SettingsScreenState extends State<Settings> {
   bool _isLoading = false;
+  String _loadingMessage = '';
 
   /// Muestra el diálogo para que el usuario seleccione el idioma.
   void _showLanguageSelectionDialog(BuildContext context) {
@@ -66,60 +67,79 @@ class _SettingsScreenState extends State<Settings> {
   Future<void> _exportDatabase() async {
     final l10n = AppLocalizations.of(context)!;
     if (!await _requestPermissions()) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.settings_permission_denied)));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.settings_permission_denied)));
       return;
     }
 
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _loadingMessage = "Creando copia de seguridad..."; // Mensaje para el usuario
 
+    });
     try {
       final dbFolder = await getApplicationDocumentsDirectory();
-      final dbPath = p.join(dbFolder.path, 'gym_diary.db');
-      final dbFile = File(dbPath);
+      final dbFile = File(p.join(dbFolder.path, 'gym_diary.db'));
 
+      // Obtener las rutas de las imágenes de los ejercicios creados por el usuario
+      final imagePaths = await DatabaseHelper.instance.getAllUserImagePaths();
+      final List<File> imageFiles = imagePaths.map((path) => File(path)).toList();
+
+      // Crear un archivo ZIP en memoria
+      final archive = Archive();
+
+      // 1. Añadir la base de datos al ZIP
       if (await dbFile.exists()) {
-        // Genera un nombre de archivo único con fecha y hora.
-        final String timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
-        final String newFileName = 'gym_diary_backup_$timestamp.db';
+        archive.addFile(ArchiveFile('gym_diary.db', dbFile.lengthSync(), dbFile.readAsBytesSync()));
+      }
 
-        // Permite al usuario elegir dónde guardar el archivo.
-        String? resultPath = await FilePicker.platform.getDirectoryPath(
-          dialogTitle: l10n.settings_export_dialog_title,
-        );
-
-        if (resultPath != null) {
-          final newPath = p.join(resultPath, newFileName);
-          await dbFile.copy(newPath);
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(l10n.settings_export_success(newPath)),
-            duration: const Duration(seconds: 5),
-          ));
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.settings_no_folder_selected)));
+      // 2. Añadir las imágenes al ZIP dentro de una carpeta 'images'
+      for (var imageFile in imageFiles) {
+        if (await imageFile.exists()) {
+          archive.addFile(ArchiveFile('images/${p.basename(imageFile.path)}', imageFile.lengthSync(), imageFile.readAsBytesSync()));
         }
       }
+
+      // 3. Comprimir el archivo
+      final zipEncoder = ZipEncoder();
+      final zipData = zipEncoder.encode(archive);
+
+      if (zipData == null) {
+        throw Exception("Error al crear el archivo ZIP.");
+      }
+
+      // 4. Permitir al usuario elegir dónde guardar el archivo .zip
+      final String timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
+      final String backupFileName = 'gym_diary_backup_$timestamp.zip';
+
+      String? resultPath = await FilePicker.platform.getDirectoryPath(
+        dialogTitle: l10n.settings_export_dialog_title,
+      );
+
+      if (resultPath != null) {
+        final finalZipFile = File(p.join(resultPath, backupFileName));
+        await finalZipFile.writeAsBytes(zipData);
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.settings_export_success(finalZipFile.path))));
+      } else {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.settings_no_folder_selected)));
+      }
+
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.settings_error(e.toString()))));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.settings_error(e.toString()))));
     } finally {
-      if(mounted) setState(() => _isLoading = false);
+      if(mounted) setState(() { _isLoading = false; _loadingMessage = ''; });
     }
   }
 
   /// Inicia el proceso de importación de la base de datos.
   Future<void> _importDatabase() async {
     final l10n = AppLocalizations.of(context)!;
-
-    // Muestra una advertencia CRÍTICA antes de proceder.
     final bool? confirm = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
           title: Text(l10n.settings_import_warning_title),
           content: Text(l10n.settings_import_warning_content),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text(l10n.cancel),
-            ),
+            TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.cancel)),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
               onPressed: () => Navigator.pop(context, true),
@@ -131,44 +151,103 @@ class _SettingsScreenState extends State<Settings> {
     if (confirm != true) return;
 
     if (!await _requestPermissions()) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.settings_permission_denied)));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.settings_permission_denied)));
       return;
     }
 
-    setState(() => _isLoading = true);
+    // 1. Permitir al usuario seleccionar el archivo .zip
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['zip'],
+    );
+    if (result == null || result.files.single.path == null) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.settings_no_file_selected)));
+      return;
+    }
+    setState(() { _isLoading = true; _loadingMessage = "Restaurando copia..."; });
 
     try {
-      // Permite al usuario seleccionar el archivo .db a importar.
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.any, // O puedes ser más estricto con custom: ['db']
+      final zipFile = File(result.files.single.path!);
+      final appDocDir = await getApplicationDocumentsDirectory();
+
+      // Crear un directorio temporal para la extracción
+      final tempDir = Directory(p.join(appDocDir.path, 'backup_temp'));
+      if (await tempDir.exists()) await tempDir.delete(recursive: true);
+      await tempDir.create(recursive: true);
+
+      final inputStream = InputFileStream(zipFile.path);
+      final archive = ZipDecoder().decodeBuffer(inputStream);
+
+      // Extraer todos los archivos al directorio temporal
+      for (final file in archive) {
+        final filename = p.join(tempDir.path, file.name);
+        if (file.isFile) {
+          final outFile = File(filename);
+          await outFile.create(recursive: true);
+          await outFile.writeAsBytes(file.content as List<int>);
+        } else {
+          await Directory(filename).create(recursive: true);
+        }
+      }
+
+      final tempDbFile = File(p.join(tempDir.path, 'gym_diary.db'));
+      if (!await tempDbFile.exists()) {
+        throw Exception("El archivo de copia no contiene 'gym_diary.db'");
+      }
+      Database tempDb = await openDatabase(tempDbFile.path);
+
+      // 2. Obtener la lista de ejercicios de usuario de la DB temporal.
+      final userExercises = await tempDb.query(
+        'categories',
+        where: 'is_predefined = ? AND image IS NOT NULL AND image != ?',
+        whereArgs: [0, ''],
       );
 
-      if (result != null && result.files.single.path != null) {
-        final sourceFile = File(result.files.single.path!);
+      // 3. Iterar y actualizar cada ruta de imagen.
+      for (var exercise in userExercises) {
+        final oldPath = exercise['image'] as String;
+        final filename = p.basename(oldPath); // Extrae 'image_picker_xyz.jpg'
+        final newPath = p.join(appDocDir.path, filename); // Crea la nueva ruta correcta
 
-        // Obtén la ruta de la base de datos de la app.
-        final dbFolder = await getApplicationDocumentsDirectory();
-        final destinationPath = p.join(dbFolder.path, 'gym_diary.db');
-
-        // ¡CRÍTICO! Cierra la conexión a la base de datos antes de sobreescribirla.
-        await DatabaseHelper.instance.closeDB();
-
-        // Copia el archivo seleccionado y reemplaza el existente.
-        await sourceFile.copy(destinationPath);
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.settings_import_success)),
+        await tempDb.update(
+          'categories',
+          {'image': newPath},
+          where: 'id = ?',
+          whereArgs: [exercise['id']],
         );
-        // Devuelve 'true' para indicar a HomeScreen que debe recargar.
-        if (mounted) Navigator.of(context).pop(true);
-
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.settings_no_file_selected)));
       }
+      await tempDb.close(); // Cerrar la base de datos temporal después de modificarla.
+      // --- **FIN DEL BLOQUE DE CORRECCIÓN DE RUTAS** ---
+
+      // Ahora que la base de datos temporal está corregida, procedemos a restaurar todo.
+      // CERRAR la base de datos principal de la app.
+      await DatabaseHelper.instance.closeDB();
+
+      // Mover la DB corregida a su lugar definitivo.
+      await tempDbFile.rename(p.join(appDocDir.path, 'gym_diary.db'));
+
+      // Mover las imágenes a su lugar definitivo.
+      final tempImagesDir = Directory(p.join(tempDir.path, 'images'));
+      if (await tempImagesDir.exists()) {
+        await for (var entity in tempImagesDir.list()) {
+          if (entity is File) {
+            await entity.rename(p.join(appDocDir.path, p.basename(entity.path)));
+          }
+        }
+      }
+
+      // Limpiar el directorio temporal.
+      await tempDir.delete(recursive: true);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.settings_import_success)));
+        Navigator.of(context).pop(true);
+      }
+
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.settings_error(e.toString()))));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.settings_error(e.toString()))));
     } finally {
-      if(mounted) setState(() => _isLoading = false);
+      if(mounted) setState(() { _isLoading = false; _loadingMessage = ''; });
     }
   }
 
@@ -181,7 +260,6 @@ class _SettingsScreenState extends State<Settings> {
       }
       return status.isGranted;
     }
-    // Para otras plataformas como iOS, la lógica puede ser diferente o no necesaria.
     return true;
   }
 
