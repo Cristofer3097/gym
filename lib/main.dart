@@ -9,6 +9,7 @@ import 'package:flutter_localizations/flutter_localizations.dart'; // Importa es
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../utils/localization_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'settings.dart';
 
 
 
@@ -187,8 +188,6 @@ class _MyAppState extends State<MyApp> {
 class HomeScreen extends StatefulWidget {
   final void Function(Locale) onLocaleChange;
   const HomeScreen({Key? key, required this.onLocaleChange}) : super(key: key);
-
-
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
@@ -205,54 +204,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
   void _loadTemplates() async {
-    final db = DatabaseHelper.instance; //
-    final tpls = await db.getAllTemplates(); //
+    await DatabaseHelper.instance.database; // Asegura que la DB esté abierta
+    final db = DatabaseHelper.instance;
+    final tpls = await db.getAllTemplates();
     if (mounted) {
       setState(() {
         templates = tpls; //
       });
     }
   }
-  void _showLanguageSelectionDialog(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    showDialog(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: Text(l10n.changeLanguageDialogTitle),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              ListTile(
-                title: Text(l10n.languageEnglish),
-                onTap: () {
-                  widget.onLocaleChange(const Locale('en'));
-                  Navigator.of(dialogContext).pop();
-                },
-              ),
-              ListTile(
-                title: Text(l10n.languageSpanish),
-                onTap: () {
-                  widget.onLocaleChange(const Locale('es'));
-                  Navigator.of(dialogContext).pop();
-                },
-              ),
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: Text(l10n.close),
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  // _showSelectTemplateToDeleteDialog no necesita cambios lógicos aquí.
 
   @override
   Widget build(BuildContext context) {
@@ -469,22 +429,23 @@ class _HomeScreenState extends State<HomeScreen> {
                   // Botón de idioma a la derecha
                   Align(
                     alignment: Alignment.centerRight,
-                    child: OutlinedButton(
-                      onPressed: () => _showLanguageSelectionDialog(context),
-                      style: OutlinedButton.styleFrom(
-                        shape: const CircleBorder(),
-                        padding: const EdgeInsets.all(10),
-                        side: BorderSide(color: theme.primaryColor.withOpacity(0.7)),
-                        minimumSize: const Size(40, 40),
-                      ),
-                      child: Text(
-                        AppLocalizations.of(context)!.localeName.toUpperCase(),
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: theme.primaryColor,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                    child: IconButton(
+                      icon: Icon(Icons.settings, color: theme.primaryColor),
+                      tooltip: l10n.settings_title, // Añade tooltip
+                      onPressed: () async {
+                        // Navega a la pantalla de configuración y espera un resultado.
+                        final result = await Navigator.push<bool>(
+                          context,
+                          MaterialPageRoute(builder: (context) => Settings(
+                            onLocaleChange: widget.onLocaleChange,
+                          )),
+                        );
+
+                        // Si el resultado es 'true', significa que se realizó una importación exitosa.
+                        if (result == true) {
+                          _loadTemplates(); // Recarga las plantillas en la pantalla principal.
+                        }
+                      },
                     ),
                   ),
                 ],

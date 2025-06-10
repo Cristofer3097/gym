@@ -30,6 +30,14 @@ class DatabaseHelper {
     );
   }
 
+  Future<void> closeDB() async {
+    if (_database != null && _database!.isOpen) {
+      await _database!.close();
+      _database = null; // Marcar como nulo para que se reinicialice en el próximo acceso
+      print("Database connection closed.");
+    }
+  }
+
   Future<void> _createDB(Database db, int version) async {
 
     // Tabla templates

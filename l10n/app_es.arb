@@ -419,6 +419,37 @@
   "calendar_select": "Selecciona un día para ver las sesiones.",
   "calendar_loading": "Cargando ejercicios...",
   "calendar_error": "No hay ejercicios en esta sesión.",
+
+  "settings_title": "Configuración",
+  "settings_loading": "Procesando...",
+  "settings_section_general": "General",
+  "settings_section_data": "Datos de la Aplicación",
+  "settings_language": "Idioma",
+  "settings_language_subtitle": "Cambiar el idioma de la aplicación",
+  "settings_export": "Exportar datos (Copia de seguridad)",
+  "settings_export_subtitle": "Guardar la base de datos en un archivo",
+  "settings_export_dialog_title": "Selecciona dónde guardar la copia",
+  "settings_export_success": "Copia de seguridad guardada en: {path}",
+  "@settings_export_success": {
+    "placeholders": { "path": { "type": "String" } }
+  },
+  "settings_import": "Importar datos (Restaurar)",
+  "settings_import_subtitle": "Restaurar datos desde un archivo",
+  "settings_import_warning_title": "¡Atención!",
+  "settings_import_warning_content": "Importar un archivo reemplazará TODOS tus datos actuales. Esta acción no se puede deshacer. ¿Deseas continuar?",
+  "settings_import_confirm": "Sí, Continuar",
+  "settings_import_success": "Importación completada. Los datos han sido restaurados.",
+  "settings_permission_denied": "Permiso de almacenamiento denegado.",
+  "settings_no_file_selected": "No se seleccionó ningún archivo.",
+  "settings_no_folder_selected": "No se seleccionó ninguna carpeta.",
+  "settings_error": "Ocurrió un error: {error}",
+  "@settings_error": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "settings_permission_title": "Permiso Requerido",
+  "settings_permission_content": "Para exportar o importar datos, la aplicación necesita acceso a su almacenamiento. Por favor, habilite el permiso en la configuración de la aplicación.",
+  "settings_open_settings_button": "Abrir Configuración",
+
   "category_all": "Todas las Categorías",
   "category_chest": "Pecho",
   "category_back": "Espalda",

@@ -410,6 +410,48 @@
   "calendar_loading": "Loading sessions...",
   "calendar_error": "No exercises in this session.",
 
+  "settings_title": "Settings",
+  "settings_loading": "Processing...",
+  "settings_section_general": "General",
+  "settings_section_data": "Application Data",
+  "settings_language": "Language",
+  "settings_language_subtitle": "Change the application's language",
+  "settings_export": "Export data (Backup)",
+  "settings_export_subtitle": "Save the database to a file",
+  "settings_export_dialog_title": "Select where to save the backup",
+  "settings_export_success": "Backup saved to: {path}",
+  "@settings_export_success": {
+    "description": "Snackbar message shown after a successful data export.",
+    "placeholders": {
+      "path": {
+        "type": "String",
+        "example": "/storage/emulated/0/Download/gym_diary_backup.db"
+      }
+    }
+  },
+  "settings_import": "Import data (Restore)",
+  "settings_import_subtitle": "Restore data from a backup file",
+  "settings_import_warning_title": "Warning!",
+  "settings_import_warning_content": "Importing a file will replace ALL of your current data. This action cannot be undone. Do you wish to continue?",
+  "settings_import_confirm": "Yes, Continue",
+  "settings_import_success": "Import complete. Your data has been restored.",
+  "settings_permission_denied": "Storage permission denied.",
+  "settings_no_file_selected": "No file selected.",
+  "settings_no_folder_selected": "No folder selected.",
+  "settings_error": "An error occurred: {error}",
+  "@settings_error": {
+    "description": "Generic error message for import/export operations.",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "example": "File not found"
+      }
+    }
+  },
+  "settings_permission_title": "Permission Required",
+  "settings_permission_content": "To export or import data, the application needs access to your storage. Please enable the permission in the app settings.",
+  "settings_open_settings_button": "Open Settings",
+
   "category_all": "All Categories",
   "category_chest": "Chest",
   "category_back": "Back",
