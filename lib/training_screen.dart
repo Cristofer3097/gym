@@ -19,11 +19,13 @@ import 'package:fl_chart/fl_chart.dart';
 class TrainingScreen extends StatefulWidget {
   final List<Map<String, dynamic>>? initialExercises;
   final String? templateName;
+  final Map<String, dynamic>? sessionToEdit;
 
   const TrainingScreen({
     Key? key,
     this.initialExercises,
     this.templateName,
+    this.sessionToEdit,
   }) : super(key: key);
 
   @override
@@ -501,27 +503,39 @@ class _TrainingScreenState extends State<TrainingScreen> {
       final String currentSessionTitle = trainingTitle;
 
       try {
-        int sessionId = await db.insertTrainingSession(currentSessionTitle, sessionDateTimeStr);
-        //debug
-        print("Nueva sesión guardada con ID: $sessionId, Título: '$currentSessionTitle'");
+        int sessionId;
+        String sessionDateTimeStr;
 
+        if (widget.sessionToEdit != null) {
+          // MODO EDICIÓN: Reutilizamos los datos de la sesión original
+          sessionId = widget.sessionToEdit!['id'] as int;
+          sessionDateTimeStr = widget.sessionToEdit!['session_dateTime']; // <-- Usamos la fecha original
+
+          // Actualizamos el título si ha cambiado
+          await db.updateTrainingSession(sessionId, currentSessionTitle, sessionDateTimeStr);
+          // Borramos los logs antiguos para reinsertar los nuevos (actualizados)
+          await db.clearExerciseLogsForSession(sessionId);
+          print("Sesión ID $sessionId actualizada.");
+        } else {
+          // MODO CREACIÓN: Creamos una nueva sesión con la fecha actual
+          sessionDateTimeStr = DateTime.now().toIso8601String();
+          sessionId = await db.insertTrainingSession(currentSessionTitle, sessionDateTimeStr);
+          print("Nueva sesión guardada con ID: $sessionId");
+        }
+
+        // Insertamos los registros de ejercicios (ya sean nuevos o actualizados)
         for (final exercise in selectedExercises) {
-          String repsForDb;
-          if (exercise['reps'] is List) {
-            repsForDb = (exercise['reps'] as List).join(',');
-          } else {
-            repsForDb = exercise['reps']?.toString() ?? '';
-          }
-          String weightForDb = exercise['weight']?.toString() ?? ''; // Ya es "w1,w2,w3"
-          String unitsForDb = exercise['weightUnit']?.toString() ?? ''; // Ya es "u1,u2,u3"
+          String repsForDb = (exercise['reps'] as List? ?? []).join(',');
+          String weightForDb = exercise['weight']?.toString() ?? '';
+          String unitsForDb = exercise['weightUnit']?.toString() ?? '';
 
           await db.insertExerciseLogWithSessionId({
             'exercise_name': exercise['name'],
-            'dateTime': DateTime.now().toIso8601String(),
+            'dateTime': sessionDateTimeStr, // Usamos la fecha correcta (original o nueva)
             'series': exercise['series']?.toString() ?? '',
             'reps': repsForDb,
             'weight': weightForDb,
-            'weightUnit': unitsForDb, // Guardar el string de unidades
+            'weightUnit': unitsForDb,
             'notes': exercise['notes']?.toString() ?? '',
           }, sessionId);
         }

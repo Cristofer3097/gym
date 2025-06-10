@@ -388,7 +388,40 @@ class DatabaseHelper {
       orderBy: 'id ASC', // O el orden que prefieras para los ejercicios dentro de una sesión
     );
   }
+  Future<Map<String, dynamic>?> getExerciseDefinitionByName(String name) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'categories', // Este es el nombre de tu tabla de definición de ejercicios
+      where: 'name = ?',
+      whereArgs: [name],
+      limit: 1,
+    );
+    if (maps.isNotEmpty) {
+      return maps.first;
+    }
+    return null;
+  }
 
+  // Nueva función para actualizar el título y fecha de una sesión
+  Future<void> updateTrainingSession(int sessionId, String newTitle, String newDateTime) async {
+    final db = await database;
+    await db.update(
+      'training_sessions',
+      {'session_title': newTitle, 'session_dateTime': newDateTime},
+      where: 'id = ?',
+      whereArgs: [sessionId],
+    );
+  }
+
+  // Nueva función para borrar todos los logs de una sesión (para luego reinsertarlos)
+  Future<void> clearExerciseLogsForSession(int sessionId) async {
+    final db = await database;
+    await db.delete(
+      'exercise_logs',
+      where: 'session_id = ?',
+      whereArgs: [sessionId],
+    );
+  }
 
 }
 

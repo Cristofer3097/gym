@@ -5,6 +5,7 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 import '../database/database_helper.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../training_screen.dart';
 
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({Key? key}) : super(key: key);
@@ -71,6 +72,53 @@ class _CalendarScreenState extends State<CalendarScreen> {
     }
   }
 
+
+  Future<void> _editTrainingSession(Map<String, dynamic> session) async {
+    final db = DatabaseHelper.instance;
+    final sessionTitle = session['session_title']?.toString() ?? 'Entrenamiento';
+    final sessionId = session['id'] as int;
+
+    // 1. Obtener los logs de la sesión
+    final List<Map<String, dynamic>> exerciseLogs = await db.getExerciseLogsForSession(sessionId);
+
+    // 2. Reconstruir la lista de ejercicios como la espera TrainingScreen
+    List<Map<String, dynamic>> reconstructedExercises = [];
+    for (var log in exerciseLogs) {
+      final exerciseName = log['exercise_name'] as String;
+      // Usamos la nueva función para obtener la definición del ejercicio (imagen, desc, etc.)
+      final Map<String, dynamic>? definition = await db.getExerciseDefinitionByName(exerciseName);
+
+      if (definition != null) {
+        // Fusionamos los datos del log con los de la definición
+        Map<String, dynamic> mergedExercise = {
+          ...definition, // id, name, description, image, etc.
+          ...log, // series, reps, weight, notes, etc. del log específico
+          'category': definition['muscle_group'], // Alineamos la clave
+          'isManual': (definition['is_predefined'] ?? 1) == 0,
+        };
+        reconstructedExercises.add(mergedExercise);
+      }
+    }
+
+    if (!mounted) return;
+
+    // 3. Navegar a TrainingScreen en modo edición
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TrainingScreen(
+          sessionToEdit: session, // Pasamos la sesión a editar
+          initialExercises: reconstructedExercises,
+          templateName: sessionTitle,
+        ),
+      ),
+    );
+
+    // 4. Refrescar la vista del calendario al volver
+    if (result == true) {
+      _loadSessionsForSelectedDay(_selectedDay!);
+    }
+  }
   // Diálogo para confirmar borrado de una SESIÓN COMPLETA
   Future<bool?> _showConfirmDeleteSessionDialog(BuildContext parentContext, Map<String, dynamic> session) async {
     final l10n = AppLocalizations.of(context)!;
@@ -266,13 +314,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 return Card(
                   // ... card properties ...
                     child: Padding(
-                      padding: const EdgeInsets.all(12.0),
+                      padding: const EdgeInsets.fromLTRB(16.0, 12.0, 8.0, 12.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          // ... Row para título de sesión y hora ...
+                          // Fila para el título y los botones
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.center, // Centrar verticalmente los botones
                             children: [
                               Expanded(
                                 child: Text(
@@ -284,17 +333,21 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                   ),
                                 ),
                               ),
-                              Text(
-                                sessionTime,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey.shade500,
-                                ),
+                              Row( // Un Row para los botones
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+
+                              // --- INICIO DEL CAMBIO ---
+                              IconButton(
+                                icon: Icon(Icons.edit_note, color: Theme.of(context).primaryColor),
+                                tooltip: l10n.training_edit_title, // Reutilizamos una clave de localización
+                                visualDensity: VisualDensity.compact,
+                                onPressed: () => _editTrainingSession(session), // Llama a la nueva función
                               ),
                               IconButton(
                                 icon: Icon(Icons.delete_outline, color: Colors.red.shade400),
                                 tooltip: l10n.deleteButton,
-                                visualDensity: VisualDensity.compact, // Reduce el espacio del botón
+                                visualDensity: VisualDensity.compact,
                                 onPressed: () async {
                                   // Llama directamente al diálogo de confirmación
                                   final bool? deletionConfirmed = await _showConfirmDeleteSessionDialog(context, session);
@@ -309,7 +362,20 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                   }
                                 },
                               ),
+                                ],
+
+                              ),
                             ],
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 0.0), // Pequeño espacio desde el título
+                            child: Text(
+                              sessionTime,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey.shade500,
+                              ),
+                            ),
                           ),
                           SizedBox(height: 12.0),
                           FutureBuilder<List<Map<String, dynamic>>>(
