@@ -2317,7 +2317,7 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
                     }
                 ),
                 SizedBox(height: 8),
-                _buildLastLogTable(widget.lastLog!),
+                LogRecordTable(log: widget.lastLog!),
                 // Usar el nuevo método para la tabla
                 SizedBox(height: 24),
               ] else
@@ -2352,85 +2352,6 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
             ]
         ),
       ),
-    );
-  }
-
-  Widget _buildLastLogTable(Map<String, dynamic> lastLog) {
-    final theme = Theme.of(context);
-    final int seriesCount = int.tryParse(
-        lastLog['series']?.toString() ?? '0') ?? 0;
-    final List<String> reps = (lastLog['reps']?.toString() ?? '').split(',');
-    final List<String> weights = (lastLog['weight']?.toString() ?? '').split(
-        ',');
-    // Ahora 'weightUnit' del log es una sola string.
-    final String logUnit = (lastLog['weightUnit']?.toString() ?? 'lb').split(
-        ',')[0].trim(); // Tomar la primera si era lista, o la unidad.
-    final String notes = lastLog['notes']?.toString() ?? '';
-    final l10n = AppLocalizations.of(context)!;
-    List<TableRow> rows = [
-      TableRow(
-        decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceVariant.withOpacity(0.3)),
-        children: [
-          Padding(padding: const EdgeInsets.all(8.0),
-              child: Text(
-                  l10n.serie, style: TextStyle(fontWeight: FontWeight.bold))),
-          Padding(padding: const EdgeInsets.all(8.0),
-              child: Text('Reps', style: TextStyle(fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center)),
-          Padding(padding: const EdgeInsets.all(8.0),
-              child: Text(
-                  l10n.weight, style: TextStyle(fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center)),
-        ],
-      ),
-    ];
-
-    for (int i = 0; i < seriesCount; i++) {
-      rows.add(TableRow(
-        children: [
-          Padding(padding: const EdgeInsets.all(8.0), child: Text('${i + 1}')),
-          Padding(padding: const EdgeInsets.all(8.0),
-              child: Text(i < reps.length ? reps[i].trim() : '-',
-                  textAlign: TextAlign.center)),
-          Padding(padding: const EdgeInsets.all(8.0), child: Text(
-              (i < weights.length ? weights[i].trim() : '-') + " " + logUnit,
-              // Usar la unidad global del log
-              textAlign: TextAlign.center
-          )),
-        ],
-      ));
-    }
-    if (seriesCount == 0) {
-      rows.add(TableRow(children: [
-        Padding(padding: const EdgeInsets.all(8.0),
-            child: Text('-', textAlign: TextAlign.center)),
-        Padding(padding: const EdgeInsets.all(8.0),
-            child: Text('-', textAlign: TextAlign.center)),
-        Padding(padding: const EdgeInsets.all(8.0),
-            child: Text('-', textAlign: TextAlign.center)),
-      ]));
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Table(
-          border: TableBorder.all(color: theme.primaryColor, width: 0.7),
-          columnWidths: const {
-            0: FlexColumnWidth(1), // Serie
-            1: FlexColumnWidth(1.5), // Reps
-            2: FlexColumnWidth(2), // Peso
-          },
-          children: rows,
-        ),
-        if (lastLog['notes'] != null &&
-            (lastLog['notes'] as String).isNotEmpty) ...[
-          SizedBox(height: 8),
-          Text("${l10n.notes} ${lastLog['notes']}",
-              style: TextStyle(fontSize: 13, fontStyle: FontStyle.italic)),
-        ]
-      ],
     );
   }
 
@@ -2527,7 +2448,7 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
                             color: Colors.white,
                             fontSize: 15)),
                         const SizedBox(height: 8),
-                        _buildLogTableForHistory(log),
+                        LogRecordTable(log: log),
                       ],
                     );
                   },
@@ -2541,108 +2462,6 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
     );
   }
 
-  Widget _buildLogTableForHistory(Map<String, dynamic> log) {
-    // Similar a _buildLastLogTable
-    final theme = Theme.of(context);
-    final int seriesCount = int.tryParse(log['series']?.toString() ?? '0') ?? 0;
-    final List<String> reps = (log['reps']?.toString() ?? '').split(',');
-    final List<String> weights = (log['weight']?.toString() ?? '').split(',');
-    // 'weightUnit' del log es una sola string.
-    final String logUnit = (log['weightUnit']?.toString() ?? 'lb').split(',')[0]
-        .trim(); // Tomar la primera si era lista, o la unidad.
-    final String notes = log['notes']?.toString() ?? '';
-
-    const TextStyle whiteTextStyle = TextStyle(
-        color: Colors.white, fontSize: 13);
-    const TextStyle whiteBoldTextStyle = TextStyle(
-        color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13);
-    final l10n = AppLocalizations.of(context)!;
-
-    List<TableRow> rows = [
-      TableRow(
-        decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceVariant.withOpacity(0.2)),
-        children: [
-          Padding(padding: const EdgeInsets.symmetric(
-              vertical: 8.0, horizontal: 4.0), child:
-          Text(l10n.serie, style: whiteBoldTextStyle,
-              textAlign: TextAlign.center)),
-          Padding(padding: const EdgeInsets.symmetric(
-              vertical: 8.0, horizontal: 4.0), child:
-          Text('Reps', style: whiteBoldTextStyle, textAlign: TextAlign.center)),
-          Padding(padding: const EdgeInsets.symmetric(
-              vertical: 8.0, horizontal: 4.0), child:
-          Text(l10n.weight, style: whiteBoldTextStyle,
-              textAlign: TextAlign.center)),
-          // Quitar columna Notas si se decide así para el historial también
-          // Padding(padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0), child: Text('Notas', style: whiteBoldTextStyle, textAlign: TextAlign.center)),
-        ],
-      ),
-    ];
-
-    for (int i = 0; i < seriesCount; i++) {
-      rows.add(TableRow(
-        children: [
-          Padding(padding: const EdgeInsets.symmetric(
-              vertical: 6.0, horizontal: 4.0),
-              child: Text('${i + 1}', style: whiteTextStyle,
-                  textAlign: TextAlign.center)),
-          Padding(padding: const EdgeInsets.symmetric(
-              vertical: 6.0, horizontal: 4.0),
-              child: Text(
-                  i < reps.length ? reps[i].trim() : '-', style: whiteTextStyle,
-                  textAlign: TextAlign.center)),
-          Padding(padding: const EdgeInsets.symmetric(
-              vertical: 6.0, horizontal: 4.0), child: Text(
-              (i < weights.length ? weights[i].trim() : '-') + " " + logUnit,
-              // Usar la unidad global del log
-              textAlign: TextAlign.center
-          )),
-          // Quitar celda de Notas si se quita la columna
-          // Padding(padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 4.0), child: Text(i == 0 ? notes : '', style: whiteTextStyle.copyWith(fontStyle: FontStyle.italic, fontSize: 12), textAlign: TextAlign.left)),
-        ],
-      ));
-    }
-    if (seriesCount == 0) {
-      rows.add(TableRow(children: [
-        Padding(padding: const EdgeInsets.all(6.0),
-            child: Text(
-                '-', style: whiteTextStyle, textAlign: TextAlign.center)),
-        Padding(padding: const EdgeInsets.all(6.0),
-            child: Text(
-                '-', style: whiteTextStyle, textAlign: TextAlign.center)),
-        Padding(padding: const EdgeInsets.all(6.0),
-            child: Text(
-                '-', style: whiteTextStyle, textAlign: TextAlign.center)),
-        // Quitar celda de Notas si se quita la columna
-        // Padding(padding: const EdgeInsets.all(6.0), child: Text(notes, style: whiteTextStyle.copyWith(fontStyle: FontStyle.italic, fontSize: 12), textAlign: TextAlign.left)),
-      ]));
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Table(
-          border: TableBorder.all(color: theme.primaryColor, width: 1.0),
-          // Ajustar columnWidths si la columna Notas se quita
-          columnWidths: const {
-            0: FlexColumnWidth(0.8),
-            1: FlexColumnWidth(1.2),
-            2: FlexColumnWidth(1.8),
-            // 3: FlexColumnWidth(2.2), // Para Notas, si se mantiene en la tabla
-          },
-          children: rows,
-        ),
-        // Si las notas no están en la tabla, mostrarlas aquí:
-        if (notes.isNotEmpty) ...[
-          SizedBox(height: 6),
-          Text("${l10n.notes} $notes", style: TextStyle(fontSize: 12,
-              fontStyle: FontStyle.italic,
-              color: Colors.white70)),
-        ]
-      ],
-    );
-  }
 
 
   Widget _buildDescriptionTab(Map<String, dynamic> exerciseDefinition) {
@@ -2739,6 +2558,109 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
           ],
         ],
       ),
+    );
+  }
+}
+// En training_screen.dart (al final del archivo)
+
+class LogRecordTable extends StatelessWidget {
+  final Map<String, dynamic> log;
+
+  const LogRecordTable({
+    Key? key,
+    required this.log,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+
+    final int seriesCount = int.tryParse(log['series']?.toString() ?? '0') ?? 0;
+    final List<String> reps = (log['reps']?.toString() ?? '').split(',');
+    final List<String> weights = (log['weight']?.toString() ?? '').split(',');
+    final List<String> units = (log['weightUnit']?.toString() ?? '').split(',');
+    final String notes = log['notes']?.toString() ?? '';
+
+    const TextStyle whiteBoldTextStyle = TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13);
+    const TextStyle whiteTextStyle = TextStyle(color: Colors.white, fontSize: 13);
+
+    List<TableRow> rows = [
+      TableRow(
+        decoration: BoxDecoration(color: theme.colorScheme.surfaceVariant.withOpacity(0.2)),
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+            child: Text(l10n.serie, style: whiteBoldTextStyle, textAlign: TextAlign.center),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+            child: Text('Reps', style: whiteBoldTextStyle, textAlign: TextAlign.center),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+            child: Text(l10n.weight, style: whiteBoldTextStyle, textAlign: TextAlign.center),
+          ),
+        ],
+      ),
+    ];
+
+    for (int i = 0; i < seriesCount; i++) {
+      // Determina la unidad para esta serie específica
+      String unitForSet = 'lb'; // Fallback por defecto
+      if (i < units.length && units[i].trim().isNotEmpty) {
+        unitForSet = units[i].trim();
+      } else if (units.isNotEmpty && units[0].trim().isNotEmpty) {
+        unitForSet = units[0].trim();
+      }
+
+      rows.add(TableRow(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 4.0),
+            child: Text('${i + 1}', style: whiteTextStyle, textAlign: TextAlign.center),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 4.0),
+            child: Text(i < reps.length ? reps[i].trim() : '-', style: whiteTextStyle, textAlign: TextAlign.center),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 4.0),
+            child: Text(
+              '${i < weights.length ? weights[i].trim() : '-'} $unitForSet',
+              textAlign: TextAlign.center,
+              style: whiteTextStyle,
+            ),
+          ),
+        ],
+      ));
+    }
+
+    if (seriesCount == 0) {
+      rows.add(TableRow(children: [
+        Padding(padding: const EdgeInsets.all(6.0), child: Text('-', style: whiteTextStyle, textAlign: TextAlign.center)),
+        Padding(padding: const EdgeInsets.all(6.0), child: Text('-', style: whiteTextStyle, textAlign: TextAlign.center)),
+        Padding(padding: const EdgeInsets.all(6.0), child: Text('-', style: whiteTextStyle, textAlign: TextAlign.center)),
+      ]));
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Table(
+          border: TableBorder.all(color: theme.primaryColor, width: 1.0),
+          columnWidths: const {
+            0: FlexColumnWidth(0.8),
+            1: FlexColumnWidth(1.2),
+            2: FlexColumnWidth(1.8),
+          },
+          children: rows,
+        ),
+        if (notes.isNotEmpty) ...[
+          const SizedBox(height: 6),
+          Text("${l10n.notes} $notes", style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic, color: Colors.white70)),
+        ]
+      ],
     );
   }
 }
