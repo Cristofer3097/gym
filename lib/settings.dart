@@ -9,6 +9,9 @@ import 'database/database_helper.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:archive/archive_io.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+const String kUnitPreferenceKey = 'preferred_weight_unit';
 
 class Settings extends StatefulWidget {
   final void Function(Locale) onLocaleChange;
@@ -22,6 +25,79 @@ class Settings extends StatefulWidget {
 class _SettingsScreenState extends State<Settings> {
   bool _isLoading = false;
   String _loadingMessage = '';
+  String _preferredUnit = 'lb'; // Valor por defecto
+
+  @override
+  void initState() {
+    super.initState();
+    // --- INICIO DE CAMBIO: Cargar preferencia al iniciar ---
+    _loadPreferredUnit();
+    // --- FIN DE CAMBIO ---
+  }
+  Future<void> _loadPreferredUnit() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _preferredUnit = prefs.getString(kUnitPreferenceKey) ?? 'lb';
+    });
+  }
+
+  Future<void> _savePreferredUnit(String unit) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(kUnitPreferenceKey, unit);
+    setState(() {
+      _preferredUnit = unit;
+    });
+  }
+
+  void _showUnitSelectionDialog() {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (context) {
+        String tempUnit = _preferredUnit;
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: Text(l10n.settings_unit_preference_dialog_title),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: ['lb', 'kg'].map((unit) {
+                  return RadioListTile<String>(
+                    title: Text(unit.toUpperCase()),
+                    value: unit,
+                    groupValue: tempUnit,
+                    onChanged: (value) {
+                      if (value != null) {
+                        setDialogState(() {
+                          tempUnit = value;
+                        });
+                      }
+                    },
+                    activeColor: Theme.of(context).primaryColor,
+                  );
+                }).toList(),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(l10n.cancel),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    _savePreferredUnit(tempUnit);
+                    Navigator.of(context).pop();
+                  },
+                  child: Text(l10n.save),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+
 
   /// Muestra el diálogo para que el usuario seleccione el idioma.
   void _showLanguageSelectionDialog(BuildContext context) {
@@ -73,7 +149,7 @@ class _SettingsScreenState extends State<Settings> {
 
     setState(() {
       _isLoading = true;
-      _loadingMessage = "Creando copia de seguridad..."; // Mensaje para el usuario
+      String _loadingMessage = '';
 
     });
     try {
@@ -164,7 +240,8 @@ class _SettingsScreenState extends State<Settings> {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.settings_no_file_selected)));
       return;
     }
-    setState(() { _isLoading = true; _loadingMessage = "Restaurando copia..."; });
+    setState(() { _isLoading = true;
+      _loadingMessage = l10n.settings_loading_export; });
 
     try {
       final zipFile = File(result.files.single.path!);
@@ -192,7 +269,16 @@ class _SettingsScreenState extends State<Settings> {
 
       final tempDbFile = File(p.join(tempDir.path, 'gym_diary.db'));
       if (!await tempDbFile.exists()) {
-        throw Exception("El archivo de copia no contiene 'gym_diary.db'");
+        // En lugar de 'throw Exception', mostramos un error localizado y salimos.
+        if(mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(l10n.settings_error_no_db_in_backup), backgroundColor: Colors.red)
+          );
+        }
+        // Limpiamos el directorio temporal y detenemos la ejecución de la función.
+        await tempDir.delete(recursive: true);
+        setState(() { _isLoading = false; _loadingMessage = ''; });
+        return;
       }
       Database tempDb = await openDatabase(tempDbFile.path);
 
@@ -277,7 +363,7 @@ class _SettingsScreenState extends State<Settings> {
             children: [
               const CircularProgressIndicator(),
               const SizedBox(height: 20),
-              Text(l10n.settings_loading, style: Theme.of(context).textTheme.titleMedium),
+              Text(_loadingMessage, style: Theme.of(context).textTheme.titleMedium),
             ],
           ))
           : ListView(
@@ -290,6 +376,24 @@ class _SettingsScreenState extends State<Settings> {
               title: Text(l10n.settings_language),
               subtitle: Text(l10n.settings_language_subtitle),
               onTap: () => _showLanguageSelectionDialog(context),
+            ),
+          ),
+          const Divider(height: 24),
+          _buildSectionTitle(context, l10n.settings_section_preferences),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.straighten), // Icono de regla/medida
+              title: Text(l10n.settings_unit_preference),
+              subtitle: Text(l10n.settings_unit_preference_subtitle),
+              trailing: Text(
+                _preferredUnit.toUpperCase(),
+                style: TextStyle(
+                    color: Theme.of(context).primaryColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16
+                ),
+              ),
+              onTap: _showUnitSelectionDialog,
             ),
           ),
           const Divider(height: 24),

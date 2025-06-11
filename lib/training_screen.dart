@@ -12,6 +12,8 @@ import '../utils/localization_utils.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../settings.dart';
 
 
 
@@ -221,7 +223,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
           'name': exercise['name'],
           'series': '',
           'weight': '',
-          'weightUnit': 'lb', // Por defecto 'lb', el diálogo lo expandirá a lista si es necesario
+          'weightUnit': '', // Por defecto 'lb', el diálogo lo expandirá a lista si es necesario
           'reps': <String>[],
           'notes': '',
           'image': exercise['image'],
@@ -987,8 +989,12 @@ class _ExerciseOverlayState extends State<ExerciseOverlay> {
       return nameMatch && categoryMatch;
 
     }).toList();
-    filteredExercises.sort((a, b) =>
-        (a['name']?.toString() ?? '').compareTo(b['name']?.toString() ?? ''));
+
+    filteredExercises.sort((a, b) {
+      final String nameA = getLocalizedExerciseName(context, a);
+      final String nameB = getLocalizedExerciseName(context, b);
+      return nameA.toLowerCase().compareTo(nameB.toLowerCase());
+    });
 
     return Container(
 
@@ -1574,6 +1580,7 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
   String seriesWarningText = '';
 
   late Map<String, dynamic> _currentExerciseDataLog;
+  bool _isUnitInitialized = false;
 
   @override
   void initState() {
@@ -1587,21 +1594,8 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
         text: _currentExerciseDataLog['notes']?.toString() ?? '');
     seriesCountFromInput = int.tryParse(seriesController.text.trim()) ?? 0;
 
-    String initialUnit = 'lb'; // Default a 'lb'
-    final dynamic existingUnitData = _currentExerciseDataLog['weightUnit'];
-    if (existingUnitData is String && existingUnitData.isNotEmpty) {
-      if (existingUnitData.contains(',')) { // Era una lista de unidades
-        List<String> unitsList = existingUnitData.split(',');
-        if (unitsList.isNotEmpty) {
-          initialUnit = unitsList[0].trim().toLowerCase();
-          if (initialUnit != 'kg' && initialUnit != 'lb') initialUnit = 'lb';
-        }
-      } else { // Era una sola unidad
-        initialUnit = existingUnitData.trim().toLowerCase();
-        if (initialUnit != 'kg' && initialUnit != 'lb') initialUnit = 'lb';
-      }
-    }
-    weightUnit = initialUnit;
+    _initializeUnit();
+
 
     repControllers = [];
     weightControllers = [];
@@ -1634,6 +1628,35 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
       }
     }
     // No es necesario poblar currentSeriesWeightUnits
+  }
+
+  Future<void> _initializeUnit() async {
+    // Prioridad 1: Usar la unidad guardada en el log del ejercicio (al editar)
+    final dynamic existingUnitData = _currentExerciseDataLog['weightUnit'];
+    if (existingUnitData is String && existingUnitData.isNotEmpty) {
+      // Si el log tiene datos de unidades (ej. 'kg,kg,lb'), usa la primera como la unidad seleccionada.
+      if (existingUnitData.contains(',')) {
+        List<String> unitsList = existingUnitData.split(',');
+        if (unitsList.isNotEmpty) {
+          final firstUnit = unitsList[0].trim().toLowerCase();
+          weightUnit = (firstUnit == 'kg' || firstUnit == 'lb') ? firstUnit : 'lb';
+        }
+      } else { // Si es una sola unidad (formato antiguo o una sola serie)
+        final singleUnit = existingUnitData.trim().toLowerCase();
+        weightUnit = (singleUnit == 'kg' || singleUnit == 'lb') ? singleUnit : 'lb';
+      }
+    } else {
+      // Prioridad 2: Si no hay datos en el log, usa la preferencia guardada
+      final prefs = await SharedPreferences.getInstance();
+      weightUnit = prefs.getString(kUnitPreferenceKey) ?? 'lb'; // Fallback a 'lb'
+    }
+
+    // Asegura que el widget se reconstruya con la unidad correcta
+    if(mounted) {
+      setState(() {
+        _isUnitInitialized = true;
+      });
+    }
   }
 
   void _initializeSeriesSpecificFields() {
@@ -2155,25 +2178,27 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
                   SizedBox(width: 12),
                   Expanded(
                     flex: 1,
-                    child: DropdownButtonFormField<String>(
+                    child: _isUnitInitialized // Solo muestra el dropdown cuando la unidad ha sido inicializada
+                        ? DropdownButtonFormField<String>(
                       value: weightUnit,
                       decoration: InputDecoration(
                         labelText: l10n.training_units,
                         border: OutlineInputBorder(),
-                        // Los estilos de error para este campo son manejados por defecto
                       ),
                       items: ['lb', 'kg']
                           .map((unit) =>
                           DropdownMenuItem(value: unit, child: Text(unit)))
                           .toList(),
                       onChanged: (value) =>
-                          setState(() => weightUnit = value ?? 'lb'),
+                          setState(() => weightUnit = value ?? ''),
                       validator: (value) =>
                       value == null || value.isEmpty
                           ? l10n.training_selection_units
                           : null,
-                    ),
+                    )
+                        : Center(child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2.0))), // Muestra un loading
                   ),
+                  // .
                 ],
               ),
               if (seriesWarningText.isNotEmpty)
