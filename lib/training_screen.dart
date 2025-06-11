@@ -2164,14 +2164,16 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
                         });
                       },
                       validator: (value) {
-                        if (value == null || value
-                            .trim()
-                            .isEmpty) return l10n.calculator_required;
+                        // Si el campo está vacío, no mostramos ningún error.
+                        if (value == null || value.trim().isEmpty) {
+                          return null;
+                        }
+                        // Si no está vacío, aplicamos las demás validaciones.
                         final n = int.tryParse(value.trim());
                         if (n == null) return l10n.training_set_invalid;
                         if (n < 0) return l10n.training_negative;
                         if (n > 99) return 'Máx. 99';
-                        return null;
+                        return null; // El valor es válido
                       },
                     ),
                   ),
