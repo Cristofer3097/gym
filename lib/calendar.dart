@@ -78,26 +78,19 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final sessionTitle = session['session_title']?.toString() ?? 'Entrenamiento';
     final sessionId = session['id'] as int;
 
-    // 1. Obtener los logs de la sesión
-    final List<Map<String, dynamic>> exerciseLogs = await db.getExerciseLogsForSession(sessionId);
+    // 1. OBTENER TODO CON UNA SOLA CONSULTA OPTIMIZADA
+    final List<Map<String, dynamic>> fullLogs = await db.getFullExerciseLogsForSession(sessionId);
 
-    // 2. Reconstruir la lista de ejercicios como la espera TrainingScreen
+    // 2. Reconstruir la lista (ahora sin bucles de consultas a la BD)
     List<Map<String, dynamic>> reconstructedExercises = [];
-    for (var log in exerciseLogs) {
-      final exerciseName = log['exercise_name'] as String;
-      // Usamos la nueva función para obtener la definición del ejercicio (imagen, desc, etc.)
-      final Map<String, dynamic>? definition = await db.getExerciseDefinitionByName(exerciseName);
-
-      if (definition != null) {
-        // Fusionamos los datos del log con los de la definición
-        Map<String, dynamic> mergedExercise = {
-          ...definition, // id, name, description, image, etc.
-          ...log, // series, reps, weight, notes, etc. del log específico
-          'category': definition['muscle_group'], // Alineamos la clave
-          'isManual': (definition['is_predefined'] ?? 1) == 0,
-        };
-        reconstructedExercises.add(mergedExercise);
-      }
+    for (var log in fullLogs) {
+      Map<String, dynamic> exerciseData = Map.from(log);
+      // Renombramos 'muscle_group' a 'category' para que coincida con lo que espera TrainingScreen
+      exerciseData['category'] = exerciseData['muscle_group'];
+      exerciseData['isManual'] = (exerciseData['is_predefined'] ?? 1) == 0;
+      // Renombramos el id de la definición para evitar colisiones
+      exerciseData['db_category_id'] = exerciseData['exercise_definition_id'];
+      reconstructedExercises.add(exerciseData);
     }
 
     if (!mounted) return;
@@ -107,7 +100,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       context,
       MaterialPageRoute(
         builder: (context) => TrainingScreen(
-          sessionToEdit: session, // Pasamos la sesión a editar
+          sessionToEdit: session,
           initialExercises: reconstructedExercises,
           templateName: sessionTitle,
         ),
@@ -115,10 +108,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
 
     // 4. Refrescar la vista del calendario al volver
-    if (result == true) {
+    if (result == true && _selectedDay != null) {
       _loadSessionsForSelectedDay(_selectedDay!);
     }
   }
+
   // Diálogo para confirmar borrado de una SESIÓN COMPLETA
   Future<bool?> _showConfirmDeleteSessionDialog(BuildContext parentContext, Map<String, dynamic> session) async {
     final l10n = AppLocalizations.of(context)!;

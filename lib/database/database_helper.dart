@@ -24,7 +24,7 @@ class DatabaseHelper {
     final path = join(documentsDirectory.path, filePath);
     return await openDatabase(
       path,
-      version: 9, // <--- ASEGÚRATE QUE ESTA VERSIÓN SEA LA CORRECTA (EJ. 6)
+      version: 1,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -224,16 +224,16 @@ class DatabaseHelper {
     return null;
   }
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
-    print("Ejecutando _upgradeDB de v$oldVersion a v$newVersion. Se eliminarán las tablas y se volverán a crear.");
-
-    await db.execute('DROP TABLE IF EXISTS templates');
-    await db.execute('DROP TABLE IF EXISTS categories');
-    await db.execute('DROP TABLE IF EXISTS template_exercises');
-    await db.execute('DROP TABLE IF EXISTS training_sessions');
-    await db.execute('DROP TABLE IF EXISTS exercise_logs');
-
-    // Vuelve a llamar a _createDB para construir el esquema limpio.
-    await _createDB(db, newVersion);
+    print("Ejecutando _upgradeDB de v$oldVersion a v$newVersion.");
+    // Las migraciones se hacen versión por versión
+    if (oldVersion < 1) { // Ejemplo: si la versión anterior es menor a la 10
+      // Añadimos la nueva columna sin borrar la tabla
+      await db.execute('''
+      ALTER TABLE categories ADD COLUMN is_favorite INTEGER DEFAULT 0
+    ''');
+      print("Tabla 'categories' actualizada a v10: columna 'is_favorite' añadida.");
+    }
+    // if (oldVersion < 11) { ... Lógica para la versión 11 ... }
   }
 
   Future<int> insertTrainingSession(String title, String dateTime) async {
@@ -441,9 +441,25 @@ class DatabaseHelper {
       where: 'is_predefined = ? AND image IS NOT NULL AND image != ?',
       whereArgs: [0, ''],
     );
-
     // Convierte el resultado en una lista de strings (rutas)
     return result.map((row) => row['image'] as String).toList();
+  }
+  Future<List<Map<String, dynamic>>> getFullExerciseLogsForSession(int sessionId) async {
+    final db = await database;
+    // Este query une los logs con las definiciones de los ejercicios para obtener todo en una sola consulta.
+    final String sql = '''
+    SELECT
+      l.*,
+      c.id as exercise_definition_id,
+      c.muscle_group,
+      c.image,
+      c.description,
+      c.is_predefined
+    FROM exercise_logs l
+    LEFT JOIN categories c ON l.exercise_name = c.name
+    WHERE l.session_id = ?
+  ''';
+    return await db.rawQuery(sql, [sessionId]);
   }
 
 
