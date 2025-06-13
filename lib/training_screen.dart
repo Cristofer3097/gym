@@ -1,5 +1,6 @@
 import 'dart:math';
-
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:io';
@@ -1415,24 +1416,50 @@ class _NewExerciseDialogState extends State<NewExerciseDialog> {
                     if (_imageFile != null || (_initialImagePathPreview != null && _initialImagePathPreview!.isNotEmpty)) TextButton.icon( icon: Icon(Icons.delete_outline, color: Colors.red.shade600),
                       label: Text(l10n.training_image_quit, style: TextStyle(color: Colors.red.shade600)), onPressed: () { setState(() { _imageFile = null; _initialImagePathPreview = null; _imageWasRemovedOrReplaced = true; }); }, ),
                     SizedBox(height: 24),
-                    ElevatedButton( style: ElevatedButton.styleFrom( minimumSize: Size(double.infinity, 44), textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          minimumSize: Size(double.infinity, 44),
+                          textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)
+                      ),
                       onPressed: () async {
+
                         if (_formKey.currentState!.validate()) {
+                          final l10n = AppLocalizations.of(context)!;
                           String trimmedName = nameController.text.trim();
                           String? imagePathToSave;
 
+                          // --- INICIO DE LA LÓGICA CORREGIDA ---
                           if (_imageFile != null) {
-                            imagePathToSave = _imageFile!.path;
+                            // 1. Obtener el directorio de documentos de la app (lugar seguro y permanente).
+                            final directory = await getApplicationDocumentsDirectory();
+
+                            // 2. Crear un nombre de archivo único para evitar colisiones.
+                            final String fileName = p.basename(_imageFile!.path);
+                            final String newPath = p.join(directory.path, fileName);
+
+                            // 3. Copiar el archivo desde la caché temporal a la nueva ruta permanente.
+                            await _imageFile!.copy(newPath);
+
+                            // 4. Usar la NUEVA ruta permanente para guardarla en la base de datos.
+                            imagePathToSave = newPath;
+
                           } else if (_imageWasRemovedOrReplaced) {
+                            // Si el usuario quitó la imagen, se guarda un valor nulo.
                             imagePathToSave = null;
                           } else if (isEditMode) {
-                            imagePathToSave = widget.exerciseToEdit!['image']; }
-
+                            // Si no se tocó la imagen en modo edición, se mantiene la ruta que ya tenía.
+                            imagePathToSave = widget.exerciseToEdit!['image'];
+                          }
+                          // --- FIN DE LA LÓGICA CORREGIDA ---
 
                           Map<String, dynamic> exerciseDataForDb = {
                             'name': trimmedName,
                             'muscle_group': selectedMuscleGroup,
-                            'image': imagePathToSave, 'description': descriptionController.text.trim(), };
+                            'image': imagePathToSave, // Aquí se usa la ruta correcta y permanente
+                            'description': descriptionController.text.trim(),
+                          };
+
+
                           final db = DatabaseHelper.instance;
                           if (isEditMode) {
                             final idToUpdate = widget.exerciseToEdit!['id'];

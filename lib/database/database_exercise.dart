@@ -1,37 +1,32 @@
-// database_exercise.dart
-
-// No necesitas 'import 'package:sqflite/sqflite.dart';' aquí.
-// Puedes eliminar esa línea si solo defines la lista.
-
 const List<Map<String, dynamic>> predefinedExerciseList = [
   // Pecho
   {
     'id': 0, // <--- Nuevo ID
-    'name': 'Barbell Bench Press',
+    'name': 'Bench Press',
     'muscle_group': 'Chest',
-    'image': 'assets/exercises/chest_bench_press.png',
-    'description': 'Fundamental exercise for the pectoralis major, anterior deltoids, and triceps.', // <-- EN INGLÉS
+    'image': 'assets/exercises/bench_press.png',
+    'description': 'The Bench Press is a classic strength training exercise that primarily targets the chest, shoulders, and triceps, contributing to upper body muscle development. It is suitable for anyone, from beginners to professional athletes, looking to improve their upper body strength and muscular endurance. Individuals may want to incorporate bench press into their routine for its effectiveness in enhancing physical performance, promoting bone health, and improving body composition.', // <-- EN INGLÉS
   },
   {
     'id': 1, // <--- Nuevo ID
-    'name': 'Press de Banca Inclinado con Barra',
+    'name': 'Dumbbell bench press',
     'muscle_group': 'Chest',
-    'image': 'assets/exercises/chest_incline_bench_press.png',
-    'description': 'Enfatiza la parte superior (clavicular) del pectoral.',
+    'image': 'assets/exercises/Dumbbell_bench_press.png',
+    'description': 'The Dumbbell Bench Press is a versatile strength-training exercise that primarily targets the chest, while also engaging the shoulders and triceps. It is suitable for both beginners and advanced fitness enthusiasts as it can be easily modified to match individual strength levels and goals. People might opt for this exercise as it promotes muscle growth, improves upper body strength, and offers better range of motion compared to a barbell bench press.',
   },
   {
     'id': 2, // <--- Nuevo ID
-    'name': 'Press de Banca Declinado con Barra',
+    'name': 'Smith Bench Press',
     'muscle_group': 'Chest',
-    'image': 'assets/exercises/chest_decline_bench_press.png',
-    'description': 'Enfatiza la parte inferior del pectoral.',
+    'image': 'assets/exercises/Smith_bench_press.png',
+    'description': 'The Smith Bench Press is a strength-training exercise that primarily targets the chest muscles, while also engaging the shoulders and triceps. The Smith machine provides stability, allowing for controlled movements and focus on form. One would want to perform this exercise to build upper body strength, enhance muscle definition, and improve overall athletic performance.',
   },
   {
     'id': 3, // <--- Nuevo ID
-    'name': 'Press de Banca con Mancuernas',
+    'name': 'Lever Seated Fly',
     'muscle_group': 'Chest',
-    'image': 'assets/exercises/chest_dumbbell_press.png',
-    'description': 'Permite mayor rango de movimiento y activación de estabilizadores.',
+    'image': 'assets/exercises/Lever_Seated_Fly.png',
+    'description': 'The Lever Seated Fly is a strength training exercise primarily targeting the chest muscles, while also engaging the shoulders and arms. The exercise is beneficial for enhancing muscle definition, improving posture, and boosting upper body strength, making it an ideal choice for those looking to increase their functional fitness or sculpt their physique.',
   },
   {
     'id': 4, // <--- Nuevo ID
