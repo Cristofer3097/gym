@@ -4,14 +4,14 @@ const List<Map<String, dynamic>> predefinedExerciseList = [
     'id': 0, // <--- Nuevo ID
     'name': 'Bench Press',
     'muscle_group': 'Chest',
-    'image': 'assets/exercises/bench_press.png',
+    'image': 'assets/exercises/bench_press.gif',
     'description': 'The Bench Press is a classic strength training exercise that primarily targets the chest, shoulders, and triceps, contributing to upper body muscle development. It is suitable for anyone, from beginners to professional athletes, looking to improve their upper body strength and muscular endurance. Individuals may want to incorporate bench press into their routine for its effectiveness in enhancing physical performance, promoting bone health, and improving body composition.', // <-- EN INGLÉS
   },
   {
     'id': 1, // <--- Nuevo ID
     'name': 'Dumbbell bench press',
     'muscle_group': 'Chest',
-    'image': 'assets/exercises/Dumbbell_bench_press.png',
+    'image': 'assets/exercises/Dumbbell_bench_press.gif',
     'description': 'The Dumbbell Bench Press is a versatile strength-training exercise that primarily targets the chest, while also engaging the shoulders and triceps. It is suitable for both beginners and advanced fitness enthusiasts as it can be easily modified to match individual strength levels and goals. People might opt for this exercise as it promotes muscle growth, improves upper body strength, and offers better range of motion compared to a barbell bench press.',
   },
   {
@@ -23,68 +23,67 @@ const List<Map<String, dynamic>> predefinedExerciseList = [
   },
   {
     'id': 3, // <--- Nuevo ID
-    'name': 'Lever Seated Fly',
+    'name': 'Dumbbell Fly',
     'muscle_group': 'Chest',
-    'image': 'assets/exercises/Lever_Seated_Fly.png',
-    'description': 'The Lever Seated Fly is a strength training exercise primarily targeting the chest muscles, while also engaging the shoulders and arms. The exercise is beneficial for enhancing muscle definition, improving posture, and boosting upper body strength, making it an ideal choice for those looking to increase their functional fitness or sculpt their physique.',
+    'image': 'assets/exercises/Dumbbell_Flyes.gif',
+    'description': 'The Dumbbell Fly is a strength training exercise targeting the chest muscles, specifically the pectoralis major, and secondary muscles like the shoulders and biceps. This exercise is beneficial for those looking to enhance their upper body strength, improve muscle definition, and promote better posture.',
   },
   {
     'id': 4, // <--- Nuevo ID
-    'name': 'Press Inclinado con Mancuernas',
+    'name': 'Lever Seated Fly',
     'muscle_group': 'Chest',
-    'image': 'assets/exercises/chest_incline_dumbbell_press.png',
-    'description': 'Mayor activación de la parte superior del pectoral con mancuernas.',
+    'image': 'assets/exercises/Lever_Seated_Fly.gif',
+    'description': 'The Lever Seated Fly is a strength training exercise primarily targeting the chest muscles, while also engaging the shoulders and arms. The exercise is beneficial for enhancing muscle definition, improving posture, and boosting upper body strength, making it an ideal choice for those looking to increase their functional fitness or sculpt their physique.',
   },
   {
     'id': 5, // <--- Nuevo ID
-    'name': 'Aperturas con Mancuernas',
+    'name': 'Incline Bench Press',
     'muscle_group': 'Chest',
-    'image': 'assets/exercises/chest_dumbbell_flyes.png',
-    'description': 'Ejercicio de aislamiento para el pectoral.',
+    'image': 'assets/exercises/Press_Incline_Bench_Press.gif',
+    'description': 'The Incline Bench Press is a strength-training exercise that primarily targets the upper portion of the chest muscles, while also engaging the shoulders and triceps. Suitable for anyone looking to enhance upper body strength and improve muscle definition, particularly in the chest area. ',
   },
   {
     'id': 6, // <--- Nuevo ID
-    'name': 'Flexiones (Push-ups)',
+    'name': 'Dumbbel Incline Bench Press',
     'muscle_group': 'Chest',
-    'image': 'assets/exercises/chest_push_ups.png',
-    'description': 'Ejercicio de peso corporal efectivo para el pecho, hombros y tríceps.',
+    'image': 'assets/exercises/Dumbbel_Incline_Bench_Press.png',
+    'description': 'The Dumbbell Incline Bench Press is a highly effective exercise primarily targeting the upper chest muscles, but also working the shoulders and triceps. Individuals may want to incorporate this exercise into their routine as it allows for a greater range of motion compared to the barbell version, promoting better muscle activation and growth.',
   },
   {
     'id': 7, // <--- Nuevo ID
-    'name': 'Fondos en Paralelas (Dips)',
+    'name': 'Lever Chest Press',
     'muscle_group': 'Chest',
-    'image': 'assets/exercises/chest_dips.png',
-    'description': 'Excelente para la parte inferior del pecho y tríceps. Inclinarse hacia adelante enfoca más el pecho.',
+    'image': 'assets/exercises/Lever_Chest_Press.gif',
+    'description': 'The Lever Chest Press is a strength-building exercise that primarily targets the pectoral muscles, but also works the triceps and anterior deltoids. It is an excellent workout for both beginners and advanced fitness enthusiasts due to its adjustable resistance and controlled movement. People may choose this exercise for its ability to enhance upper body strength, improve muscle tone, and assist in the development of a more defined chest.',
   },
   {
     'id': 8, // <--- Nuevo ID
-    'name': 'Cruce de Poleas (Cable Crossover)',
+    'name': 'Chest Dip',
     'muscle_group': 'Chest',
-    'image': 'assets/exercises/chest_cable_crossover.png',
-    'description': 'Permite tensión constante y trabajar diferentes ángulos del pectoral.',
+    'image': 'assets/exercises/chest_dips.gif',
+    'description': 'The Chest Dip is a powerful exercise that primarily targets the pectoralis muscles, triceps, and the front shoulders, helping to build strength and definition in these areas. It is suitable for individuals at an intermediate or advanced fitness level who are aiming to enhance their upper body strength and muscular endurance.',
   },
-
-  // Espalda
   {
     'id': 9, // <--- Nuevo ID
-    'name': 'Dominadas (Pull-ups)',
-    'muscle_group': "Back",
-    'image': 'assets/exercises/back_pull_ups.png',
-    'description': 'Ejercicio compuesto clave para el dorsal ancho y la parte superior de la espalda.',
+    'name': 'Smith Incline Bench Press',
+    'muscle_group': "Chest",
+    'image': 'assets/exercises/Smith_Incline_Bench_Press.png',
+    'description': 'The Smith Incline Bench Press is a strength-building exercise that primarily targets your upper chest, shoulders, and triceps, while also engaging other supporting muscles. Suitable for both beginners and advanced athletes due to the controlled movement of the Smith machine, which can help prevent injury and ensure correct form.',
   },
+  // Espalda
   {
     'id': 10, // <--- Nuevo ID
-    'name': 'Jalón al Pecho (Lat Pulldown)',
-    'muscle_group': "Back",
-    'image': 'assets/exercises/back_lat_pulldown.png',
-    'description': 'Alternativa a las dominadas, trabaja el dorsal ancho.',
+    'name': 'Pulldown',
+    'muscle_group': 'Back',
+    'image': 'assets/exercises/Pulldown.gif',
+    'description': 'The Cable Pulldown is a popular strength training exercise that primarily targets the muscles in your back, specifically the latissimus dorsi, but also works your shoulders and arms. This exercise is ideal for both beginners and advanced fitness enthusiasts, as the weight can be easily adjusted to match individual strength levels. Incorporating Cable Pulldowns into your workout routine can help improve upper body strength, promote better posture, and enhance muscle definition.',
   },
   {
     'id': 11, // <--- Nuevo ID
-    'name': 'Remo con Barra',
+    'name': 'Pulldown with V-bar',
     'muscle_group': "Back",
-    'image': 'assets/exercises/back_barbell_row.png',
-    'description': 'Desarrolla el grosor de la espalda, trabajando dorsales, romboides y trapecios.',
+    'image': 'assets/exercises/Pulldown_with_V-bar.gif',
+    'description': 'Pulldown with V-bar is a highly effective exercise that targets and strengthens the muscles in your back, shoulders, and arms, particularly the latissimus dorsi.',
   },
   {
     'id': 12, // <--- Nuevo ID
