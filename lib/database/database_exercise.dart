@@ -70,129 +70,130 @@ const List<Map<String, dynamic>> predefinedExerciseList = [
     'image': 'assets/exercises/Smith_Incline_Bench_Press.png',
     'description': 'The Smith Incline Bench Press is a strength-building exercise that primarily targets your upper chest, shoulders, and triceps, while also engaging other supporting muscles. Suitable for both beginners and advanced athletes due to the controlled movement of the Smith machine, which can help prevent injury and ensure correct form.',
   },
-  // Espalda
   {
     'id': 10, // <--- Nuevo ID
+    'name': 'Cable Fly',
+    'muscle_group': "Chest",
+    'image': 'assets/exercises/cable_fly.gif',
+    'description': 'Cable Fly is a targeted exercise that primarily strengthens the chest muscles, while also engaging the shoulders and arms. Suitable for both beginners and experienced gym-goers, offering adjustable resistance to match individual fitness levels. ',
+  },
+  // Espalda
+  {
+    'id': 11, // <--- Nuevo ID
     'name': 'Pulldown',
     'muscle_group': 'Back',
     'image': 'assets/exercises/Pulldown.gif',
     'description': 'The Cable Pulldown is a popular strength training exercise that primarily targets the muscles in your back, specifically the latissimus dorsi, but also works your shoulders and arms. This exercise is ideal for both beginners and advanced fitness enthusiasts, as the weight can be easily adjusted to match individual strength levels. Incorporating Cable Pulldowns into your workout routine can help improve upper body strength, promote better posture, and enhance muscle definition.',
   },
   {
-    'id': 11, // <--- Nuevo ID
+    'id': 12, // <--- Nuevo ID
     'name': 'Pulldown with V-bar',
     'muscle_group': "Back",
     'image': 'assets/exercises/Pulldown_with_V-bar.gif',
     'description': 'Pulldown with V-bar is a highly effective exercise that targets and strengthens the muscles in your back, shoulders, and arms, particularly the latissimus dorsi.',
   },
   {
-    'id': 12, // <--- Nuevo ID
-    'name': 'Remo con Mancuerna (Dumbbell Row)',
-    'muscle_group': "Back",
-    'image': 'assets/exercises/back_dumbbell_row.png',
-    'description': 'Permite un trabajo unilateral y mayor rango de movimiento.',
-  },
-  {
     'id': 13, // <--- Nuevo ID
-    'name': 'Peso Muerto (Deadlift)',
+    'name': 'Pull-up',
     'muscle_group': "Back", // También trabaja piernas y glúteos intensamente
-    'image': 'assets/exercises/back_deadlift.png',
-    'description': 'Ejercicio compuesto que trabaja prácticamente todo el cuerpo, con gran énfasis en la cadena posterior.',
+    'image': 'assets/exercises/Pull-up.gif',
+    'description': 'The Pull-up exercise is a highly beneficial upper body workout that targets multiple muscle groups, including the back, arms, shoulders, and chest, improving strength and endurance. It is an ideal exercise for anyone, from beginners to fitness enthusiasts, who are interested in building upper body strength and enhancing muscle definition. ',
   },
   {
     'id': 14, // <--- Nuevo ID
-    'name': 'Remo Sentado en Polea (Seated Cable Row)',
+    'name': 'Supination Pulldown on High Pulley',
     'muscle_group': "Back",
-    'image': 'assets/exercises/back_seated_cable_row.png',
-    'description': 'Trabaja la parte media de la espalda.',
+    'image': 'assets/exercises/Supination-Pulldown-on-High-Pulley.gif',
+    'description': 'Supination Pulldown on High Pulley is a strength-building exercise targeting your back muscles, particularly the lats, rhomboids, and traps. It is suitable for individuals at all fitness levels who want to improve their upper body strength and posture. ',
   },
   {
     'id': 15, // <--- Nuevo ID
-    'name': 'Hiperextensiones (Back Extensions)',
-    'muscle_group': "Back", // Principalmente lumbares
-    'image': 'assets/exercises/back_hyperextensions.png',
-    'description': 'Fortalece la zona lumbar, glúteos e isquiotibiales.',
+    'name': 'Horizontal Row',
+    'muscle_group': "Back",
+    'image': 'assets/exercises/Horizontal_Rowing.gif',
+    'description': 'Horizontal Row is a strength-building exercise that targets the muscles in your back, shoulders, and arms, making it ideal for those looking to improve upper body strength and posture. ',
   },
 
-  // Piernas
+
   {
     'id': 16, // <--- Nuevo ID
-    'name': 'Sentadilla con Barra (Squat)',
-    'muscle_group': "Legs",
-    'image': 'assets/exercises/legs_squat.png',
-    'description': 'Ejercicio fundamental para cuádriceps, glúteos e isquiotibiales.',
+    'name': 'Open Horizontal Row',
+    'muscle_group': "Back",
+    'image': 'assets/exercises/Open_Horizontal_Rowing.gif',
+    'description': 'Open Horizontal Row is a strength-building exercise that targets the muscles in your back, shoulders, and arms, contributing to improved posture and overall upper body strength.',
   },
   {
     'id': 17, // <--- Nuevo ID
-    'name': 'Prensa de Piernas (Leg Press)',
-    'muscle_group': "Legs",
-    'image': 'assets/exercises/legs_leg_press.png',
-    'description': 'Permite mover grandes pesos y enfocar diferentes áreas de las piernas según la posición de los pies.',
+    'name': 'Horizontal Machine Row',
+    'muscle_group': "Back",
+    'image': 'assets/exercises/Horizontal_Machine_Row.gif',
+    'description': 'Horizontal Machine Row is a strength training exercise that primarily targets the muscles in the back, improving muscular endurance and promoting better posture. ',
   },
   {
     'id': 18, // <--- Nuevo ID
-    'name': 'Extensiones de Cuádriceps (Leg Extensions)',
-    'muscle_group': "Legs",
-    'image': 'assets/exercises/legs_leg_extensions.png',
-    'description': 'Ejercicio de aislamiento para los cuádriceps.',
+    'name': 'T-Bar Row',
+    'muscle_group': "Back",
+    'image': 'assets/exercises/T-Bar_Row.gif',
+    'description': 'T-Bar Row is a strength training exercise that primarily targets the muscles in your back, shoulders, and arms, offering a comprehensive upper body workout. ',
   },
   {
     'id': 19, // <--- Nuevo ID
-    'name': 'Curl Femoral Tumbado (Lying Leg Curl)',
-    'muscle_group': "Legs",
-    'image': 'assets/exercises/legs_lying_leg_curl.png',
-    'description': 'Ejercicio de aislamiento para los isquiotibiales.',
+    'name': 'Rear Delt Row',
+    'muscle_group': "Back",
+    'image': 'assets/exercises/Rear_Delt_Row.gif',
+    'description': 'Rear Delt Row is a strength training exercise that specifically targets the rear deltoids, helping to enhance shoulder stability and upper body strength.',
   },
   {
-    'id': 20, // <--- Nuevo ID
-    'name': 'Curl Femoral Sentado (Seated Leg Curl)',
-    'muscle_group': "Legs",
-    'image': 'assets/exercises/legs_seated_leg_curl.png',
-    'description': 'Alternativa para trabajar los isquiotibiales.',
+    'id': 20,
+    'name': 'Reverse Barbell Row',
+    'muscle_group': "Back",
+    'image': 'assets/exercises/Reverse_Barbell_Row.gif',
+    'description': 'Reverse Barbell Row is a strength-building exercise that primarily targets the muscles in your back, biceps, and forearms.',
   },
   {
     'id': 21, // <--- Nuevo ID
-    'name': 'Zancadas (Lunges)',
-    'muscle_group': "Legs",
-    'image': 'assets/exercises/legs_lunges.png',
-    'description': 'Trabaja cuádriceps, glúteos e isquiotibiales, además de mejorar el equilibrio.',
+    'name': 'One Arm Row',
+    'muscle_group': "Back",
+    'image': 'assets/exercises/One_Arm_Row.gif',
+    'description': 'The One Arm Row is a strength training exercise that primarily targets the muscles in the back, but also works the biceps and shoulders, contributing to improved posture and upper body strength. ',
   },
+  // Piernas
   {
     'id': 22, // <--- Nuevo ID
-    'name': 'Elevación de Talones (Calf Raises)',
-    'muscle_group': "Legs", // Específicamente pantorrillas
-    'image': 'assets/exercises/legs_calf_raises.png',
-    'description': 'Desarrolla los músculos de la pantorrilla (gastrocnemio y sóleo).',
+    'name': 'Hack Squat',
+    'muscle_group': "Legs",
+    'image': 'assets/exercises/Hack_Squat.gif',
+    'description': 'The Hack Squat is a lower body exercise that primarily targets the quadriceps, while also engaging the glutes and hamstrings, contributing to improved strength, balance, and muscle definition. Individuals might opt for the Sled Hack Squat because it offers a safer alternative to traditional squats, as it reduces strain on the back while still providing an effective workout for the lower body.',
   },
   {
     'id': 23, // <--- Nuevo ID
-    'name': 'Sentadilla Búlgara (Bulgarian Split Squat)',
+    'name': 'Extension',
     'muscle_group': "Legs",
-    'image': 'assets/exercises/legs_bulgarian_split_squat.png',
-    'description': 'Excelente ejercicio unilateral para cuádriceps y glúteos.',
+    'image': 'assets/exercises/Extension.gif',
+    'description': 'The Extension is a strength-building exercise that primarily targets the quadriceps, enhancing muscle tone, power, and endurance in the lower body.',
   },
 
   // Hombros
   {
     'id': 24, // <--- Nuevo ID
-    'name': 'Press Militar con Barra (Overhead Press)',
-    'muscle_group': "Shoulders",
-    'image': 'assets/exercises/shoulders_overhead_press.png',
-    'description': 'Ejercicio compuesto principal para el desarrollo de los deltoides.',
+    'name': 'Incline Press',
+    'muscle_group': "Legs",
+    'image': 'assets/exercises/Incline_Press.gif',
+    'description': 'The Incline Press is a comprehensive lower body exercise that primarily targets the quadriceps, while also engaging the glutes, hamstrings, and calves. This exercise is suitable for both beginners and advanced fitness enthusiasts as it can be easily adjusted to match individual strength levels.',
   },
   {
     'id': 25, // <--- Nuevo ID
-    'name': 'Press de Hombros con Mancuernas',
-    'muscle_group': "Shoulders",
+    'name': 'Barbell Squat',
+    'muscle_group': "Legs",
     'image': 'assets/exercises/shoulders_dumbbell_press.png',
-    'description': 'Permite un movimiento más natural y mayor activación de estabilizadores.',
+    'description': 'The Barbell Squat is a comprehensive lower body exercise that primarily targets the quadriceps, hamstrings, and glutes, while also engaging the core and improving balance. It is suitable for individuals at all fitness levels, from beginners to advanced athletes, due to its modifiable intensity and form. People would want to perform this exercise not only for its ability to build strength and muscle, but also for its benefits in enhancing flexibility, mobility, and overall functional fitness.',
   },
   {
     'id': 26, // <--- Nuevo ID
-    'name': 'Elevaciones Laterales con Mancuernas',
-    'muscle_group': "Shoulders",
-    'image': 'assets/exercises/shoulders_lateral_raises.png',
-    'description': 'Aísla la cabeza media del deltoides, dando amplitud a los hombros.',
+    'name': 'Smith Squat',
+    'muscle_group': "Legs",
+    'image': 'assets/exercises/Smith_Squat.png',
+    'description': 'The Smith Squat is a strength training exercise that primarily targets the glutes, quadriceps, and hamstrings, while also engaging the core and lower back. ',
   },
   {
     'id': 27, // <--- Nuevo ID
