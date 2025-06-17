@@ -113,8 +113,6 @@ const List<Map<String, dynamic>> predefinedExerciseList = [
     'image': 'assets/exercises/Horizontal_Rowing.gif',
     'description': 'Horizontal Row is a strength-building exercise that targets the muscles in your back, shoulders, and arms, making it ideal for those looking to improve upper body strength and posture. ',
   },
-
-
   {
     'id': 16, // <--- Nuevo ID
     'name': 'Open Horizontal Row',
@@ -172,8 +170,6 @@ const List<Map<String, dynamic>> predefinedExerciseList = [
     'image': 'assets/exercises/Extension.gif',
     'description': 'The Extension is a strength-building exercise that primarily targets the quadriceps, enhancing muscle tone, power, and endurance in the lower body.',
   },
-
-  // Hombros
   {
     'id': 24, // <--- Nuevo ID
     'name': 'Incline Press',
@@ -185,7 +181,7 @@ const List<Map<String, dynamic>> predefinedExerciseList = [
     'id': 25, // <--- Nuevo ID
     'name': 'Barbell Squat',
     'muscle_group': "Legs",
-    'image': 'assets/exercises/shoulders_dumbbell_press.png',
+    'image': 'assets/exercises/Barbell_Squat.gif',
     'description': 'The Barbell Squat is a comprehensive lower body exercise that primarily targets the quadriceps, hamstrings, and glutes, while also engaging the core and improving balance. It is suitable for individuals at all fitness levels, from beginners to advanced athletes, due to its modifiable intensity and form. People would want to perform this exercise not only for its ability to build strength and muscle, but also for its benefits in enhancing flexibility, mobility, and overall functional fitness.',
   },
   {
@@ -197,61 +193,62 @@ const List<Map<String, dynamic>> predefinedExerciseList = [
   },
   {
     'id': 27, // <--- Nuevo ID
-    'name': 'Elevaciones Frontales con Mancuernas',
-    'muscle_group': "Shoulders",
-    'image': 'assets/exercises/shoulders_front_raises.png',
-    'description': 'Trabaja la cabeza anterior (frontal) del deltoides.',
+    'name': 'Adductor in Machine',
+    'muscle_group': "Legs",
+    'image': 'assets/exercises/Adductor_in_Machine.gif',
+    'description': 'The Adductor in Machine is a targeted strength exercise that focuses on the inner thigh muscles, primarily the adductor group. This exercise is beneficial not only for improving overall leg aesthetics, but also for enhancing performance in movements and sports that require strong, stable hips and thighs.',
   },
+  // Hombros
   {
-    'id': 28, // <--- Nuevo ID
-    'name': 'Pájaro (Bent-over Dumbbell Raise)',
-    'muscle_group': "Shoulders", // También trabaja espalda alta
-    'image': 'assets/exercises/shoulders_bent_over_raises.png',
-    'description': 'Enfatiza la cabeza posterior del deltoides y los músculos de la espalda alta.',
+    'id': 28,
+    'name': 'Machine Lateral Raises',
+    'muscle_group': "Shoulders",
+    'image': 'assets/exercises/Machine_Lateral_Raises.gif',
+    'description': 'The Machine Lateral Raises is a strength training exercise that primarily targets the shoulders, specifically the lateral deltoids, aiding in the development of broader, stronger shoulders.',
   },
   {
     'id': 29, // <--- Nuevo ID
-    'name': 'Remo al Mentón (Upright Row)',
+    'name': 'Dumbbell Lateral Raises',
     'muscle_group': "Shoulders", // También trapecios
-    'image': 'assets/exercises/shoulders_upright_row.png',
-    'description': 'Trabaja los deltoides laterales y anteriores, así como los trapecios.',
+    'image': 'assets/exercises/Dumbbell_Lateral_Raises.gif',
+    'description': 'The Lateral Raise is a strength training exercise that primarily targets the deltoids, helping to build shoulder width and definition. It is suitable for individuals at any fitness level, from beginners to advanced athletes, looking to improve upper body strength and posture. People may want to incorporate Lateral Raises into their routine to enhance shoulder stability, promote balanced muscle development, and improve daily functional movements.',
   },
 
   // Brazos (Bíceps)
   {
     'id': 30, // <--- Nuevo ID
-    'name': 'Curl de Bíceps con Barra',
-    'muscle_group': "Arms",
-    'image': 'assets/exercises/arms_barbell_curl.png',
-    'description': 'Ejercicio básico para la masa de los bíceps.',
+    'name': 'Lateral Raises on Cables',
+    'muscle_group': "Shoulders",
+    'image': 'assets/exercises/Lateral_Raises_on_cables.gif',
+    'description': 'The Lateral Raises on Cables is a strength-building exercise that primarily targets the deltoids, enhancing shoulder definition and improving overall upper body strength.',
   },
   {
     'id': 31, // <--- Nuevo ID
-    'name': 'Curl de Bíceps con Mancuernas',
-    'muscle_group': "Arms",
-    'image': 'assets/exercises/arms_dumbbell_curl.png',
-    'description': 'Permite supinación para una mayor activación del bíceps.',
+    'name': 'Dumbbell Military Press',
+    'muscle_group': "Shoulders",
+    'image': 'assets/exercises/Dumbbell_Military_Press.gif',
+    'description': 'The Dumbbell Military Press is a highly effective upper body exercise that targets the deltoids, triceps, and upper pectoral muscles, promoting improved strength and muscle tone.',
   },
   {
     'id': 32, // <--- Nuevo ID
-    'name': 'Curl Martillo (Hammer Curl)',
-    'muscle_group': "Arms",
-    'image': 'assets/exercises/arms_hammer_curl.png',
-    'description': 'Trabaja el bíceps braquial y el braquiorradial, dando grosor al brazo.',
+    'name': 'Military Press on Machine',
+    'muscle_group': "Shoulders",
+    'image': 'assets/exercises/Military_Press_on_Machine.gif',
+    'description': 'The Military Press on Machine is a strength-building exercise targeting the deltoids, triceps, and upper body muscles, making it highly beneficial for those aiming to enhance their upper body strength.',
   },
   {
     'id': 33, // <--- Nuevo ID
-    'name': 'Curl Concentrado',
-    'muscle_group': "Arms",
-    'image': 'assets/exercises/arms_concentration_curl.png',
-    'description': 'Ejercicio de aislamiento para el pico del bíceps.',
+    'name': 'Military Press Smith',
+    'muscle_group': "Shoulders",
+    'image': 'assets/exercises/Military_Press_Smith.png',
+    'description': 'The Military Press Smith is a strength-building exercise that primarily targets the deltoids, triceps, and upper body muscles, offering a comprehensive workout for your upper body. It is suitable for both beginners and advanced fitness enthusiasts as it allows for controlled movements and adjustable weights. ',
   },
   {
     'id': 34, // <--- Nuevo ID
-    'name': 'Curl en Banco Scott (Preacher Curl)',
-    'muscle_group': "Arms",
-    'image': 'assets/exercises/arms_preacher_curl.png',
-    'description': 'Aísla el bíceps al evitar el balanceo del cuerpo.',
+    'name': 'Dumbbell Front Raise',
+    'muscle_group': "Shoulders",
+    'image': 'assets/exercises/Dumbbell_Front_Raises.gif',
+    'description': 'The Dumbbell Front Raise is a strength-building exercise that primarily targets the shoulders, specifically the anterior deltoids, and also works the upper chest muscles. ',
   },
 
   // Brazos (Tríceps)

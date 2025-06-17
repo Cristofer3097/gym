@@ -133,6 +133,7 @@ String getLocalizedCategoryName(BuildContext context, String categoryKey) {
     case 'Legs': return l10n.category_legs;
     case 'Arms': return l10n.category_arms;
     case 'Shoulders': return l10n.category_shoulders;
+    case 'Glutes': return l10n.category_glutes;
     case 'Abs': return l10n.category_abs;
     case 'Other': return l10n.category_other;
     default:
