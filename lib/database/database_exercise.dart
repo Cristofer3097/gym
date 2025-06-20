@@ -368,7 +368,7 @@ const List<Map<String, dynamic>> predefinedExerciseList = [
   {
     'id': 51,
     'name': 'Barbell Lying Triceps Extension',
-    'muscle_group': "Triceps", // También Pecho
+    'muscle_group': "Triceps",
     'image': 'assets/exercises/Barbell_Lying_Triceps_Extension.gif',
     'description': 'The Barbell Lying Triceps Extension, also known as Skull Crusher, is a strength training exercise that predominantly targets the triceps muscles, contributing to upper body strength and toned arms. ',
   },
@@ -388,6 +388,7 @@ const List<Map<String, dynamic>> predefinedExerciseList = [
     'image': 'assets/exercises/Cable_Kneeling_Crunch.gif',
     'description': 'The Cable Kneeling Crunch is a core exercise that targets the abdominal muscles, specifically enhancing strength and definition. Individuals would want to incorporate this exercise into their routine as it not only helps in achieving a toned midsection but also improves posture, balance, and reduces the risk of back pain.',
   },
+  //Gluteos
   {
     'id': 54,
     'name': 'Hip Thrust',
@@ -418,61 +419,56 @@ const List<Map<String, dynamic>> predefinedExerciseList = [
   },
   {
     'id': 58,
-    'name': 'Overhead Tricep Extension',
-    'muscle_group': "Triceps",
-    'image': 'assets/exercises/Overhead_Tricep_Extension.gif',
-    'description': 'The Overhead Tricep Extension is a strength-building exercise specifically designed to target and isolate the tricep muscles, contributing to well-defined arms. ',
+    'name': 'Deadlift',
+    'muscle_group': "Other",
+    'image': 'assets/exercises/Deadlift.gif',
+    'description': 'The Deadlift is a powerful exercise that targets multiple major muscle groups, including the back, legs, and core, offering comprehensive strength and muscle growth. It is suitable for anyone from beginners to advanced athletes, as it can be modified based on individual skill levels and goals. Individuals may choose to incorporate deadlifts into their routine to improve overall body strength, enhance athletic performance, and promote better posture and balance.',
   },
+  //Femoral
   {
     'id': 59,
-    'name': 'Barbell Lying Triceps Extension',
-    'muscle_group': "Triceps", // También Pecho
-    'image': 'assets/exercises/Barbell_Lying_Triceps_Extension.gif',
-    'description': 'The Barbell Lying Triceps Extension, also known as Skull Crusher, is a strength training exercise that predominantly targets the triceps muscles, contributing to upper body strength and toned arms. ',
+    'name': 'Lever Lying Leg Curl',
+    'muscle_group': "Hamstrings",
+    'image': 'assets/exercises/Lever_Lying_Leg_Curl.gif',
+    'description': 'The Lever Lying Leg Curl is a strength training exercise that primarily targets the hamstrings, but also works the calf muscles and glutes, promoting muscle balance, strength, and endurance. ',
   },
   {
     'id': 60,
-    'name': 'Lever Seated Crunch',
-    'muscle_group': "Abs",
-    'image': 'assets/exercises/Lever_Seated_Crunch.gif',
-    'description': 'The Lever Seated Crunch is a targeted exercise that primarily strengthens the core muscles, particularly the abs, and enhances overall body stability. People would want to perform this exercise due to its effectiveness in developing a strong and toned midsection, contributing to better balance and reduced risk of back pain.',
+    'name': 'Lever Seated Leg Curl',
+    'muscle_group': "Hamstrings",
+    'image': 'assets/exercises/Lever_Seated_Leg_Curl.gif',
+    'description': 'The Lever Seated Leg Curl is a strength-building exercise primarily targeting the hamstrings, while also engaging the calf muscles and glutes. It is suitable for individuals at all fitness levels, from beginners to advanced athletes, due to its adjustable resistance. Performing this exercise can improve lower body strength, enhance muscle definition, and aid in injury prevention, making it an excellent addition to any workout regimen.',
   },
 
-  // Abdomen
+
   {
     'id': 61,
-    'name': 'Cable Kneeling Crunch',
-    'muscle_group': "Abs",
-    'image': 'assets/exercises/Cable_Kneeling_Crunch.gif',
-    'description': 'The Cable Kneeling Crunch is a core exercise that targets the abdominal muscles, specifically enhancing strength and definition. Individuals would want to incorporate this exercise into their routine as it not only helps in achieving a toned midsection but also improves posture, balance, and reduces the risk of back pain.',
+    'name': 'Lever Kneeling Leg Curl',
+    'muscle_group': "Hamstrings",
+    'image': 'assets/exercises/Lever_Kneeling_Leg_Curl.gif',
+    'description': 'The Lever Kneeling Leg Curl is a strength training exercise that specifically targets the hamstrings, glutes, and lower back muscles, enhancing muscle tone and overall lower body strength.',
   },
+  // Pantorrilas/Gemelos
   {
     'id': 62,
-    'name': 'Hip Thrust',
-    'muscle_group': "Glutes",
-    'image': 'assets/exercises/Hip_Thrust.gif',
-    'description': 'The Hip Thrust is a strength training exercise primarily targeting the glutes, hamstrings, and core, making it an effective workout for enhancing lower body strength and improving hip power.Incorporating hip thrusts into your fitness routine can help improve your speed, jumping abilities, overall athletic performance, and even aid in preventing injuries associated with weak glute muscles.',
+    'name': 'Lever Seated Calf Raise',
+    'muscle_group': "Legs",
+    'image': 'assets/exercises/Lever_Seated_Calf_Raise.gif',
+    'description': 'The Lever Seated Calf Raise is a strength-training exercise that primarily targets the calf muscles, enhancing lower leg strength and improving overall balance. ',
   },
   {
     'id': 63,
-    'name': 'Bulgarian Split Squat',
-    'muscle_group': "Glutes",
-    'image': 'assets/exercises/Bulgarian_Split_Squat.gif',
-    'description': 'The Bulgarian Split Squat is a highly effective lower-body exercise that targets the quadriceps, glutes, and hamstrings, while also improving balance and mobility. ',
+    'name': 'Lever Standing Calf Raise',
+    'muscle_group': "Legs",
+    'image': 'assets/exercises/Lever_Standing_Calf_Raise.gif',
+    'description': 'The Lever Standing Calf Raise is a strength training exercise that primarily targets the calf muscles, helping to improve lower leg strength, balance, and muscular definition.',
   },
   {
     'id': 64,
-    'name': 'Lever Hip Extension',
-    'muscle_group': "Glutes",
-    'image': 'assets/exercises/Lever_Hip_Extension.png',
-    'description': 'The Lever Hip Extension is a targeted exercise that primarily strengthens the gluteus maximus and hamstrings, contributing to improved balance, posture, and athletic performance. People would want to perform this exercise to enhance lower body strength, support functional movements in daily life, and promote overall body stability and flexibility.',
-  },
-  {
-    'id': 65,
-    'name': 'Romanian Deadlift',
-    'muscle_group': "Glutes",
-    'image': 'assets/exercises/Romanian_Deadlift.gif',
-    'description': 'The Romanian Deadlift is a highly effective exercise that primarily targets the muscles of the posterior chain, including the hamstrings, glutes, and lower back, contributing to improved strength, balance, and posture. It is suitable for both beginners and advanced fitness enthusiasts as it can be modified to match individual fitness levels. Individuals may want to incorporate this exercise into their routine to enhance functional strength, promote muscle growth, and improve overall athletic performance.',
+    'name': 'Calf Press',
+    'muscle_group': "Legs",
+    'image': 'assets/exercises/Calf_press.gif',
+    'description': 'The Calf Press is a strength training exercise that primarily targets the calf muscles, but also engages the hamstrings and glutes.',
   },
 
 
