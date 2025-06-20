@@ -50,24 +50,29 @@ String getLocalizedExerciseName(BuildContext context, Map<String, dynamic> exerc
       case 40: return l10n.exercise_40_name;
       case 41: return l10n.exercise_41_name;
       case 42: return l10n.exercise_42_name;
-      case 43: return l10n.exercise_21_name;
-      case 44: return l10n.exercise_22_name;
-      case 45: return l10n.exercise_23_name;
-      case 46: return l10n.exercise_24_name;
-      case 47: return l10n.exercise_25_name;
-      case 48: return l10n.exercise_26_name;
-      case 49: return l10n.exercise_27_name;
-      case 50: return l10n.exercise_28_name;
-      case 51: return l10n.exercise_29_name;
-      case 52: return l10n.exercise_30_name;
-      case 53: return l10n.exercise_31_name;
-      case 54: return l10n.exercise_32_name;
-      case 55: return l10n.exercise_33_name;
-      case 56: return l10n.exercise_34_name;
-      case 57: return l10n.exercise_35_name;
-      case 58: return l10n.exercise_36_name;
-      case 59: return l10n.exercise_37_name;
-      case 60: return l10n.exercise_38_name;
+      case 43: return l10n.exercise_43_name;
+      case 44: return l10n.exercise_44_name;
+      case 45: return l10n.exercise_45_name;
+      case 46: return l10n.exercise_46_name;
+      case 47: return l10n.exercise_47_name;
+      case 48: return l10n.exercise_48_name;
+      case 49: return l10n.exercise_49_name;
+      case 50: return l10n.exercise_50_name;
+      case 51: return l10n.exercise_51_name;
+      case 52: return l10n.exercise_52_name;
+      case 53: return l10n.exercise_53_name;
+      case 54: return l10n.exercise_54_name;
+      case 55: return l10n.exercise_55_name;
+      case 56: return l10n.exercise_56_name;
+      case 57: return l10n.exercise_57_name;
+      case 58: return l10n.exercise_58_name;
+      case 59: return l10n.exercise_59_name;
+      case 60: return l10n.exercise_60_name;
+      case 61: return l10n.exercise_61_name;
+      case 62: return l10n.exercise_62_name;
+      case 63: return l10n.exercise_63_name;
+      case 64: return l10n.exercise_64_name;
+      case 65: return l10n.exercise_65_name;
 
 
       default:
@@ -132,23 +137,31 @@ String getLocalizedExerciseDescription(BuildContext context, Map<String, dynamic
       case 40: return l10n.exercise_40_description;
       case 41: return l10n.exercise_41_description;
       case 42: return l10n.exercise_42_description;
-      case 44: return l10n.exercise_43_description;
-      case 45: return l10n.exercise_26_description;
-      case 46: return l10n.exercise_27_description;
-      case 47: return l10n.exercise_28_description;
-      case 48: return l10n.exercise_29_description;
-      case 49: return l10n.exercise_30_description;
-      case 50: return l10n.exercise_31_description;
-      case 51: return l10n.exercise_32_description;
-      case 52: return l10n.exercise_33_description;
-      case 53: return l10n.exercise_34_description;
-      case 54: return l10n.exercise_35_description;
-      case 55: return l10n.exercise_36_description;
-      case 56: return l10n.exercise_37_description;
-      case 57: return l10n.exercise_38_description;
-      case 58: return l10n.exercise_39_description;
-      case 59: return l10n.exercise_40_description;
-      case 60: return l10n.exercise_41_description;
+      case 43: return l10n.exercise_43_description;
+      case 44: return l10n.exercise_44_description;
+      case 45: return l10n.exercise_45_description;
+      case 46: return l10n.exercise_46_description;
+      case 47: return l10n.exercise_47_description;
+      case 48: return l10n.exercise_48_description;
+      case 59: return l10n.exercise_49_description;
+      case 50: return l10n.exercise_50_description;
+      case 51: return l10n.exercise_51_description;
+      case 52: return l10n.exercise_52_description;
+      case 53: return l10n.exercise_53_description;
+      case 54: return l10n.exercise_54_description;
+      case 55: return l10n.exercise_55_description;
+      case 56: return l10n.exercise_56_description;
+      case 57: return l10n.exercise_57_description;
+      case 58: return l10n.exercise_58_description;
+      case 59: return l10n.exercise_59_description;
+      case 60: return l10n.exercise_60_description;
+      case 61: return l10n.exercise_61_description;
+      case 62: return l10n.exercise_62_description;
+      case 63: return l10n.exercise_63_description;
+      case 64: return l10n.exercise_64_description;
+      case 65: return l10n.exercise_65_description;
+
+
 
       default:
         debugPrint("Advertencia: ID de ejercicio predefinido '$originalId' no encontrado en getLocalizedExerciseDescription. Usando descripción de BD.");
@@ -171,6 +184,7 @@ String getLocalizedCategoryName(BuildContext context, String categoryKey) {
     case 'Triceps': return l10n.category_Triceps;
     case 'Shoulders': return l10n.category_shoulders;
     case 'Glutes': return l10n.category_glutes;
+
     case 'Abs': return l10n.category_abs;
     case 'Other': return l10n.category_other;
     default:
