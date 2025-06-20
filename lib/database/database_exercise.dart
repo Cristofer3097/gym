@@ -213,8 +213,6 @@ const List<Map<String, dynamic>> predefinedExerciseList = [
     'image': 'assets/exercises/Dumbbell_Lateral_Raises.gif',
     'description': 'The Lateral Raise is a strength training exercise that primarily targets the deltoids, helping to build shoulder width and definition. It is suitable for individuals at any fitness level, from beginners to advanced athletes, looking to improve upper body strength and posture. People may want to incorporate Lateral Raises into their routine to enhance shoulder stability, promote balanced muscle development, and improve daily functional movements.',
   },
-
-  // Brazos (Bíceps)
   {
     'id': 30, // <--- Nuevo ID
     'name': 'Lateral Raises on Cables',
@@ -224,24 +222,24 @@ const List<Map<String, dynamic>> predefinedExerciseList = [
   },
   {
     'id': 31, // <--- Nuevo ID
-    'name': 'Dumbbell Military Press',
+    'name': 'Dumbbell Shoulder Press',
     'muscle_group': "Shoulders",
     'image': 'assets/exercises/Dumbbell_Military_Press.gif',
-    'description': 'The Dumbbell Military Press is a highly effective upper body exercise that targets the deltoids, triceps, and upper pectoral muscles, promoting improved strength and muscle tone.',
+    'description': 'The Dumbbell Shoulder Press is a highly effective upper body exercise that targets the deltoids, triceps, and upper pectoral muscles, promoting improved strength and muscle tone.',
   },
   {
     'id': 32, // <--- Nuevo ID
-    'name': 'Military Press on Machine',
+    'name': 'Shoulder Press on Machine',
     'muscle_group': "Shoulders",
     'image': 'assets/exercises/Military_Press_on_Machine.gif',
-    'description': 'The Military Press on Machine is a strength-building exercise targeting the deltoids, triceps, and upper body muscles, making it highly beneficial for those aiming to enhance their upper body strength.',
+    'description': 'The Shoulder Press on Machine is a strength-building exercise targeting the deltoids, triceps, and upper body muscles, making it highly beneficial for those aiming to enhance their upper body strength.',
   },
   {
     'id': 33, // <--- Nuevo ID
-    'name': 'Military Press Smith',
+    'name': 'Shoulder Press Smith',
     'muscle_group': "Shoulders",
     'image': 'assets/exercises/Military_Press_Smith.png',
-    'description': 'The Military Press Smith is a strength-building exercise that primarily targets the deltoids, triceps, and upper body muscles, offering a comprehensive workout for your upper body. It is suitable for both beginners and advanced fitness enthusiasts as it allows for controlled movements and adjustable weights. ',
+    'description': 'The Shoulder Press Smith is a strength-building exercise that primarily targets the deltoids, triceps, and upper body muscles, offering a comprehensive workout for your upper body. It is suitable for both beginners and advanced fitness enthusiasts as it allows for controlled movements and adjustable weights. ',
   },
   {
     'id': 34, // <--- Nuevo ID
@@ -250,80 +248,183 @@ const List<Map<String, dynamic>> predefinedExerciseList = [
     'image': 'assets/exercises/Dumbbell_Front_Raises.gif',
     'description': 'The Dumbbell Front Raise is a strength-building exercise that primarily targets the shoulders, specifically the anterior deltoids, and also works the upper chest muscles. ',
   },
-
-  // Brazos (Tríceps)
   {
     'id': 35, // <--- Nuevo ID
-    'name': 'Press Francés (Skullcrusher)',
-    'muscle_group': "Arms",
-    'image': 'assets/exercises/arms_skullcrusher.png',
-    'description': 'Excelente para la masa del tríceps, especialmente la cabeza larga.',
+    'name': 'Lever Reverse Fly',
+    'muscle_group': "Shoulders",
+    'image': 'assets/exercises/Machine_Rear_Flyes.gif',
+    'description': 'The Lever Reverse Fly is a strength training exercise that primarily targets and enhances the muscles in your upper back, shoulders, and arms. It is ideal for individuals at an intermediate fitness level who are looking to improve their upper body strength and posture.',
   },
   {
     'id': 36, // <--- Nuevo ID
-    'name': 'Extensiones de Tríceps en Polea Alta',
-    'muscle_group': "Arms",
-    'image': 'assets/exercises/arms_tricep_pulldown.png',
-    'description': 'Ejercicio popular para trabajar todas las cabezas del tríceps.',
+    'name': 'Rear Fly',
+    'muscle_group': "Shoulders",
+    'image': 'assets/exercises/Rear_Fly.gif',
+    'description': 'The Rear Fly is a strength training exercise that primarily targets the muscles in the upper back, shoulders, and arms, contributing to improved posture and enhanced muscle definition.  People may choose this exercise for its ability to be easily modified, its effectiveness in building upper body strength, and its role in creating a balanced, well-rounded fitness routine.',
   },
+  // Biceps
+
   {
     'id': 37, // <--- Nuevo ID
-    'name': 'Fondos entre Bancos',
-    'muscle_group': "Arms",
-    'image': 'assets/exercises/arms_bench_dips.png',
-    'description': 'Ejercicio de peso corporal para tríceps.',
+    'name': 'Barbell Curl',
+    'muscle_group': "Biceps",
+    'image': 'assets/exercises/Barbell_Curl.gif',
+    'description': 'The Barbell Curl is a strength training exercise designed to target the biceps and improve upper body strength. It is suitable for anyone, from beginners to advanced athletes, who are looking to build muscle mass and enhance arm definition. ',
   },
   {
     'id': 38, // <--- Nuevo ID
-    'name': 'Press Cerrado (Close-grip Bench Press)',
-    'muscle_group': "Arms", // También Pecho
-    'image': 'assets/exercises/arms_close_grip_bench_press.png',
-    'description': 'Variante del press de banca que enfatiza el trabajo de los tríceps.',
+    'name': 'Biceps Curl',
+    'muscle_group': "Biceps", // También Pecho
+    'image': 'assets/exercises/Biceps_Curl.gif',
+    'description': 'The Biceps Curl is a strength training exercise that primarily targets the biceps muscles, promoting muscle growth and endurance in the upper arms. This exercise is suitable for individuals at all fitness levels, from beginners to advanced athletes, due to its adjustable intensity. People may want to perform Biceps Curls not only to enhance their arm strength and tone, but also to improve their overall lifting capability, making daily tasks easier.',
   },
   {
     'id': 39, // <--- Nuevo ID
-    'name': 'Patada de Tríceps (Tricep Kickback)',
-    'muscle_group': "Arms",
-    'image': 'assets/exercises/arms_tricep_kickback.png',
-    'description': 'Ejercicio de aislamiento para la cabeza lateral del tríceps.',
+    'name': 'Concentration Curl',
+    'muscle_group': "Biceps",
+    'image': 'assets/exercises/Concentration_Curl.gif',
+    'description': 'The Concentration Curl is a highly effective exercise that primarily targets the biceps, promoting muscle growth and strength. People might opt for this exercise as it focuses on the isolation of the bicep muscle, leading to improved muscle definition and size.',
   },
 
   // Abdomen
   {
     'id': 40, // <--- Nuevo ID
-    'name': 'Encogimientos (Crunches)',
-    'muscle_group': "Abs",
-    'image': 'assets/exercises/abs_crunches.png',
-    'description': 'Ejercicio básico para la parte superior del abdomen.',
+    'name': 'Overhead Curl',
+    'muscle_group': "Biceps",
+    'image': 'assets/exercises/Overhead_Curl.gif',
+    'description': 'The Overhead Curl is a strength training exercise that primarily targets the biceps and shoulders, helping to enhance upper body strength and improve muscle definition. This exercise is ideal for both beginners and advanced fitness enthusiasts as it can be easily adjusted to match individual fitness levels. Incorporating Overhead Curls into your workout routine can aid in improving arm strength and stability, making it a beneficial exercise for those who are looking to improve their performance in sports or daily activities that require upper body strength.',
   },
   {
     'id': 41, // <--- Nuevo ID
-    'name': 'Elevaciones de Piernas (Leg Raises)',
-    'muscle_group': "Abs",
-    'image': 'assets/exercises/abs_leg_raises.png',
+    'name': 'Lever Preacher Curl',
+    'muscle_group': "Biceps",
+    'image': 'assets/exercises/Lever_Preacher_Curl.gif',
     'description': 'Enfatiza la parte inferior del abdomen.',
   },
   {
     'id': 42, // <--- Nuevo ID
-    'name': 'Plancha Abdominal (Plank)',
-    'muscle_group': "Abs",
-    'image': 'assets/exercises/abs_plank.png',
-    'description': 'Ejercicio isométrico para fortalecer todo el core.',
+    'name': 'Barbell Preacher Curl',
+    'muscle_group': "Biceps",
+    'image': 'assets/exercises/Barbell_Preacher_Curl.gif',
+    'description': 'The Barbell Preacher Curl is a highly effective exercise for targeting and isolating the biceps, particularly the brachialis muscle, leading to enhanced arm strength and size. ',
   },
   {
     'id': 43, // <--- Nuevo ID
+    'name': 'Barbell Spider Curl',
+    'muscle_group': "Biceps",
+    'image': 'assets/exercises/Barbell_Spider_Curl.gif',
+    'description': 'The Barbell Spider Curl is a targeted exercise designed to isolate and enhance the biceps by reducing help from other muscle groups. This exercise is ideal for individuals looking to improve their upper body strength, particularly those wanting to define and sculpt their arm muscles.',
+  },
+  {
+    'id': 44, // <--- Nuevo ID
+    'name': 'Isolated Biceps Curl',
+    'muscle_group': "Biceps",
+    'image': 'assets/exercises/Isolated_Biceps_Curl.gif',
+    'description': 'The Cable One Arm Biceps Curl is a strength-building exercise targeting the biceps and providing an intense isolation workout. This exercise is especially beneficial for those who want to focus on muscle symmetry and balance, as it allows for the independent workout of each arm, helping to prevent or correct any strength imbalances.',
+  },
+  {
+    'id': 45,
+    'name': 'Inclined Curl',
+    'muscle_group': "Biceps",
+    'image': 'assets/exercises/Inclined_Curl.gif',
+    'description': 'The Inclined Curl is a strength training exercise that specifically targets the biceps, promoting muscle growth and enhancing arm strength.',
+  },
+  {
+    'id': 45,
+    'name': 'Triceps Pushdown',
+    'muscle_group': "Triceps",
+    'image': 'assets/exercises/Triceps_Pushdown.gif',
+    'description': 'The Triceps Pushdown is a strength training exercise that primarily targets the triceps muscles, helping to improve upper body strength and muscle definition. It is suitable for individuals at all fitness levels, from beginners to advanced, as it can be easily adjusted based on strength and skill.',
+  },
+  {
+    'id': 46,
+    'name': 'Cross Triceps Extension',
+    'muscle_group': "Tricpes",
+    'image': 'assets/exercises/Cross_Triceps_Extension.png',
+    'description': 'The Cross Triceps Extension is a strength-building exercise that primarily targets the triceps, while also engaging the shoulders and core muscles.',
+  },
+  {
+    'id': 47,
+    'name': 'One Arm Triceps Extension',
+    'muscle_group': "Triceps",
+    'image': 'assets/exercises/One_Arm_Triceps_Extension.gif',
+    'description': 'The One Arm Triceps Extension is a strength-building exercise designed to isolate and develop the triceps muscle, contributing to improved upper body strength and toned arms.  ',
+  },
+  {
+    'id': 48,
+    'name': 'Triceps Extension',
+    'muscle_group': "Triceps",
+    'image': 'assets/exercises/Machine_Rear_Flyes.gif',
+    'description': 'The Triceps Extension is a strength training exercise that specifically targets and isolates the triceps muscles, promoting muscle growth and endurance. ',
+  },
+  {
+    'id': 49,
+    'name': 'Rear Fly',
+    'muscle_group': "Shoulders",
+    'image': 'assets/exercises/Rear_Fly.gif',
+    'description': 'The Rear Fly is a strength training exercise that primarily targets the muscles in the upper back, shoulders, and arms, contributing to improved posture and enhanced muscle definition.  People may choose this exercise for its ability to be easily modified, its effectiveness in building upper body strength, and its role in creating a balanced, well-rounded fitness routine.',
+  },
+  // Biceps
+
+  {
+    'id': 50,
+    'name': 'Barbell Curl',
+    'muscle_group': "Biceps",
+    'image': 'assets/exercises/Barbell_Curl.gif',
+    'description': 'The Barbell Curl is a strength training exercise designed to target the biceps and improve upper body strength. It is suitable for anyone, from beginners to advanced athletes, who are looking to build muscle mass and enhance arm definition. ',
+  },
+  {
+    'id': 51,
+    'name': 'Biceps Curl',
+    'muscle_group': "Biceps", // También Pecho
+    'image': 'assets/exercises/Biceps_Curl.gif',
+    'description': 'The Biceps Curl is a strength training exercise that primarily targets the biceps muscles, promoting muscle growth and endurance in the upper arms. This exercise is suitable for individuals at all fitness levels, from beginners to advanced athletes, due to its adjustable intensity. People may want to perform Biceps Curls not only to enhance their arm strength and tone, but also to improve their overall lifting capability, making daily tasks easier.',
+  },
+  {
+    'id': 52,
+    'name': 'Concentration Curl',
+    'muscle_group': "Biceps",
+    'image': 'assets/exercises/Concentration_Curl.gif',
+    'description': 'The Concentration Curl is a highly effective exercise that primarily targets the biceps, promoting muscle growth and strength. People might opt for this exercise as it focuses on the isolation of the bicep muscle, leading to improved muscle definition and size.',
+  },
+
+  // Abdomen
+  {
+    'id': 53,
+    'name': 'Overhead Curl',
+    'muscle_group': "Biceps",
+    'image': 'assets/exercises/Overhead_Curl.gif',
+    'description': 'The Overhead Curl is a strength training exercise that primarily targets the biceps and shoulders, helping to enhance upper body strength and improve muscle definition. This exercise is ideal for both beginners and advanced fitness enthusiasts as it can be easily adjusted to match individual fitness levels. Incorporating Overhead Curls into your workout routine can aid in improving arm strength and stability, making it a beneficial exercise for those who are looking to improve their performance in sports or daily activities that require upper body strength.',
+  },
+  {
+    'id': 54,
+    'name': 'Lever Preacher Curl',
+    'muscle_group': "Biceps",
+    'image': 'assets/exercises/Lever_Preacher_Curl.gif',
+    'description': 'Enfatiza la parte inferior del abdomen.',
+  },
+  {
+    'id': 55,
+    'name': 'Barbell Preacher Curl',
+    'muscle_group': "Biceps",
+    'image': 'assets/exercises/Barbell_Preacher_Curl.gif',
+    'description': 'The Barbell Preacher Curl is a highly effective exercise for targeting and isolating the biceps, particularly the brachialis muscle, leading to enhanced arm strength and size. ',
+  },
+  {
+    'id': 56,
     'name': 'Rueda Abdominal (Ab Wheel Rollout)',
     'muscle_group': "Abs",
     'image': 'assets/exercises/abs_ab_wheel.png',
     'description': 'Ejercicio avanzado para un core fuerte y definido.',
   },
   {
-    'id': 44, // <--- Nuevo ID
+    'id': 57,
     'name': 'Encogimientos en Polea Alta (Cable Crunch)',
     'muscle_group': "Abs",
     'image': 'assets/exercises/abs_cable_crunch.png',
     'description': 'Permite añadir resistencia progresiva a los encogimientos.',
   },
+
 
   // Continúa añadiendo IDs únicos a todos tus ejercicios...
 ];
