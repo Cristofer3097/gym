@@ -95,7 +95,7 @@ const List<Map<String, dynamic>> predefinedExerciseList = [
   {
     'id': 13, // <--- Nuevo ID
     'name': 'Pull-up',
-    'muscle_group': "Back", // También trabaja piernas y glúteos intensamente
+    'muscle_group': "Back",
     'image': 'assets/exercises/Pull-up.gif',
     'description': 'The Pull-up exercise is a highly beneficial upper body workout that targets multiple muscle groups, including the back, arms, shoulders, and chest, improving strength and endurance. It is an ideal exercise for anyone, from beginners to fitness enthusiasts, who are interested in building upper body strength and enhancing muscle definition. ',
   },
@@ -136,10 +136,10 @@ const List<Map<String, dynamic>> predefinedExerciseList = [
   },
   {
     'id': 19, // <--- Nuevo ID
-    'name': 'Rear Delt Row',
+    'name': 'Barbell Row',
     'muscle_group': "Back",
     'image': 'assets/exercises/Rear_Delt_Row.gif',
-    'description': 'Rear Delt Row is a strength training exercise that specifically targets the rear deltoids, helping to enhance shoulder stability and upper body strength.',
+    'description': 'Barbell Row is a strength training exercise that specifically targets the rear deltoids, helping to enhance shoulder stability and upper body strength.',
   },
   {
     'id': 20,
@@ -188,7 +188,7 @@ const List<Map<String, dynamic>> predefinedExerciseList = [
     'id': 26, // <--- Nuevo ID
     'name': 'Smith Squat',
     'muscle_group': "Legs",
-    'image': 'assets/exercises/Smith_Squat.png',
+    'image': 'assets/exercises/Smith_Squat.gif',
     'description': 'The Smith Squat is a strength training exercise that primarily targets the glutes, quadriceps, and hamstrings, while also engaging the core and lower back. ',
   },
   {
@@ -272,14 +272,14 @@ const List<Map<String, dynamic>> predefinedExerciseList = [
     'description': 'The Barbell Curl is a strength training exercise designed to target the biceps and improve upper body strength. It is suitable for anyone, from beginners to advanced athletes, who are looking to build muscle mass and enhance arm definition. ',
   },
   {
-    'id': 38, // <--- Nuevo ID
-    'name': 'Biceps Curl',
-    'muscle_group': "Biceps", // También Pecho
-    'image': 'assets/exercises/Biceps_Curl.gif',
-    'description': 'The Biceps Curl is a strength training exercise that primarily targets the biceps muscles, promoting muscle growth and endurance in the upper arms. This exercise is suitable for individuals at all fitness levels, from beginners to advanced athletes, due to its adjustable intensity. People may want to perform Biceps Curls not only to enhance their arm strength and tone, but also to improve their overall lifting capability, making daily tasks easier.',
+    'id': 38,
+    'name': 'Cable Biceps Curl',
+    'muscle_group': "Biceps",
+    'image': 'assets/exercises/Cable_Biceps_Curl.gif',
+    'description': 'The Cable Biceps Curl is a strength training exercise that primarily targets the biceps muscles, promoting muscle growth and endurance in the upper arms. This exercise is suitable for individuals at all fitness levels, from beginners to advanced athletes, due to its adjustable intensity. People may want to perform Biceps Curls not only to enhance their arm strength and tone, but also to improve their overall lifting capability, making daily tasks easier.',
   },
   {
-    'id': 39, // <--- Nuevo ID
+    'id': 39,
     'name': 'Concentration Curl',
     'muscle_group': "Biceps",
     'image': 'assets/exercises/Concentration_Curl.gif',
@@ -298,7 +298,7 @@ const List<Map<String, dynamic>> predefinedExerciseList = [
     'name': 'Lever Preacher Curl',
     'muscle_group': "Biceps",
     'image': 'assets/exercises/Lever_Preacher_Curl.gif',
-    'description': 'Enfatiza la parte inferior del abdomen.',
+    'description': 'The Lever Preacher Curl is a strength-training exercise that focuses on isolating the biceps, providing a more targeted workout for muscle growth and toning. It is ideal for both beginners and advanced fitness enthusiasts who are looking to improve their upper body strength and definition. People would want to incorporate this exercise into their routine as it promotes better arm stability, enhances muscle symmetry, and contributes to overall upper body aesthetics.',
   },
   {
     'id': 42, // <--- Nuevo ID
@@ -319,7 +319,7 @@ const List<Map<String, dynamic>> predefinedExerciseList = [
     'name': 'Isolated Biceps Curl',
     'muscle_group': "Biceps",
     'image': 'assets/exercises/Isolated_Biceps_Curl.gif',
-    'description': 'The Cable One Arm Biceps Curl is a strength-building exercise targeting the biceps and providing an intense isolation workout. This exercise is especially beneficial for those who want to focus on muscle symmetry and balance, as it allows for the independent workout of each arm, helping to prevent or correct any strength imbalances.',
+    'description': 'The Isolated Biceps Curl is a strength-building exercise targeting the biceps and providing an intense isolation workout. This exercise is especially beneficial for those who want to focus on muscle symmetry and balance, as it allows for the independent workout of each arm, helping to prevent or correct any strength imbalances.',
   },
   {
     'id': 45,
@@ -339,8 +339,8 @@ const List<Map<String, dynamic>> predefinedExerciseList = [
   {
     'id': 47,
     'name': 'Cross Triceps Extension',
-    'muscle_group': "Tricpes",
-    'image': 'assets/exercises/Cross_Triceps_Extension.png',
+    'muscle_group': "Triceps",
+    'image': 'assets/exercises/Cross_Triceps_Extension.gif',
     'description': 'The Cross Triceps Extension is a strength-building exercise that primarily targets the triceps, while also engaging the shoulders and core muscles.',
   },
   {
