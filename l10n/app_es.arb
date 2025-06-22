@@ -602,11 +602,12 @@
   "exercise_63_description": "La elevación de pantorrillas de pie es un ejercicio de entrenamiento de fuerza que se dirige principalmente a los músculos de la pantorrilla, ayudando a mejorar la fuerza de la parte inferior de la pierna, el equilibrio y la definición muscular.",
   "exercise_64_name": "Prensa de Pantorrillas",
   "exercise_64_description": "La prensa pantorrillas  es un ejercicio de entrenamiento de fuerza que se dirige principalmente a los músculos de la pantorrilla, pero también involucra a los isquiotibiales y los glúteos.",
+  "exercise_65_name": "Pullover",
+  "exercise_65_description": "El Pullover es un ejercicio de entrenamiento de fuerza que se dirige principalmente a los músculos de la espalda, los hombros y los brazos, ofreciendo una forma eficaz de mejorar la fuerza y la flexibilidad de la parte superior del cuerpo. ",
 
-  "predefined_template_chest_routine_full_name": "Rutina de Pecho Completa",
-  "predefined_template_back_strong_name": "Espalda Fuerte",
-  "predefined_template_leg_day_basic_name": "Día de Pierna Básico",
-  "predefined_template_shoulders_steel_name": "Hombros de Acero",
-  "predefined_template_arms_toned_name": "Brazos Tonificados"
+  "predefined_template_Push_Routine": "Rutina de empuje",
+  "predefined_template_pull_day": "Día de Tirón",
+  "predefined_template_leg_day_basic_name": "Pierna Completa",
+  "predefined_template_shoulders_steel_name": "Hombros de Acero"
 
 }

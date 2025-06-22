@@ -72,6 +72,7 @@ String getLocalizedExerciseName(BuildContext context, Map<String, dynamic> exerc
       case 62: return l10n.exercise_62_name;
       case 63: return l10n.exercise_63_name;
       case 64: return l10n.exercise_64_name;
+      case 65: return l10n.exercise_65_name;
 
 
 
@@ -159,6 +160,7 @@ String getLocalizedExerciseDescription(BuildContext context, Map<String, dynamic
       case 62: return l10n.exercise_62_description;
       case 63: return l10n.exercise_63_description;
       case 64: return l10n.exercise_64_description;
+      case 65: return l10n.exercise_65_description;
 
 
 
@@ -200,11 +202,11 @@ String getLocalizedTemplateName(BuildContext context, Map<String, dynamic> templ
 
   if (templateKey != null && templateKey.isNotEmpty) {
     switch (templateKey) {
-      case 'chest_routine_full': return l10n.predefined_template_chest_routine_full_name;
-      case 'back_strong': return l10n.predefined_template_back_strong_name;
+      case 'Push_Routine': return l10n.predefined_template_Push_Routine;
+      case 'pull_day': return l10n.predefined_template_pull_day;
       case 'leg_day_basic': return l10n.predefined_template_leg_day_basic_name;
       case 'shoulders_steel': return l10n.predefined_template_shoulders_steel_name;
-      case 'arms_toned': return l10n.predefined_template_arms_toned_name;
+
       default:
       // Si hay una templateKey pero no coincide con ninguna clave ARB (debería ser raro)
         debugPrint("Advertencia: Clave de plantilla predefinida '$templateKey' no encontrada. Mostrando nombre de BD.");

@@ -470,6 +470,13 @@ const List<Map<String, dynamic>> predefinedExerciseList = [
     'image': 'assets/exercises/Calf_press.gif',
     'description': 'The Calf Press is a strength training exercise that primarily targets the calf muscles, but also engages the hamstrings and glutes.',
   },
+  {
+    'id': 65,
+    'name': 'Pullover',
+    'muscle_group': "Back",
+    'image': 'assets/exercises/Pullover.gif',
+    'description': 'The Pullover is a strength training exercise that primarily targets the muscles in your back, shoulders, and arms, offering an effective way to enhance upper body strength and flexibility.',
+  },
 
 
   // Continúa añadiendo IDs únicos a todos tus ejercicios...
@@ -477,28 +484,24 @@ const List<Map<String, dynamic>> predefinedExerciseList = [
 
 const List<Map<String, dynamic>> predefinedTemplatesData = [
   {
-    'templateKey': 'chest_routine_full', // <-- NUEVA CLAVE ÚNICA
-    'templateName': 'Complete Chest Routine', // <-- NOMBRE CANÓNICO EN INGLÉS
-    'exerciseSourceIds': [0, 1, 4, 5, 8],
+    'templateKey': 'Push_Routine', // CLAVE
+    'templateName': 'Push Routine', // <-- NOMBRE
+    'exerciseSourceIds': [9, 4, 1, 30, 31, 51, 46],
   },
   {
-    'templateKey': 'back_strong',
-    'templateName': 'Strong Back', // <-- NOMBRE CANÓNICO EN INGLÉS
-    'exerciseSourceIds': [9, 11, 12, 14],
+    'templateKey': 'pull_day',
+    'templateName': 'Pull Day',
+    'exerciseSourceIds': [65, 18, 11, 42, 45],
   },
   {
     'templateKey': 'leg_day_basic',
-    'templateName': 'Basic Leg Day', // <-- NOMBRE CANÓNICO EN INGLÉS
+    'templateName': 'Complete Leg',
     'exerciseSourceIds': [16, 17, 19, 22],
   },
   {
     'templateKey': 'shoulders_steel',
-    'templateName': 'Steel Shoulders', // <-- NOMBRE CANÓNICO EN INGLÉS
+    'templateName': 'Steel Shoulders',
     'exerciseSourceIds': [24, 25, 26, 28],
   },
-  {
-    'templateKey': 'arms_toned',
-    'templateName': 'Toned Arms', // <-- NOMBRE CANÓNICO EN INGLÉS
-    'exerciseSourceIds': [30, 31, 35, 36],
-  },
+
 ];

@@ -602,15 +602,16 @@
   "exercise_63_description": "The Lever Standing Calf Raise is a strength training exercise that primarily targets the calf muscles, helping to improve lower leg strength, balance, and muscular definition.",
   "exercise_64_name": "Calf Press",
   "exercise_64_description": "The Calf Press is a strength training exercise that primarily targets the calf muscles, but also engages the hamstrings and glutes.",
+  "exercise_65_name": "Pullover",
+  "exercise_65_description": "The Pullover is a strength training exercise that primarily targets the muscles in your back, shoulders, and arms, offering an effective way to enhance upper body strength and flexibility.",
 
 
 
+  "predefined_template_Push_Routine": "Push Routine",
+  "predefined_template_pull_day": "Pull Day",
+  "predefined_template_leg_day_basic_name": "Complete Leg",
+  "predefined_template_shoulders_steel_name": "Steel Shoulders"
 
-  "predefined_template_chest_routine_full_name": "Complete Chest Routine",
-  "predefined_template_back_strong_name": "Strong Back",
-  "predefined_template_leg_day_basic_name": "Basic Leg Day",
-  "predefined_template_shoulders_steel_name": "Steel Shoulders",
-  "predefined_template_arms_toned_name": "Toned Arms"
 
 
 
