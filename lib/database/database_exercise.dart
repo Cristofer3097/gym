@@ -372,6 +372,7 @@ const List<Map<String, dynamic>> predefinedExerciseList = [
     'image': 'assets/exercises/Barbell_Lying_Triceps_Extension.gif',
     'description': 'The Barbell Lying Triceps Extension, also known as Skull Crusher, is a strength training exercise that predominantly targets the triceps muscles, contributing to upper body strength and toned arms. ',
   },
+  // Abdomen
   {
     'id': 52,
     'name': 'Lever Seated Crunch',
@@ -379,8 +380,6 @@ const List<Map<String, dynamic>> predefinedExerciseList = [
     'image': 'assets/exercises/Lever_Seated_Crunch.gif',
     'description': 'The Lever Seated Crunch is a targeted exercise that primarily strengthens the core muscles, particularly the abs, and enhances overall body stability. People would want to perform this exercise due to its effectiveness in developing a strong and toned midsection, contributing to better balance and reduced risk of back pain.',
   },
-
-  // Abdomen
   {
     'id': 53,
     'name': 'Cable Kneeling Crunch',
@@ -495,13 +494,13 @@ const List<Map<String, dynamic>> predefinedTemplatesData = [
   },
   {
     'templateKey': 'leg_day_basic',
-    'templateName': 'Complete Leg',
-    'exerciseSourceIds': [16, 17, 19, 22],
+    'templateName': 'Complete Legs',
+    'exerciseSourceIds': [23, 26, 59, 55, 27, 62],
   },
   {
-    'templateKey': 'shoulders_steel',
-    'templateName': 'Steel Shoulders',
-    'exerciseSourceIds': [24, 25, 26, 28],
+    'templateKey': 'toned_arms',
+    'templateName': 'Toned Arms',
+    'exerciseSourceIds': [29, 33, 46, 49, 42, 44],
   },
 
 ];

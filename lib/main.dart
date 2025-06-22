@@ -45,7 +45,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    _loadLocale(); // Cargar el idioma guardado al iniciar el estado
+    _loadLocale();
   }
 
 // Método para cargar el idioma guardado
@@ -54,11 +54,29 @@ class _MyAppState extends State<MyApp> {
     final String? languageCode = prefs.getString(_kLanguagePreferenceKey);
 
     if (languageCode != null && languageCode.isNotEmpty) {
+      // 1. Prioridad: El usuario ya guardó una preferencia. La usamos.
       if (mounted) {
         setState(() {
           _locale = Locale(languageCode);
         });
       }
+    } else {
+
+      final deviceLocale = WidgetsBinding.instance.platformDispatcher.locale;
+
+      for (var supportedLocale in AppLocalizations.supportedLocales) {
+        if (supportedLocale.languageCode == deviceLocale.languageCode) {
+
+          if (mounted) {
+            setState(() {
+              _locale = deviceLocale;
+            });
+          }
+
+          return; // Salimos de la función, ya encontramos el idioma correcto.
+        }
+      }
+
     }
   }
 

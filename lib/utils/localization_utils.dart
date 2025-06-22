@@ -205,7 +205,7 @@ String getLocalizedTemplateName(BuildContext context, Map<String, dynamic> templ
       case 'Push_Routine': return l10n.predefined_template_Push_Routine;
       case 'pull_day': return l10n.predefined_template_pull_day;
       case 'leg_day_basic': return l10n.predefined_template_leg_day_basic_name;
-      case 'shoulders_steel': return l10n.predefined_template_shoulders_steel_name;
+      case 'toned_arms': return l10n.predefined_template_toned_arms;
 
       default:
       // Si hay una templateKey pero no coincide con ninguna clave ARB (debería ser raro)
