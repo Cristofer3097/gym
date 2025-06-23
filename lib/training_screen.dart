@@ -981,15 +981,21 @@ class _ExerciseOverlayState extends State<ExerciseOverlay> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     List<Map<String, dynamic>> filteredExercises = exercises.where((exercise) {
+      final localizedName = getLocalizedExerciseName(context, exercise).trim().toLowerCase();
+      final query = searchQuery.trim().toLowerCase();
 
-      final name = exercise['name']?.toString() ?? '';
-      final nameMatch = name.toLowerCase().contains(searchQuery.toLowerCase());
-      final categoryOfExercise =
-          exercise['category']?.toString() ?? exercise['muscle_group']?.toString() ?? '';
-      final categoryMatch =
-          filterCategory.isEmpty || categoryOfExercise == filterCategory;
-      return nameMatch && categoryMatch;
+      // Si el query está vacío, muestra todo
+      if (query.isEmpty) return true;
 
+      // Divide el query en palabras, ignora espacios dobles
+      final queryWords = query.split(RegExp(r'\s+')).where((w) => w.isNotEmpty);
+
+      // Cada palabra del query debe estar en el nombre del ejercicio
+      final matchesAllWords = queryWords.every((word) => localizedName.contains(word));
+
+      final categoryOfExercise = exercise['category']?.toString() ?? exercise['muscle_group']?.toString() ?? '';
+      final categoryMatch = filterCategory.isEmpty || categoryOfExercise == filterCategory;
+      return matchesAllWords && categoryMatch;
     }).toList();
 
     filteredExercises.sort((a, b) {
