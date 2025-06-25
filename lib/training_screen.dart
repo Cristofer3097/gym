@@ -984,17 +984,20 @@ class _ExerciseOverlayState extends State<ExerciseOverlay> {
       final localizedName = getLocalizedExerciseName(context, exercise).trim().toLowerCase();
       final query = searchQuery.trim().toLowerCase();
 
-      // Si el query está vacío, muestra todo
-      if (query.isEmpty) return true;
+      // Filtro de categoría SIEMPRE debe aplicarse
+      final categoryOfExercise = exercise['category']?.toString() ?? exercise['muscle_group']?.toString() ?? '';
+      final categoryMatch = filterCategory.isEmpty || categoryOfExercise == filterCategory;
 
-      // Divide el query en palabras, ignora espacios dobles
+      // Si el query está vacío, solo filtra por categoría
+      if (query.isEmpty) return categoryMatch;
+
+      // Divide el query en palabras
       final queryWords = query.split(RegExp(r'\s+')).where((w) => w.isNotEmpty);
 
       // Cada palabra del query debe estar en el nombre del ejercicio
       final matchesAllWords = queryWords.every((word) => localizedName.contains(word));
 
-      final categoryOfExercise = exercise['category']?.toString() ?? exercise['muscle_group']?.toString() ?? '';
-      final categoryMatch = filterCategory.isEmpty || categoryOfExercise == filterCategory;
+      // Aplica ambos filtros
       return matchesAllWords && categoryMatch;
     }).toList();
 
