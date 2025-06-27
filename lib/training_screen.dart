@@ -252,7 +252,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
   void _openExerciseOverlay() {
     showDialog(
       context: context,
-      barrierDismissible: false,
+      barrierDismissible: true,
       builder: (BuildContext dialogContext) {
         return StatefulBuilder(
           builder: (BuildContext sbfContext, StateSetter setDialogState) {

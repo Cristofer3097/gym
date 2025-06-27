@@ -24,7 +24,7 @@ class DatabaseHelper {
     final path = join(documentsDirectory.path, filePath);
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -68,6 +68,7 @@ class DatabaseHelper {
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     template_id INTEGER NOT NULL,
     category_id INTEGER,
+    exercise_id INTEGER,
     name TEXT NOT NULL,
     image TEXT,
     description TEXT, 
@@ -84,10 +85,20 @@ class DatabaseHelper {
   ''');
 
     await db.execute('''
+    CREATE TABLE IF NOT EXISTS exercise_name_history (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  old_name TEXT NOT NULL,
+  new_name TEXT NOT NULL,
+  changed_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+  ''');
+
+    await db.execute('''
     CREATE TABLE IF NOT EXISTS exercise_logs (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       session_id INTEGER, 
       exercise_name TEXT NOT NULL,
+      exercise_id INTEGER,
       dateTime TEXT NOT NULL, 
       series TEXT,
       reps TEXT,
@@ -97,8 +108,34 @@ class DatabaseHelper {
       FOREIGN KEY (session_id) REFERENCES training_sessions(id) ON DELETE CASCADE
     );
   ''');
+
     // Insertar datos de ejemplo
     await _insertDefaultData(db);
+  }
+  Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    print("Ejecutando _upgradeDB de v$oldVersion a v$newVersion.");
+
+    // Migración para cambios en nombres de ejercicios (sin incrementar versión)
+    if (oldVersion <= 1) {
+      await _migrateExerciseNames(db);
+    }
+
+    // Migración para nuevos campos (requiere incrementar versión solo si es crítico)
+    if (oldVersion < 2) {
+      await db.execute('ALTER TABLE categories ADD COLUMN is_favorite INTEGER DEFAULT 0');
+      print("Nueva columna 'is_favorite' añadida.");
+    }
+  }
+
+  Future<void> _migrateExerciseNames(Database db) async {
+    // Ejemplo: Actualizar nombres de ejercicios sin cambiar la versión de la DB
+    await db.update(
+      'categories',
+      {'name': 'Nuevo nombre'},
+      where: 'name = ?',
+      whereArgs: ['Nombre antiguo'],
+    );
+    print("Nombres de ejercicios actualizados sin incrementar versión.");
   }
   Future<void> _insertDefaultData(Database db) async {
     Map<String, Map<String, dynamic>> exerciseDetailsCache = {};
@@ -223,18 +260,7 @@ class DatabaseHelper {
     if (res.isNotEmpty) return res.first;
     return null;
   }
-  Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
-    print("Ejecutando _upgradeDB de v$oldVersion a v$newVersion.");
-    // Las migraciones se hacen versión por versión
-    if (oldVersion < 1) { // Ejemplo: si la versión anterior es menor a la 10
-      // Añadimos la nueva columna sin borrar la tabla
-      await db.execute('''
-      ALTER TABLE categories ADD COLUMN is_favorite INTEGER DEFAULT 0
-    ''');
-      print("Tabla 'categories' actualizada a v10: columna 'is_favorite' añadida.");
-    }
-    // if (oldVersion < 11) { ... Lógica para la versión 11 ... }
-  }
+
 
   Future<int> insertTrainingSession(String title, String dateTime) async {
     final db = await database;
@@ -329,6 +355,38 @@ class DatabaseHelper {
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
     }
+  }
+  Future<void> updateExerciseName(String oldName, String newName) async {
+    final db = await database;
+    await db.transaction((txn) async {
+      // 1. Registrar el cambio en el historial
+      await txn.insert('exercise_name_history', {
+        'old_name': oldName,
+        'new_name': newName,
+      });
+
+      // 2. Actualizar el nombre en todas las tablas afectadas
+      await txn.update(
+        'categories',
+        {'name': newName},
+        where: 'name = ?',
+        whereArgs: [oldName],
+      );
+
+      await txn.update(
+        'exercise_logs',
+        {'exercise_name': newName},
+        where: 'exercise_name = ?',
+        whereArgs: [oldName],
+      );
+
+      await txn.update(
+        'template_exercises',
+        {'name': newName},
+        where: 'name = ?',
+        whereArgs: [oldName],
+      );
+    });
   }
   Future<void> updateExerciseNameInTemplateExercises(String oldName, String newName) async {
     final db = await database;
