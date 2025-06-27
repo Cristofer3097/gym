@@ -47,7 +47,7 @@ dependencies:
   fl_chart: ^1.0.0
   file_picker: ^8.0.5
   archive: ^3.5.1
-
+  diacritic: ^0.1.6
 
 
   # The following adds the Cupertino Icons font to your application.

@@ -15,7 +15,7 @@ import 'package:flutter/services.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../settings.dart';
-
+import 'package:diacritic/diacritic.dart';
 
 
 // Clase principal de la pantalla de Entrenamiento
@@ -977,12 +977,16 @@ class _ExerciseOverlayState extends State<ExerciseOverlay> {
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+
     List<Map<String, dynamic>> filteredExercises = exercises.where((exercise) {
-      final localizedName = getLocalizedExerciseName(context, exercise).trim().toLowerCase();
-      final query = searchQuery.trim().toLowerCase();
+      String localizedName = removeDiacritics(getLocalizedExerciseName(context, exercise).trim().toLowerCase());
+
+      String query = removeDiacritics(searchQuery.trim().toLowerCase());
+
 
       // Filtro de categoría SIEMPRE debe aplicarse
       final categoryOfExercise = exercise['category']?.toString() ?? exercise['muscle_group']?.toString() ?? '';
