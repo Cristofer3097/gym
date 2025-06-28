@@ -324,19 +324,14 @@ class _TrainingScreenState extends State<TrainingScreen> {
       String name, List<Map<String, dynamic>> exercisesToSave) async {
     final db = DatabaseHelper.instance;
     final templateId = await db.insertTemplate(name);
-    final exercisesForTemplateDb = exercisesToSave.map((ex) {
-      return {
-        'template_id': templateId,
-        'name': ex['name'],
-        'image': ex['image'],
-        'category_id': ex['db_category_id'] ?? ex['id'],
-        'description': ex['description'],
-      };
-    }).toList();
-    await db.insertTemplateExercises(templateId, exercisesForTemplateDb);
+
+    // Solo pasamos la lista de IDs de categoría
+    final categoryIds = exercisesToSave.map<int>((ex) => ex['db_category_id'] ?? ex['id'] as int).toList();
+
+    await db.insertTemplateExercises(templateId, categoryIds);
+
     if (mounted) {
       final l10n = AppLocalizations.of(context)!;
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.training_template_success(name))),
       );

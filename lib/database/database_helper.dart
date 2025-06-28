@@ -65,15 +65,12 @@ class DatabaseHelper {
     // Tabla template_exercises
     await db.execute('''
   CREATE TABLE IF NOT EXISTS template_exercises (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    template_id INTEGER NOT NULL,
-    category_id INTEGER,
-    exercise_id INTEGER,
-    name TEXT NOT NULL,
-    image TEXT,
-    description TEXT, 
-    FOREIGN KEY (template_id) REFERENCES templates(id) ON DELETE CASCADE
-  );
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  template_id INTEGER NOT NULL,
+  category_id INTEGER NOT NULL,
+  FOREIGN KEY (template_id) REFERENCES templates(id) ON DELETE CASCADE,
+  FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
+);
 ''');
 
     await db.execute('''
@@ -340,17 +337,14 @@ class DatabaseHelper {
   }
 
 // Agrega este método para guardar los ejercicios de la plantilla
-  Future<void> insertTemplateExercises(int templateId, List<Map<String, dynamic>> exercises) async {
+  Future<void> insertTemplateExercises(int templateId, List<int> categoryIds) async {
     final db = await database;
-    for (final exercise in exercises) {
+    for (final categoryId in categoryIds) {
       await db.insert(
         'template_exercises',
         {
           'template_id': templateId,
-          'name': exercise['name'],
-          'image': exercise['image'],
-          'category_id': exercise['category_id'],
-          'description': exercise['description'], // <--- AÑADE ESTA LÍNEA para guardar la descripción
+          'category_id': categoryId,
         },
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
@@ -411,19 +405,19 @@ class DatabaseHelper {
     SELECT
       te.id,
       te.template_id,
-      te.name,
-      te.image,
-      te.description,
       te.category_id,
-      c.muscle_group,  -- Obtener el nombre del grupo muscular de la tabla categories
-      c.original_id,    
-      c.is_predefined 
+      c.name,
+      c.image,
+      c.description,
+      c.muscle_group,
+      c.is_predefined,
+      c.original_id        -- <--- AGREGA ESTA LÍNEA
     FROM template_exercises te
-    LEFT JOIN categories c ON te.category_id = c.id
+    JOIN categories c ON te.category_id = c.id
     WHERE te.template_id = ?
-      ''';
-    final List<Map<String, dynamic>> result = await db.rawQuery(sql, [templateId]);
-    return result;
+    ORDER BY te.id ASC
+  ''';
+    return await db.rawQuery(sql, [templateId]);
   }
 
   Future<List<DateTime>> getDatesWithTrainingSessions() async {
