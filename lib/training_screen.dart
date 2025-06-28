@@ -224,16 +224,16 @@ class _TrainingScreenState extends State<TrainingScreen> {
           'name': exercise['name'],
           'series': '',
           'weight': '',
-          'weightUnit': '', // Por defecto 'lb', el diálogo lo expandirá a lista si es necesario
+          'weightUnit': '',
           'reps': <String>[],
           'notes': '',
           'image': exercise['image'],
           'category': exercise['category'],
           'description': exercise['description'],
           'isManual': exercise['isManual'] ?? false,
-          'id': exercise['id'],
-          'db_category_id': exercise['db_category_id'],
-          'is_predefined': exercise['is_predefined'], // <<< AÑADIR
+          'id': exercise['id'], // ID de la tabla template_exercises (si existe)
+          'db_category_id': exercise['id'], // ID de la tabla categories
+          'is_predefined': exercise['is_predefined'],
           'original_id': exercise['original_id'],
         });
         _didDataChange = true;
@@ -323,21 +323,55 @@ class _TrainingScreenState extends State<TrainingScreen> {
   Future<void> _saveTemplate(
       String name, List<Map<String, dynamic>> exercisesToSave) async {
     final db = DatabaseHelper.instance;
-    final templateId = await db.insertTemplate(name);
 
-    // Solo pasamos la lista de IDs de categoría
-    final categoryIds = exercisesToSave.map<int>((ex) => ex['db_category_id'] ?? ex['id'] as int).toList();
+    try {
+      // Insertar la plantilla
+      final templateId = await db.insertTemplate(name);
 
-    await db.insertTemplateExercises(templateId, categoryIds);
+      // Obtener los IDs correctos de los ejercicios
+      final categoryIds = exercisesToSave.map<int>((ex) {
+        // Prioridad 1: Usar db_category_id si existe
+        if (ex['db_category_id'] != null) {
+          return ex['db_category_id'] as int;
+        }
+        // Prioridad 2: Usar id si existe
+        else if (ex['id'] != null) {
+          return ex['id'] as int;
+        }
+        // Prioridad 3: Si no hay ID, buscar por nombre
+        else {
+          debugPrint("Advertencia: Ejercicio sin ID, buscando por nombre: ${ex['name']}");
+          return -1; // Marcador temporal, se manejará después
+        }
+      }).where((id) => id != -1).toList();
 
-    if (mounted) {
-      final l10n = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.training_template_success(name))),
-      );
-      setState(() {
-        _didDataChange = true;
-      });
+      if (categoryIds.isEmpty) {
+        throw Exception("No se pudieron obtener IDs válidos para los ejercicios");
+      }
+
+      // Insertar las relaciones ejercicio-plantilla
+      await db.insertTemplateExercises(templateId, categoryIds);
+
+      if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.training_template_success(name))),
+        );
+        setState(() {
+          _didDataChange = true;
+        });
+      }
+    } catch (e) {
+      debugPrint("Error al guardar plantilla: $e");
+      if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Error"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 

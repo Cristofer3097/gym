@@ -339,16 +339,25 @@ class DatabaseHelper {
 // Agrega este método para guardar los ejercicios de la plantilla
   Future<void> insertTemplateExercises(int templateId, List<int> categoryIds) async {
     final db = await database;
+
+    // Eliminar ejercicios existentes para esta plantilla (si los hay)
+    await db.delete(
+      'template_exercises',
+      where: 'template_id = ?',
+      whereArgs: [templateId],
+    );
+
+    // Insertar los nuevos ejercicios
+    final batch = db.batch();
+
     for (final categoryId in categoryIds) {
-      await db.insert(
-        'template_exercises',
-        {
-          'template_id': templateId,
-          'category_id': categoryId,
-        },
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
+      batch.insert('template_exercises', {
+        'template_id': templateId,
+        'category_id': categoryId,
+      });
     }
+
+    await batch.commit();
   }
   Future<void> updateExerciseName(String oldName, String newName) async {
     final db = await database;
@@ -403,15 +412,15 @@ class DatabaseHelper {
     final db = await database;
     final String sql = '''
     SELECT
-      te.id,
+      te.id as template_exercise_id,
       te.template_id,
-      te.category_id,
+      c.id as category_id,
       c.name,
+      c.muscle_group as category,
       c.image,
       c.description,
-      c.muscle_group,
       c.is_predefined,
-      c.original_id        -- <--- AGREGA ESTA LÍNEA
+      c.original_id
     FROM template_exercises te
     JOIN categories c ON te.category_id = c.id
     WHERE te.template_id = ?
