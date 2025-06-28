@@ -34,6 +34,6 @@ Tips and Extras: a section with quick tips on training, nutrition and rest and R
 For now only in Spanish
 
 
-[Gym Diary v1.0 - Versión]([https://drive.usercontent.google.com/download?id=12VpTGsRILfuEtV5lNte7m9XGSZWwLPoW&export=download&authuser=0](https://github.com/Cristofer3097/GymTrainingDiary/blob/master/GymTrainingDiary.apk))
+[Gym Diary v1.0 - Versión](https://github.com/Cristofer3097/GymTrainingDiary/blob/master/GymTrainingDiary.apk)
 
   
