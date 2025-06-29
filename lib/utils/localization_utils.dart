@@ -87,7 +87,13 @@ String getLocalizedExerciseName(BuildContext context, Map<String, dynamic> exerc
 
 
   // Para ejercicios manuales o si falta información para localizar
-  return exercise['name']?.toString() ?? "Exercise";
+  if ((exercise['name']?.toString().trim().isNotEmpty ?? false)) {
+    return exercise['name'].toString();
+  }
+  if ((exercise['exercise_name']?.toString().trim().isNotEmpty ?? false)) {
+    return exercise['exercise_name'].toString();
+  }
+  return "Exercise";
 }
 
 String getLocalizedExerciseDescription(BuildContext context, Map<String, dynamic> exercise) {
