@@ -515,7 +515,8 @@ class DatabaseHelper {
       c.muscle_group,
       c.image,
       c.description,
-      c.is_predefined
+      c.is_predefined,
+      c.original_id  
     FROM exercise_logs l
     LEFT JOIN categories c ON l.exercise_name = c.name
     WHERE l.session_id = ?

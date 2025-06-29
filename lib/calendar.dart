@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../database/database_helper.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../training_screen.dart';
+import '../utils/localization_utils.dart';
 
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({Key? key}) : super(key: key);
@@ -85,11 +86,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
     List<Map<String, dynamic>> reconstructedExercises = [];
     for (var log in fullLogs) {
       Map<String, dynamic> exerciseData = Map.from(log);
-      // Renombramos 'muscle_group' a 'category' para que coincida con lo que espera TrainingScreen
       exerciseData['category'] = exerciseData['muscle_group'];
       exerciseData['isManual'] = (exerciseData['is_predefined'] ?? 1) == 0;
-      // Renombramos el id de la definición para evitar colisiones
       exerciseData['db_category_id'] = exerciseData['exercise_definition_id'];
+      exerciseData['name'] = log['exercise_name']; // <--- ASEGÚRATE DE ESTO
       reconstructedExercises.add(exerciseData);
     }
 
@@ -373,7 +373,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           ),
                           SizedBox(height: 12.0),
                           FutureBuilder<List<Map<String, dynamic>>>(
-                            future: DatabaseHelper.instance.getExerciseLogsForSession(session['id'] as int),
+                            future: DatabaseHelper.instance.getFullExerciseLogsForSession(session['id'] as int),
                             builder: (context, exerciseSnapshot) {
                               if (exerciseSnapshot.connectionState == ConnectionState.waiting) {
                                 return Padding(
@@ -402,7 +402,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                         Padding(
                                           padding: const EdgeInsets.only(left: 8.0, bottom: 6.0), // Indentación y espacio
                                           child: Text(
-                                            "${exerciseIdx + 1}. ${log['exercise_name']}",
+                                          "${exerciseIdx + 1}. ${getLocalizedExerciseName(context, log)}",
                                             style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16.5), // Tamaño consistente
                                           ),
                                         ),
