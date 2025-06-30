@@ -19,7 +19,7 @@
   "save": "Guardar",
   "weight": "Peso",
   "serie": "Serie",
-  "reps": "Repeticiones",
+  "repetitions": "Repeticiones",
   "notes": "Notas:",
   "addExerciseButton": "Añadir Ejer.",
   "createTemplateButton": "Crear Plantilla",
