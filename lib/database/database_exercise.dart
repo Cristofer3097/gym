@@ -165,10 +165,10 @@ const List<Map<String, dynamic>> predefinedExerciseList = [
   },
   {
     'id': 23, // <--- Nuevo ID
-    'name': 'Extension',
+    'name': 'Quadriceps Extensions',
     'muscle_group': "Legs",
     'image': 'assets/exercises/Extension.gif',
-    'description': 'The Extension is a strength-building exercise that primarily targets the quadriceps, enhancing muscle tone, power, and endurance in the lower body.',
+    'description': 'The quadriceps extensions is a strength-building exercise that primarily targets the quadriceps, enhancing muscle tone, power, and endurance in the lower body.',
   },
   {
     'id': 24, // <--- Nuevo ID
