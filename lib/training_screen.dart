@@ -778,7 +778,17 @@ class _TrainingScreenState extends State<TrainingScreen> {
                         }
                         weightText = sb.toString();
                       }
-
+                      final String? exerciseImage = exercise['image'] as String?;
+                      Widget imageWidget;
+                      if (exerciseImage != null && exerciseImage.isNotEmpty) {
+                        if (exerciseImage.startsWith('assets/')) {
+                          imageWidget = Image.asset(exerciseImage, fit: BoxFit.cover, height: 60, width: 60);
+                        } else {
+                          imageWidget = Image.file(File(exerciseImage), fit: BoxFit.cover, height: 60, width: 60);
+                        }
+                      } else {
+                        imageWidget = Icon(Icons.fitness_center, color: Colors.grey[600], size: 40);
+                      }
 
                       return Card(
                           margin: const EdgeInsets.symmetric(vertical: 6.0),
@@ -857,17 +867,52 @@ class _TrainingScreenState extends State<TrainingScreen> {
                           },
                           child: ListTile(
                             contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-                      title: Text(getLocalizedExerciseName(context, exercise),
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
-                            subtitle: Column( // Usar Column para mejor estructura
+                            title: Row(
+                              children: [
+                                Text(
+                                  '${index + 1}. ', // Número del ejercicio
+                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: Theme.of(context).primaryColor), // Color amarillo para el número
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    exerciseName,
+                                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+                                    overflow: TextOverflow.ellipsis, // Para manejar nombres largos
+                                  ),
+                                ),
+                              ],
+                            ),
+                            subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    Container(
+                                      width: 60, // Ancho de la imagen
+                                      height: 60, // Alto de la imagen
+                                      clipBehavior: Clip.antiAlias,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(8.0),
+                                        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                                      ),
+                                      child: imageWidget, // Aquí se muestra la imagen
+                                      ),
+                                    SizedBox(width: 10), // Espacio entre imagen y texto
+                            Expanded(
+                      child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                                 Text('${l10n.serie}: $seriesText', style: TextStyle(fontSize: 14, height: 1.4)),
                                 Text('${l10n.weight}: $weightText', style: TextStyle(fontSize: 14, height: 1.4)),
                                 Text('Reps: $repsText', style: TextStyle(fontSize: 14, height: 1.4)),
-                              ],
-                            ),
+                      ],
+                      ),
+                      ),
+                      ],
+                      ),
+                      ],
+                      ),
                             trailing: IconButton(
                               icon: Icon(Icons.edit_note,
                                   color: Theme.of(context).primaryColor, size: 28),
@@ -2183,6 +2228,13 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
         child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              Text(
+                getLocalizedExerciseName(context, _currentExerciseDataLog),
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold,
+                    fontSize: 20), // Cambia 'fontSize' a 20 o el tamaño deseado
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 // Alinea los elementos al inicio si tienen alturas diferentes (debido a errores)
