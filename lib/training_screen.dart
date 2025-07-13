@@ -379,6 +379,7 @@ class _TrainingScreenState extends State<TrainingScreen> {
     final db = DatabaseHelper.instance;
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) {
         return FutureBuilder<Map<String, dynamic>?>(
           future: db.getLastExerciseLog(exercise['name']?.toString() ?? ''),
@@ -2134,7 +2135,6 @@ class _ExerciseDataDialogState extends State<ExerciseDataDialog>
 
   @override
   Widget build(BuildContext context) {
-    final lastLogData = widget.lastLog;
     final l10n = AppLocalizations.of(context)!;
     final exerciseDefinitionForInfoTab = {
       'name': _currentExerciseDataLog['name'],
