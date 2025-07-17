@@ -463,6 +463,7 @@
   "category_Biceps": "Biceps",
   "category_Triceps": "Triceps",
   "category_shoulders": "Hombros",
+  "category_trapeze": "Trapecio",
   "category_glutes": "Gluteos",
   "category_Hamstrings": "Femoral",
   "category_abs": "Abdomen",
@@ -604,6 +605,9 @@
   "exercise_64_description": "La prensa pantorrillas  es un ejercicio de entrenamiento de fuerza que se dirige principalmente a los músculos de la pantorrilla, pero también involucra a los isquiotibiales y los glúteos.",
   "exercise_65_name": "Pullover",
   "exercise_65_description": "El Pullover es un ejercicio de entrenamiento de fuerza que se dirige principalmente a los músculos de la espalda, los hombros y los brazos, ofreciendo una forma eficaz de mejorar la fuerza y la flexibilidad de la parte superior del cuerpo. ",
+  "exercise_66_name": "Encogimientos",
+  "exercise_66_description":"El encogimiento de hombros es un ejercicio de fortalecimiento que se dirige principalmente a los músculos trapecios de la parte superior de la espalda y el cuello, lo que contribuye a mejorar la postura y la fuerza de la parte superior del cuerpo.",
+
 
   "predefined_template_Push_Routine": "Rutina de empuje",
   "predefined_template_pull_day": "Día de Tirón",

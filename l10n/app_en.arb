@@ -465,6 +465,7 @@
   "category_Biceps": "Biceps",
   "category_Triceps": "Triceps",
   "category_shoulders": "Shoulders",
+  "category_trapeze": "Trapeze",
   "category_glutes": "Glutes",
   "category_Hamstrings": "Hamstrings",
   "category_abs": "Abs",
@@ -604,6 +605,8 @@
   "exercise_64_description": "The Calf Press is a strength training exercise that primarily targets the calf muscles, but also engages the hamstrings and glutes.",
   "exercise_65_name": "Pullover",
   "exercise_65_description": "The Pullover is a strength training exercise that primarily targets the muscles in your back, shoulders, and arms, offering an effective way to enhance upper body strength and flexibility.",
+  "exercise_66_name": "Shrug",
+  "exercise_66_description":"The Shrug exercise is a strength-building workout that primarily targets the trapezius muscles in the upper back and neck, contributing to improved posture and upper body strength. It's a suitable exercise for anyone, from fitness beginners to professional athletes, looking to enhance their shoulder stability and upper body muscular endurance. ",
 
 
 

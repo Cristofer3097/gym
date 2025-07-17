@@ -476,6 +476,13 @@ const List<Map<String, dynamic>> predefinedExerciseList = [
     'image': 'assets/exercises/Pullover.gif',
     'description': 'The Pullover is a strength training exercise that primarily targets the muscles in your back, shoulders, and arms, offering an effective way to enhance upper body strength and flexibility.',
   },
+  {
+    'id': 66,
+    'name': 'Shrug',
+    'muscle_group': "Trapeze",
+    'image': 'assets/exercises/Shrug.gif',
+    'description': 'The Shrug exercise is a strength-building workout that primarily targets the trapezius muscles in the upper back and neck, contributing to improved posture and upper body strength. It is a suitable exercise for anyone, from fitness beginners to professional athletes, looking to enhance their shoulder stability and upper body muscular endurance. ',
+  },
 
 
   // Continúa añadiendo IDs únicos a todos tus ejercicios...
