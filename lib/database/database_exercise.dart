@@ -483,6 +483,13 @@ const List<Map<String, dynamic>> predefinedExerciseList = [
     'image': 'assets/exercises/Shrug.gif',
     'description': 'The Shrug exercise is a strength-building workout that primarily targets the trapezius muscles in the upper back and neck, contributing to improved posture and upper body strength. It is a suitable exercise for anyone, from fitness beginners to professional athletes, looking to enhance their shoulder stability and upper body muscular endurance. ',
   },
+  {
+    'id': 67,
+    'name': 'Hammer Curl',
+    'muscle_group': "Biceps",
+    'image': 'assets/exercises/Hammer.gif',
+    'description': 'The Hammer Curl is a strength training exercise that primarily targets the biceps and forearms, enhancing upper body strength and improving muscle definition.',
+  },
 
 
   // Continúa añadiendo IDs únicos a todos tus ejercicios...

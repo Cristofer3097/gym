@@ -24,7 +24,7 @@ class DatabaseHelper {
     final path = join(documentsDirectory.path, filePath);
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -46,6 +46,19 @@ class DatabaseHelper {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL UNIQUE,
         template_key TEXT
+      );
+    ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS categories (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL UNIQUE,
+        original_id INTEGER,
+        muscle_group TEXT,
+        image TEXT,
+        description TEXT,
+        is_predefined INTEGER DEFAULT 0,
+        is_favorite INTEGER DEFAULT 0
       );
     ''');
 
@@ -106,135 +119,125 @@ class DatabaseHelper {
     );
   ''');
 
-    // Insertar datos de ejemplo
-    await _insertDefaultData(db);
+    await _synchronizePredefinedData(db);
+    print("Base de datos creada y datos predefinidos sincronizados.");
   }
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
     print("Ejecutando _upgradeDB de v$oldVersion a v$newVersion.");
 
-    // Migración para cambios en nombres de ejercicios (sin incrementar versión)
-    if (oldVersion <= 1) {
-      await _migrateExerciseNames(db);
-    }
-
-    // Migración para nuevos campos (requiere incrementar versión solo si es crítico)
+    // Mantenemos la migración de la v1 a la v2
     if (oldVersion < 2) {
       await db.execute('ALTER TABLE categories ADD COLUMN is_favorite INTEGER DEFAULT 0');
-      print("Nueva columna 'is_favorite' añadida.");
+      print("Migración a v2: Columna 'is_favorite' añadida.");
+    }
+
+    // CAMBIO: Nueva migración para la v3.
+    // Esta se ejecutará para cualquier usuario que tenga una versión inferior a 3.
+    if (oldVersion < 3) {
+      print("Migración a v3: Sincronizando datos predefinidos...");
+      await _synchronizePredefinedData(db);
+      print("Migración a v3 completada.");
     }
   }
 
-  Future<void> _migrateExerciseNames(Database db) async {
-    // Ejemplo: Actualizar nombres de ejercicios sin cambiar la versión de la DB
-    await db.update(
-      'categories',
-      {'name': 'Nuevo nombre'},
-      where: 'name = ?',
-      whereArgs: ['Nombre antiguo'],
-    );
-    print("Nombres de ejercicios actualizados sin incrementar versión.");
-  }
-  Future<void> _insertDefaultData(Database db) async {
-    Map<String, Map<String, dynamic>> exerciseDetailsCache = {};
-    // Insertar ejercicios predefinidos desde database_exercise.dart
-    for (final exerciseData in predefinedExerciseList) { // predefinedExerciseList vendrá de database_exercise.dart
-      try {
-        await db.insert(
+
+  Future<void> _synchronizePredefinedData(Database db) async {
+    print("Iniciando sincronización de datos predefinidos...");
+    final batch = db.batch();
+
+    // 1. Sincronizar Ejercicios
+    for (final exerciseData in predefinedExerciseList) {
+      final originalId = exerciseData['id'];
+      final existingExercise = await db.query(
           'categories',
-          {
-            'name': exerciseData['name'],
-            'muscle_group': exerciseData['muscle_group'],
-            'image': exerciseData['image'] ?? 'assets/exercises/placeholder.png',
-            'description': exerciseData['description'] ?? 'Descripción no disponible.',
-            'is_predefined': 1, // Marcar como predefinido
-            'original_id': exerciseData['id'],
-            // Asegúrate que otros campos NOT NULL tengan un valor por defecto o sean nullable
-          },
-          conflictAlgorithm: ConflictAlgorithm.ignore, // Ignorar si ya existe (por el UNIQUE name)
+          where: 'original_id = ? AND is_predefined = 1',
+          whereArgs: [originalId],
+          limit: 1
+      );
+
+      Map<String, dynamic> dataToInsertOrUpdate = {
+        'name': exerciseData['name'],
+        'muscle_group': exerciseData['muscle_group'],
+        'image': exerciseData['image'] ?? 'assets/exercises/placeholder.png',
+        'description': exerciseData['description'] ?? 'No hay descripción.',
+        'is_predefined': 1,
+        'original_id': originalId,
+      };
+
+      if (existingExercise.isNotEmpty) {
+        // El ejercicio ya existe, lo actualizamos
+        batch.update(
+            'categories',
+            dataToInsertOrUpdate,
+            where: 'id = ?',
+            whereArgs: [existingExercise.first['id']]
         );
-        exerciseDetailsCache[exerciseData['name'] as String] = {
-          'image': exerciseData['image'] ?? 'assets/exercises/placeholder.png',
-          'description': exerciseData['description'] ??
-              'Descripción no disponible.'
-        };
-        } catch (e) {
-        print("Error insertando ejercicio predefinido ${exerciseData['name']}: $e");
+      } else {
+        // El ejercicio es nuevo, lo insertamos
+        batch.insert(
+            'categories',
+            dataToInsertOrUpdate,
+            conflictAlgorithm: ConflictAlgorithm.ignore // Por si acaso el nombre ya fue tomado por un ejercicio de usuario
+        );
       }
     }
-    print("${predefinedExerciseList.length} ejercicios predefinidos procesados para inserción.");
-    // Ya no insertamos la plantilla "Pierna" ni sus ejercicios en template_exercises aquí,
-    // ya que los ejercicios predefinidos ahora están directamente en 'categories'.
-    Map<int, String> sourceIdToNameMap = {};
-    for (var ex in predefinedExerciseList) { //
-      sourceIdToNameMap[ex['id'] as int] = ex['name'] as String; //
-    }
 
-    for (var templateData in predefinedTemplatesData) {
-      try {
-        String templateKeyStr = templateData['templateKey'] as String;
-        String templateNameStr = templateData['templateName'] as String;
-        List<int> exerciseSourceIds = templateData['exerciseSourceIds'] as List<int>;
-        int templateId = await db.insert(
-          'templates',
-          {'name': templateNameStr,
-          'template_key': templateKeyStr
-          },
-          conflictAlgorithm: ConflictAlgorithm.ignore, // Ignorar si ya existe una plantilla con ese nombre
-        );
+    // 2. Sincronizar Plantillas
+    for (final templateData in predefinedTemplatesData) {
+      String templateKey = templateData['templateKey'] as String;
+      String templateName = templateData['templateName'] as String;
 
-        if (templateId > 0) { // Si la plantilla se insertó (o ya existía y se ignoró)
-          print("Plantilla '$templateNameStr' insertada/encontrada con ID: $templateId");
+      // Buscamos si la plantilla ya existe por su clave única
+      final existingTemplates = await db.query('templates', where: 'template_key = ?', whereArgs: [templateKey]);
+      int templateId;
 
-          for (int sourceId in exerciseSourceIds) {
-            String? exerciseName = sourceIdToNameMap[sourceId];
-            if (exerciseName == null) {
-              print("Advertencia: Ejercicio con source_id $sourceId no encontrado en sourceIdToNameMap.");
-              continue;
-            }
-
-            // Buscar el ejercicio en la tabla 'categories' por su nombre para obtener su ID real
-            final List<Map<String, dynamic>> exerciseEntry = await db.query(
-              'categories',
-              columns: ['id'], // Solo necesitamos el id de la tabla categories
-              where: 'name = ?',
-              whereArgs: [exerciseName],
-              limit: 1,
-            );
-
-            if (exerciseEntry.isNotEmpty) {
-              int categoryDbId = exerciseEntry.first['id'] as int;
-              Map<String, dynamic> details = exerciseDetailsCache[exerciseName] ?? {};
-
-              await db.insert(
-                'template_exercises',
-                {
-                  'template_id': templateId,
-                  'category_id': categoryDbId, // Este es el ID real de la tabla 'categories'
-                  'name': exerciseName, // Guardamos el nombre para fácil acceso
-                  'image': details['image'], // Guardamos la imagen
-                  'description': details['description'], // Puedes poner una descripción general o específica para la plantilla
-                },
-                conflictAlgorithm: ConflictAlgorithm.replace,
-              );
-            } else {
-              print("Advertencia: Ejercicio '$exerciseName' (source_id $sourceId) no encontrado en la tabla 'categories' al crear la plantilla '$templateNameStr'.");
-            }
-          }
-        } else {
-          print("Plantilla '$templateNameStr' ya existía y no se reinsertó debido a UNIQUE constraint.");
-          // Si quieres actualizar una plantilla existente, necesitarías otra lógica (borrar y reinsertar o update)
+      if (existingTemplates.isNotEmpty) {
+        templateId = existingTemplates.first['id'] as int;
+        // Si el nombre ha cambiado en el archivo, lo actualizamos en la BD
+        if (existingTemplates.first['name'] != templateName) {
+          batch.update('templates', {'name': templateName}, where: 'id = ?', whereArgs: [templateId]);
         }
-      } catch (e) {
-        print("Error insertando plantilla predefinida '${templateData['templateName']}': $e");
+      } else {
+        // Insertamos la nueva plantilla y obtenemos su ID para el siguiente paso
+        templateId = await db.insert('templates', {'name': templateName, 'template_key': templateKey});
+      }
+
+      // Si tenemos un ID válido, sincronizamos sus ejercicios
+      if(templateId > 0) {
+        // Borramos las asociaciones viejas para asegurar una lista limpia
+        batch.delete('template_exercises', where: 'template_id = ?', whereArgs: [templateId]);
+
+        List<int> exerciseSourceIds = templateData['exerciseSourceIds'] as List<int>;
+
+        for (int sourceId in exerciseSourceIds) {
+          // Buscamos el ID real del ejercicio en la tabla 'categories' usando su 'original_id'
+          final exercises = await db.query(
+              'categories',
+              columns: ['id'],
+              where: 'original_id = ?',
+              whereArgs: [sourceId]
+          );
+
+          if (exercises.isNotEmpty) {
+            int categoryDbId = exercises.first['id'] as int;
+            batch.insert('template_exercises', {
+              'template_id': templateId,
+              'category_id': categoryDbId,
+            });
+          } else {
+            print("Advertencia: Ejercicio con source_id $sourceId no encontrado al sincronizar plantilla '$templateName'.");
+          }
+        }
       }
     }
-    print("Plantillas predefinidas procesadas.");
-  }
 
+    await batch.commit(noResult: true);
+    print("Sincronización de datos predefinidos finalizada.");
+  }
   Future<void> deleteCategory(int id) async {
     final db = await database;
     await db.delete('categories', where: 'id = ?', whereArgs: [id]);
-    // Opcional: borra también logs relacionados si lo deseas
+
   }
   Future<List<Map<String, dynamic>>> getExerciseLogs(String exerciseName) async {
     final db = await database;
@@ -383,31 +386,16 @@ class DatabaseHelper {
         whereArgs: [oldName],
       );
 
-      await txn.update(
-        'template_exercises',
-        {'name': newName},
-        where: 'name = ?',
-        whereArgs: [oldName],
-      );
     });
   }
-  Future<void> updateExerciseNameInTemplateExercises(String oldName, String newName) async {
-    final db = await database;
-    int count = await db.update(
-      'template_exercises', // Nombre de la tabla
-      {'name': newName},    // Columna a actualizar y nuevo valor
-      where: 'name = ?',    // Condición para encontrar los registros
-      whereArgs: [oldName], // Argumento para la condición
-    );
-    print('Nombres de ejercicio actualizados en template_exercises: $count registros de "$oldName" a "$newName"');
-  }
-// Agrega este método para obtener todas las plantillas
+
+// Obtener todas las plantillas
   Future<List<Map<String, dynamic>>> getAllTemplates() async {
     final db = await database;
     return await db.query('templates', columns: ['id', 'name', 'template_key'], orderBy: 'id DESC'); // Añadir template_key
   }
 
-// Agrega este método para obtener los ejercicios de una plantilla
+// Obtener los ejercicios de una plantilla
   Future<List<Map<String, dynamic>>> getTemplateExercises(int templateId) async {
     final db = await database;
     final String sql = '''
@@ -471,7 +459,7 @@ class DatabaseHelper {
     return null;
   }
 
-  // Nueva función para actualizar el título y fecha de una sesión
+  // Actualizar el título y fecha de una sesión
   Future<void> updateTrainingSession(int sessionId, String newTitle, String newDateTime) async {
     final db = await database;
     await db.update(
@@ -482,7 +470,7 @@ class DatabaseHelper {
     );
   }
 
-  // Nueva función para borrar todos los logs de una sesión (para luego reinsertarlos)
+  // Función para borrar todos los logs de una sesión (para luego reinsertarlos)
   Future<void> clearExerciseLogsForSession(int sessionId) async {
     final db = await database;
     await db.delete(

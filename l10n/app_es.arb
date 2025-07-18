@@ -607,7 +607,8 @@
   "exercise_65_description": "El Pullover es un ejercicio de entrenamiento de fuerza que se dirige principalmente a los músculos de la espalda, los hombros y los brazos, ofreciendo una forma eficaz de mejorar la fuerza y la flexibilidad de la parte superior del cuerpo. ",
   "exercise_66_name": "Encogimientos",
   "exercise_66_description":"El encogimiento de hombros es un ejercicio de fortalecimiento que se dirige principalmente a los músculos trapecios de la parte superior de la espalda y el cuello, lo que contribuye a mejorar la postura y la fuerza de la parte superior del cuerpo.",
-
+  "exercise_67_name": "Curl de Martillo",
+  "exercise_67_description":"Curl de martillo es un ejercicio de entrenamiento de fuerza que se dirige principalmente a los bíceps y los antebrazos, aumentando la fuerza de la parte superior del cuerpo y mejorando la definición muscular. ",
 
   "predefined_template_Push_Routine": "Rutina de empuje",
   "predefined_template_pull_day": "Día de Tirón",

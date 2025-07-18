@@ -1592,7 +1592,6 @@ class _NewExerciseDialogState extends State<NewExerciseDialog> {
                             await db.updateCategory(idToUpdate, exerciseDataForDb);
                             if (trimmedName.toLowerCase() != oldName.toLowerCase()) {
                               await db.updateExerciseLogsName(oldName, trimmedName);
-                              await db.updateExerciseNameInTemplateExercises(oldName, trimmedName);
                             }
                             if (mounted) {
                               Navigator.pop(context, {
