@@ -152,7 +152,7 @@ String getLocalizedExerciseDescription(BuildContext context, Map<String, dynamic
       case 46: return l10n.exercise_46_description;
       case 47: return l10n.exercise_47_description;
       case 48: return l10n.exercise_48_description;
-      case 59: return l10n.exercise_49_description;
+      case 49: return l10n.exercise_49_description;
       case 50: return l10n.exercise_50_description;
       case 51: return l10n.exercise_51_description;
       case 52: return l10n.exercise_52_description;
@@ -217,7 +217,7 @@ String getLocalizedTemplateName(BuildContext context, Map<String, dynamic> templ
       case 'Push_Routine': return l10n.predefined_template_Push_Routine;
       case 'pull_day': return l10n.predefined_template_pull_day;
       case 'leg_day_basic': return l10n.predefined_template_leg_day_basic_name;
-      case 'toned_arms': return l10n.predefined_template_toned_arms;
+      case 'complete_torso': return l10n.predefined_template_complete_torso;
 
       default:
       // Si hay una templateKey pero no coincide con ninguna clave ARB (debería ser raro)

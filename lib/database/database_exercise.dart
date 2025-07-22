@@ -512,9 +512,9 @@ const List<Map<String, dynamic>> predefinedTemplatesData = [
     'exerciseSourceIds': [23, 26, 59, 55, 27, 62],
   },
   {
-    'templateKey': 'toned_arms',
-    'templateName': 'Toned Arms',
-    'exerciseSourceIds': [29, 33, 46, 49, 42, 44],
+    'templateKey': 'complete_torso',
+    'templateName': 'Complete Torso',
+    'exerciseSourceIds': [9, 10, 12,18, 51, 50, 44],
   },
 
 ];

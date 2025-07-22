@@ -24,7 +24,7 @@ class DatabaseHelper {
     final path = join(documentsDirectory.path, filePath);
     return await openDatabase(
       path,
-      version: 3,
+      version: 7,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -59,19 +59,6 @@ class DatabaseHelper {
         description TEXT,
         is_predefined INTEGER DEFAULT 0,
         is_favorite INTEGER DEFAULT 0
-      );
-    ''');
-
-    // Tabla categories
-    await db.execute('''
-      CREATE TABLE IF NOT EXISTS categories (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL UNIQUE,
-        original_id INTEGER,
-        muscle_group TEXT,
-        image TEXT,
-        description TEXT,
-        is_predefined INTEGER DEFAULT 0
       );
     ''');
 
@@ -137,6 +124,11 @@ class DatabaseHelper {
       print("Migración a v3: Sincronizando datos predefinidos...");
       await _synchronizePredefinedData(db);
       print("Migración a v3 completada.");
+    }
+    if (oldVersion < 4) {
+      print("Migración a v4: Resincronizando datos para corregir enlaces de plantillas...");
+      await _synchronizePredefinedData(db);
+      print("Migración a v4 completada.");
     }
   }
 
